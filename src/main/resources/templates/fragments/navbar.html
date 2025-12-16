@@ -1,4 +1,5 @@
-<div th:fragment="navbar">
+<div th:fragment="navbar" xmlns:th="http://www.thymeleaf.org" 
+     xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
     <!-- Add Google Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
@@ -16,18 +17,19 @@
             font-size: 20px;
         }
 
-        /* ⭐ FIX: push page content to the right so sidebar does not block it */
+        /* Push page content to the right so sidebar does not block it */
         #page-content-wrapper {
-            margin-left: 260px !important;  /* match sidebar width */
+            margin-left: 260px !important;
         }
     </style>
     
     <div class="d-flex">
-        <!-- Sidebar -->
-        <nav class="sidebar bg-primary text-white p-3" 
+        <!-- ========== STUDENT SIDEBAR ========== -->
+        <nav sec:authorize="hasRole('STUDENT')" 
+             class="sidebar bg-primary text-white p-3" 
              style="width: 260px; min-height: 100vh; position: fixed; top: 0; left: 0;">
             <a class="navbar-brand d-flex align-items-center gap-2 mb-4" th:href="@{/}" style="text-decoration: none;">
-                <img src="\resources\static\logoinnerly.png" alt="Innerly Logo" class="sidebar-logo" style="width: 40px; height: 40px;">
+                <img src="/resources/static/logoinnerly.png" alt="Innerly Logo" class="sidebar-logo" style="width: 40px; height: 40px;">
                 <span class="fs-3 fw-bold text-white">Innerly</span>
             </a>
             <ul class="nav flex-column" style="gap: 0.25rem;">
@@ -37,7 +39,6 @@
                         <span>Dashboard</span>
                     </a>
                 </li>
-                <!-- Peer Forum -->
                 <li class="nav-item">
                     <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/forum}">
                         <span class="material-icons">forum</span>
@@ -62,29 +63,18 @@
                         <span>Symptoms Recognition</span>
                     </a>
                 </li>
-                <!-- Student -->
-                <li class="nav-item" sec:authorize="hasRole('STUDENT')">
+                <li class="nav-item">
                     <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/counselling/schedule}">
                         <span class="material-icons">event</span>
                         <span>Schedule Counselling</span>
                     </a>
                 </li>
-                <!-- Counsellor -->
-                <li class="nav-item" sec:authorize="hasRole('COUNSELLOR')">
-                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/counselling/approval}">
-                        <span class="material-icons">check_circle</span>
-                        <span>Approve Sessions</span>
-                    </a>
-                </li>
-                <!-- Progress -->
                 <li class="nav-item">
                     <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/progress/mood}">
                         <span class="material-icons">mood</span>
                         <span>Mood Tracker</span>
                     </a>
                 </li>
-                
-                <!-- Awareness -->
                 <li class="nav-item">
                     <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/awareness/resources}">
                         <span class="material-icons">menu_book</span>
@@ -93,22 +83,141 @@
                 </li>
             </ul>
             <hr class="text-white my-3">
-            <!-- User Info -->
-            <div sec:authorize="isAuthenticated()" class="mb-3 d-flex align-items-center gap-3 px-0">
+            <div class="mb-3 d-flex align-items-center gap-3 px-0">
                 <span class="material-icons">account_circle</span>
-                <span>Hello, <strong th:text="${#authentication?.name}">User</strong></span>
+                <span>Hello, <strong th:text="${#authentication?.name}">Student</strong></span>
             </div>
-            <!-- Auth Buttons -->
             <div>
                 <a class="btn btn-outline-light btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2" 
-                   sec:authorize="isAuthenticated()" th:href="@{/logout}">
+                   th:href="@{/logout}">
                     <span class="material-icons" style="font-size: 18px;">logout</span>
                     <span>Logout</span>
                 </a>
-                <a class="btn btn-light btn-sm w-100 d-flex align-items-center justify-content-center gap-2" 
-                   sec:authorize="!isAuthenticated()" th:href="@{/login}">
-                    <span class="material-icons" style="font-size: 18px;">login</span>
-                    <span>Login</span>
+            </div>
+        </nav>
+
+        <!-- ========== COUNSELOR SIDEBAR ========== -->
+        <nav sec:authorize="hasRole('COUNSELOR')" 
+             class="sidebar bg-success text-white p-3" 
+             style="width: 260px; min-height: 100vh; position: fixed; top: 0; left: 0;">
+            <a class="navbar-brand d-flex align-items-center gap-2 mb-4" th:href="@{/}" style="text-decoration: none;">
+                <img src="/resources/static/logoinnerly.png" alt="Innerly Logo" class="sidebar-logo" style="width: 40px; height: 40px;">
+                <span class="fs-3 fw-bold text-white">Innerly</span>
+            </a>
+            <ul class="nav flex-column" style="gap: 0.25rem;">
+                <li class="nav-item">
+                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/progress/dashboard}">
+                        <span class="material-icons">dashboard</span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/counselling/approval}">
+                        <span class="material-icons">check_circle</span>
+                        <span>Approve Sessions</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/counselling/schedule}">
+                        <span class="material-icons">event</span>
+                        <span>My Sessions</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/forum}">
+                        <span class="material-icons">forum</span>
+                        <span>Moderate Forum</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/progress/mood}">
+                        <span class="material-icons">assessment</span>
+                        <span>Student Progress</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/awareness/resources}">
+                        <span class="material-icons">menu_book</span>
+                        <span>Resources</span>
+                    </a>
+                </li>
+            </ul>
+            <hr class="text-white my-3">
+            <div class="mb-3 d-flex align-items-center gap-3 px-0">
+                <span class="material-icons">psychology</span>
+                <span>Hello, <strong th:text="${#authentication?.name}">Counselor</strong></span>
+            </div>
+            <div>
+                <a class="btn btn-outline-light btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2" 
+                   th:href="@{/logout}">
+                    <span class="material-icons" style="font-size: 18px;">logout</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- ========== ADMIN SIDEBAR ========== -->
+        <nav sec:authorize="hasRole('ADMIN')" 
+             class="sidebar bg-dark text-white p-3" 
+             style="width: 260px; min-height: 100vh; position: fixed; top: 0; left: 0;">
+            <a class="navbar-brand d-flex align-items-center gap-2 mb-4" th:href="@{/}" style="text-decoration: none;">
+                <img src="/resources/static/logoinnerly.png" alt="Innerly Logo" class="sidebar-logo" style="width: 40px; height: 40px;">
+                <span class="fs-3 fw-bold text-white">Innerly</span>
+            </a>
+            <ul class="nav flex-column" style="gap: 0.25rem;">
+                <li class="nav-item">
+                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/admin/dashboard}">
+                        <span class="material-icons">dashboard</span>
+                        <span>Admin Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/admin/users}">
+                        <span class="material-icons">people</span>
+                        <span>Manage Users</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/forum}">
+                        <span class="material-icons">forum</span>
+                        <span>Manage Forum</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/counselling/approval}">
+                        <span class="material-icons">event_note</span>
+                        <span>View All Sessions</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/admin/reports}">
+                        <span class="material-icons">analytics</span>
+                        <span>Reports & Analytics</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/awareness/resources}">
+                        <span class="material-icons">menu_book</span>
+                        <span>Manage Resources</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/admin/settings}">
+                        <span class="material-icons">settings</span>
+                        <span>System Settings</span>
+                    </a>
+                </li>
+            </ul>
+            <hr class="text-white my-3">
+            <div class="mb-3 d-flex align-items-center gap-3 px-0">
+                <span class="material-icons">admin_panel_settings</span>
+                <span>Hello, <strong th:text="${#authentication?.name}">Admin</strong></span>
+            </div>
+            <div>
+                <a class="btn btn-outline-light btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2" 
+                   th:href="@{/logout}">
+                    <span class="material-icons" style="font-size: 18px;">logout</span>
+                    <span>Logout</span>
                 </a>
             </div>
         </nav>
