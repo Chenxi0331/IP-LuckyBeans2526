@@ -86,13 +86,16 @@
         .required {
             color: #e74c3c;
         }
+        #page-content-wrapper {
+            margin-left: 260px !important;
+        }
     </style>
 </head>
 <body>
     <!-- Navbar -->
     <nav th:replace="fragments/navbar :: navbar"></nav>
 
-    <div class="container-main">
+    <div id="page-content-wrapper" class="container-main">
         <div class="card-container">
             <h2 class="card-title">Schedule a Counselling Session</h2>
 
