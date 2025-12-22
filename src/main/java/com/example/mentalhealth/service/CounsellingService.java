@@ -53,12 +53,6 @@ public class CounsellingService {
                 .count();
     }
 
-    // public long countApprovedSessionsThisMonth() {
-    // return repo.findByStatus("APPROVED").stream()
-    //            .filter(s -> s.getSessionDate().getMonth() == LocalDate.now().getMonth())
-    //            .count();
-    // }
-
     public List<CounsellingSession> getHistoryForUser(Long userId) {
         return repo.findByStudentId(userId); 
     }

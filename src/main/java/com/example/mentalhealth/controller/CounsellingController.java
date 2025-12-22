@@ -1,8 +1,12 @@
 package com.example.mentalhealth.controller;
 
 import com.example.mentalhealth.model.CounsellingSession;
+import com.example.mentalhealth.model.Role;
+import com.example.mentalhealth.model.User;
 import com.example.mentalhealth.repository.UserRepository;
 import com.example.mentalhealth.service.CounsellingService;
+
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
