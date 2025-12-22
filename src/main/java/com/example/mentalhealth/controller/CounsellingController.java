@@ -1,19 +1,24 @@
 package com.example.mentalhealth.controller;
 
 import com.example.mentalhealth.model.CounsellingSession;
+import com.example.mentalhealth.repository.UserRepository;
 import com.example.mentalhealth.service.CounsellingService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 @Controller
 @RequestMapping("/counselling")
 public class CounsellingController {
 
     @Autowired
-    private final CounsellingService service;
+    private CounsellingService service;
+    @Autowired
+    private UserRepository userRepository;
 
     public CounsellingController(CounsellingService service) {
         this.service = service;
@@ -29,13 +34,20 @@ public class CounsellingController {
     @PostMapping("/schedule")
     public String scheduleSubmit(@RequestParam String date,
                                  @RequestParam String time,
-                                 @RequestParam(required = false) Long counsellorId) {
+                                 @RequestParam(required = false) Long counsellorId,
+                                Authentication authentication) {
         // date expected in yyyy-MM-dd and time in HH:mm (from date + time inputs)
         java.time.LocalDate d = java.time.LocalDate.parse(date);
         java.time.LocalTime t = java.time.LocalTime.parse(time);
         java.time.LocalDateTime dt = java.time.LocalDateTime.of(d, t);
 
+        // String currentPrincipalName = authentication.getName();
+        // User currentUser = userService.findByEmail(currentPrincipalName);   
+        // CounsellingSession session = new CounsellingSession();
+        String email = authentication.getName();
+        User currentUser = userRepository.findByEmail(email).orElseThrow(); 
         CounsellingSession session = new CounsellingSession();
+        session.setStudentId(currentUser.getId());
         session.setSessionDate(dt);
         session.setStatus("PENDING");
         if (counsellorId != null) {
@@ -44,12 +56,16 @@ public class CounsellingController {
             session.setCounsellorId(1L); // fallback temporary ID
         }
         service.save(session);
-        return "redirect:/counselling";
+        return "redirect:/counselling/my-sessions";
     }
 
+    @PreAuthorize("hasAnyRole('COUNSELOR')")
     @GetMapping("/approval")
     public String listApproval(Model model) {
-        model.addAttribute("sessions", service.findPending());
+        List<CounsellingSession> pendingSessions = service.findPending();
+        model.addAttribute("sessions", pendingSessions);
+        model.addAttribute("approvedCount", service.countMonthlyStatus("APPROVED"));
+        model.addAttribute("rejectedCount", service.countMonthlyStatus("REJECTED"));
         return "counselling/approval";
     }
 
@@ -65,22 +81,31 @@ public class CounsellingController {
         return "redirect:/counselling/approval";
     }
 
+    @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/book")
     public String showBookingForm(Model model) {
+        List<User> counselors = userRepository.findAll().stream()
+                .filter(u -> u.getRole() == Role.COUNSELOR)
+                .toList();
+        model.addAttribute("counselors", counselors);
         model.addAttribute("session", new CounsellingSession());
         return "counselling/book";
     }
 
     @PostMapping("/book")
-    public String submitBooking(@ModelAttribute CounsellingSession session) {
-        session.setStudentId(1L); // TODO: change to login user
+    public String submitBooking(@ModelAttribute CounsellingSession session, Authentication authentication) {
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email).orElseThrow();
+        session.setStudentId(user.getId());
         service.createSession(session);
         return "redirect:/counselling/my-sessions";
     }
 
     @GetMapping("/my-sessions")
-    public String mySessions(Model model) {
-        model.addAttribute("sessions", service.getSessionsForStudent(1L));
+    public String mySessions(Model model, Authentication authentication) {
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email).orElseThrow();
+        model.addAttribute("sessions", service.getSessionsForStudent(user.getId()));
         return "counselling/my-sessions";
     }
 }

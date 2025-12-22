@@ -18,4 +18,8 @@ public class CounsellingSession {
 
     private LocalDateTime sessionDate;
     private String status = "PENDING"; // PENDING / APPROVED / COMPLETED
+
+    private String sessionType;
+    private String notes;      
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

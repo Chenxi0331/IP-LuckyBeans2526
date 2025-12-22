@@ -15,8 +15,13 @@
                 <h4 class="card-title">Book Counselling Session</h4>
                 <form th:action="@{/counselling/book}" th:object="${session}" method="post">
                     <div class="mb-3">
-                        <label class="form-label">Counsellor ID</label>
-                        <input class="form-control" type="number" th:field="*{counsellorId}" required />
+                        <label class="form-label">Select Preferred Counsellor</label>
+                        <select class="form-select" th:field="*{counsellorId}" required>
+                            <option value="">-- Choose a Counsellor --</option>
+                            <option th:each="c : ${counselors}" 
+                                    th:value="${c.id}" 
+                                    th:text="${c.fullName}"></option>
+                        </select>
                     </div>
 
                     <div class="mb-3">
