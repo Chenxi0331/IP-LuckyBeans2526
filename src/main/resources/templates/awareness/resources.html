@@ -1,54 +1,39 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Innerly Mental Health Platform</title>
+    <title>Innerly | Awareness & Education</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <style>
-        /* Custom styles based on the purple/pink design */
         :root {
-            --innerly-primary: #8e2de2; /* Purple */
-            --innerly-secondary: #4a00e0; /* Deep Purple */
-            --innerly-accent: #ff4081; /* Pink */
+            --innerly-primary: #8e2de2; 
+            --innerly-secondary: #4a00e0; 
+            --innerly-accent: #ff4081; 
         }
         
-        /* 🛑 FIX 🛑 1. Ensure the entire page takes up 100% of the viewport height */
-        body, html {
-            height: 100%;
-        }
+        body, html { height: 100%; }
+        #wrapper { display: flex; height: 100%; width: 100%; }
 
-        /* 🛑 FIX 🛑 2. Use flexbox to arrange the sidebar and content horizontally */
-        #wrapper {
-            display: flex;
-            height: 100%; /* Make the wrapper fill the entire viewport height */
-            width: 100%;
-        }
-
-        /* 3. Page Content Wrapper (The area next to the sidebar) */
         #page-content-wrapper {
-            /* This property ensures the main content area takes up all *remaining* space */
             flex-grow: 1; 
-            /* Set min-width to 0 to prevent the content from overflowing the flex container */
             min-width: 0; 
             padding: 1.5rem;
-            overflow-y: auto; /* Allows content area to scroll independently */
+            overflow-y: auto;
         }
 
-        /* 4. Tab Navigation Styling (Visual Design) */
         .nav-tabs .nav-link.active {
             color: var(--innerly-primary) !important;
             border-bottom: 3px solid var(--innerly-primary) !important;
             background-color: transparent !important;
-            border-top: none !important;
-            border-left: none !important;
-            border-right: none !important;
+            border: none !important;
         }
         
-        /* 5. Card Styling (Visual Design) */
         .campaign-card {
             border: 1px solid rgba(0, 0, 0, 0.05);
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
         }
+        .campaign-card:hover { transform: scale(1.01); }
 
         .resource-icon {
             color: var(--innerly-primary);
@@ -57,155 +42,113 @@
         }
 
         .btn-join {
-            background-color: #343a40; /* Dark color for "Join Campaign" */
+            background-color: #343a40;
             border-color: #343a40;
             color: white;
         }
-        .btn-join:hover {
-            background-color: #23272b;
-            border-color: #23272b;
-            color: white;
-        }
+        .btn-join:hover { background-color: #23272b; color: white; }
+
+        .category-pill { text-decoration: none; cursor: pointer; transition: 0.3s; }
     </style>
 </head>
 <body class="bg-light">
 
     <div id="wrapper">
-
         <div th:replace="fragments/navbar :: navbar"></div>
         
         <div id="page-content-wrapper">
-
             <div class="container-fluid">
                 
                 <h2 class="fw-bold">Awareness and Education Module</h2>
                 <p class="text-muted mb-4">Access Educational Resources | Participate in Awareness Campaigns</p>
 
                 <ul class="nav nav-tabs mb-4 border-0" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active fw-bold" id="resources-tab" data-bs-toggle="tab" data-bs-target="#resources-content" type="button" role="tab" aria-controls="resources-content" aria-selected="true">Resources Library</button>
+                    <li class="nav-item">
+                        <button class="nav-link active fw-bold" id="resources-tab" data-bs-toggle="tab" data-bs-target="#resources-content" type="button" role="tab">Resources Library</button>
                     </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link fw-bold" id="campaigns-tab" data-bs-toggle="tab" data-bs-target="#campaigns-content" type="button" role="tab" aria-controls="campaigns-content" aria-selected="false">Awareness Campaigns</button>
+                    <li class="nav-item">
+                        <button class="nav-link fw-bold" id="campaign-tab" data-bs-toggle="tab" data-bs-target="#campaigns-content" type="button" role="tab">Awareness Campaigns</button>
                     </li>
                 </ul>
 
                 <div class="tab-content">
-
-                    <div class="tab-pane fade show active" id="resources-content" role="tabpanel" aria-labelledby="resources-tab">
+                    <div class="tab-pane fade show active" id="resources-content" role="tabpanel">
                         
-                        <div class="input-group mb-4 shadow-sm rounded-3">
+                        <form th:action="@{/awareness/library}" method="get" class="input-group mb-4 shadow-sm rounded-3">
                             <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted"></i></span>
-                            <input type="text" class="form-control border-0 py-3" placeholder="Search resources by title, category, or topic..." aria-label="Search resources">
-                        </div>
+                            <input type="text" name="search" class="form-control border-0 py-3" placeholder="Search resources...">
+                        </form>
 
                         <div class="d-flex flex-wrap gap-2 mb-4">
-                            <span class="badge rounded-pill bg-primary">All</span>
-                            <span class="badge rounded-pill bg-light text-dark border">Anxiety</span>
-                            <span class="badge rounded-pill bg-light text-dark border">Depression</span>
-                            <span class="badge rounded-pill bg-light text-dark border">Stress</span>
-                            <span class="badge rounded-pill bg-light text-dark border">Mindfulness</span>
-                            <span class="badge rounded-pill bg-light text-dark border">Sleep</span>
-                            <span class="badge rounded-pill bg-light text-dark border">Resilience</span>
+                            <a th:href="@{/awareness/library(category='All')}" 
+                               class="badge rounded-pill category-pill" 
+                               th:classappend="${selectedCategory == 'All' || selectedCategory == null} ? 'bg-primary' : 'bg-light text-dark border'">All</a>
+                            
+                            <th:block th:each="cat : ${ {'Anxiety', 'Depression', 'Stress', 'Mindfulness', 'Sleep'} }">
+                                <a th:href="@{/awareness/library(category=${cat})}" 
+                                   class="badge rounded-pill category-pill"
+                                   th:classappend="${selectedCategory == cat} ? 'bg-primary' : 'bg-light text-dark border'"
+                                   th:text="${cat}">Topic</a>
+                            </th:block>
                         </div>
 
                         <div class="row row-cols-1 row-cols-md-2 g-4">
-                            
-                            <div class="col">
-                                <div class="card h-100 shadow-sm">
+                            <div class="col" th:each="res : ${resources}">
+                                <div class="card h-100 shadow-sm border-0">
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-start">
-                                            <div><i class="fas fa-file-alt resource-icon"></i><span class="badge bg-light text-muted fw-normal ms-2">Article</span></div>
+                                            <div>
+                                                <i class="fas fa-file-alt resource-icon"></i>
+                                                <span class="badge bg-light text-muted fw-normal ms-2" th:text="${res.category}">Category</span>
+                                            </div>
                                             <i class="fas fa-share-alt text-muted small"></i>
                                         </div>
-                                        <h5 class="card-title mt-2 fw-bold">Understanding Anxiety: A Complete Guide</h5>
-                                        <p class="card-text text-muted small">Learn about different types of anxiety disorders and evidence-based coping strategies</p>
+                                        <h5 class="card-title mt-2 fw-bold" th:text="${res.title}">Understanding Anxiety</h5>
+                                        <p class="card-text text-muted small" th:text="${res.description}">Learn about coping strategies...</p>
                                         <div class="d-flex align-items-center mb-3">
-                                            <span class="badge bg-info-subtle text-info me-2">Anxiety</span>
-                                            <span class="badge bg-secondary-subtle text-secondary me-2">Beginner</span>
+                                            <span class="badge bg-info-subtle text-info me-2" th:text="${res.category}">Anxiety</span>
                                             <span class="text-muted small">10 min read</span>
                                         </div>
-                                        <button class="btn btn-dark w-100 py-2"><i class="fas fa-book-reader me-2"></i>Read More</button>
+                                        <a th:href="${res.url}" target="_blank" class="btn btn-dark w-100 py-2">Read More</a>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div class="col">
-                                <div class="card h-100 shadow-sm">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div><i class="fas fa-video resource-icon"></i><span class="badge bg-light text-muted fw-normal ms-2">Video</span></div>
-                                            <i class="fas fa-share-alt text-muted small"></i>
-                                        </div>
-                                        <h5 class="card-title mt-2 fw-bold">Mindfulness Meditation for Beginners</h5>
-                                        <p class="card-text text-muted small">A practical introduction to mindfulness meditation with guided exercises</p>
-                                        <div class="d-flex align-items-center mb-3">
-                                            <span class="badge bg-success-subtle text-success me-2">Mindfulness</span>
-                                            <span class="badge bg-secondary-subtle text-secondary me-2">Beginner</span>
-                                            <span class="text-muted small">15 min</span>
-                                        </div>
-                                        <button class="btn btn-dark w-100 py-2"><i class="fas fa-play-circle me-2"></i>Watch Now</button>
-                                    </div>
-                                </div>
-                            </div>
-                            
                         </div>
                     </div>
 
-                    <div class="tab-pane fade" id="campaigns-content" role="tabpanel" aria-labelledby="campaigns-tab">
-                        
+                    <div class="tab-pane fade" id="campaigns-content" role="tabpanel">
                         <h3 class="fw-bold mt-4">Active Campaigns</h3>
                         <p class="text-muted">Join ongoing mental health awareness initiatives</p>
                         
                         <div class="row row-cols-1 g-3">
-                            <div class="col">
+                            <div class="col" th:each="camp : ${campaigns}">
                                 <div class="card campaign-card p-3">
                                     <div class="card-body p-0">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div>
-                                                <h4 class="fw-bold mb-1">Mindfulness Challenge - 30 Days</h4>
-                                                <p class="mb-2 text-muted">Practice mindfulness daily for 30 days with guided sessions and community support</p>
+                                                <h4 class="fw-bold mb-1" th:text="${camp.title}">Campaign Title</h4>
+                                                <p class="mb-2 text-muted" th:text="${camp.description}">Description</p>
                                             </div>
                                             <span class="badge bg-success py-2 px-3 fw-bold">Active</span>
                                         </div>
-                                        <p class="small text-muted mb-3">Oct 1, 2025 - Oct 30, 2025 | **89 participants**</p>
+                                        <p class="small text-muted mb-3">
+                                            <span th:text="${camp.startDate}">Date</span> - <span th:text="${camp.endDate}">Date</span>
+                                        </p>
                                         <div class="text-end">
-                                            <button class="btn btn-join py-2 px-4">Join Campaign</button>
+                                            <form th:action="@{/awareness/campaigns/join/{id}(id=${camp.id})}" method="post">
+                                                <button type="submit" class="btn btn-join py-2 px-4">Join Campaign</button>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <h3 class="fw-bold mt-5">Upcoming Campaigns</h3>
-                        <p class="text-muted">Mark your calendar for these events</p>
-
-                        <div class="row row-cols-1 g-3">
-                            <div class="col">
-                                <div class="card campaign-card p-3">
-                                    <div class="card-body p-0">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <h4 class="fw-bold mb-1">Mental Health Awareness Week</h4>
-                                                <p class="mb-2 text-muted">Join us for daily workshops, webinars, and community discussions about mental health</p>
-                                            </div>
-                                            <span class="badge bg-warning text-dark py-2 px-3 fw-bold">Upcoming</span>
-                                        </div>
-                                        <p class="small text-muted mb-3">Nov 1, 2025 - Nov 7, 2025</p>
-                                        <div class="text-end">
-                                            <button class="btn btn-secondary py-2 px-4">Get Notified</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
-                    
-                </div>
-            </div>
+
+                </div> </div>
         </div>
-        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

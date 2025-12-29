@@ -19,4 +19,23 @@ public class EducationalResourceService {
     public EducationalResource saveResource(EducationalResource resource) {
         return educationalResourceRepository.save(resource);
     }
+
+    // NEW: Logic for Category Pills
+    public List<EducationalResource> getResourcesByCategory(String category) {
+        return educationalResourceRepository.findByCategory(category);
+    }
+
+    // NEW: Logic for Search Bar
+    public List<EducationalResource> searchResources(String keyword) {
+        return educationalResourceRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyword,
+                keyword);
+    }
+
+    public EducationalResource getResourceById(Long id) {
+        return educationalResourceRepository.findById(id).orElse(null);
+    }
+
+    public void deleteResource(Long id) {
+        educationalResourceRepository.deleteById(id);
+    }
 }

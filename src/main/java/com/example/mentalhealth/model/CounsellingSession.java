@@ -1,12 +1,11 @@
 package com.example.mentalhealth.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Data
 public class CounsellingSession {
 
     @Id
@@ -18,4 +17,45 @@ public class CounsellingSession {
 
     private LocalDateTime sessionDate;
     private String status = "PENDING"; // PENDING / APPROVED / COMPLETED
+
+    // Manual Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getStudentId() {
+        return studentId;
+    }
+
+    public void setStudentId(Long studentId) {
+        this.studentId = studentId;
+    }
+
+    public Long getCounsellorId() {
+        return counsellorId;
+    }
+
+    public void setCounsellorId(Long counsellorId) {
+        this.counsellorId = counsellorId;
+    }
+
+    public LocalDateTime getSessionDate() {
+        return sessionDate;
+    }
+
+    public void setSessionDate(LocalDateTime sessionDate) {
+        this.sessionDate = sessionDate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }
