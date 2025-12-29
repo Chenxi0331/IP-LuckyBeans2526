@@ -288,6 +288,9 @@
                 transform: translateX(0);
             }
         }
+        #page-content-wrapper {
+            margin-left: 260px !important;
+        }
     </style>
 </head>
 
@@ -295,7 +298,8 @@
 
     <div th:replace="fragments/navbar :: navbar"></div>
 
-    <div class="container py-5">
+<div id="page-content-wrapper" class="container py-5">
+    <div class="row">
 
         <!-- Header -->
         <div class="mb-5">

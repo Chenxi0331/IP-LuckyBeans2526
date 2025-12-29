@@ -18,6 +18,9 @@
         .gauge-fill {
             border-radius: 0.375rem;
         }
+        #page-content-wrapper {
+            margin-left: 260px !important;
+        }
     </style>
 </head>
 
@@ -26,7 +29,7 @@
 <!-- NAVBAR -->
 <div th:replace="fragments/navbar :: navbar"></div>
 
-<div class="container py-5">
+<div id="page-content-wrapper" class="container py-5">
 
     <h1 class="mb-4 text-dark">
         <i class="bi bi-bar-chart-line-fill text-primary me-2"></i> Dashboard

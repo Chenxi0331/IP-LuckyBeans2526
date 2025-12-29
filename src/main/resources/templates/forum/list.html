@@ -14,6 +14,9 @@
         .category-chip.inactive { background-color: #f1f3f5; color: #333; }
         .forum-card { border-radius: 14px; }
         .badge-category { background-color: #e9ecef; color: #333; border-radius: 20px; padding: 3px 10px; font-size: 0.75rem; }
+        #page-content-wrapper {
+            margin-left: 260px !important;
+        }
     </style>
 </head>
 
@@ -21,7 +24,7 @@
 
     <div th:replace="fragments/navbar :: navbar"></div>
 
-    <div class="container py-5">
+    <div id="page-content-wrapper" class="container py-5">
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="fw-bold">Peer Forum Module</h2>

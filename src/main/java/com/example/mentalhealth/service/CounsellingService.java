@@ -3,14 +3,18 @@ package com.example.mentalhealth.service;
 import com.example.mentalhealth.model.CounsellingSession;
 import com.example.mentalhealth.repository.CounsellingSessionRepository;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class CounsellingService {
-
-    private final CounsellingSessionRepository repo;
+    
+    @Autowired
+    private CounsellingSessionRepository repo;
 
     public CounsellingService(CounsellingSessionRepository repo) {
         this.repo = repo;
@@ -41,5 +45,15 @@ public class CounsellingService {
             s.setStatus(string);
             repo.save(s);
         });
+    }
+
+    public long countMonthlyStatus(String status) {
+        return repo.findByStatus(status).stream()
+                .filter(s -> s.getSessionDate().getMonth() == LocalDateTime.now().getMonth())
+                .count();
+    }
+
+    public List<CounsellingSession> getHistoryForUser(Long userId) {
+        return repo.findByStudentId(userId); 
     }
 }

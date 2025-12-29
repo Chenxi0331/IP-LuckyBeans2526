@@ -14,13 +14,16 @@
         textarea {
             resize: vertical;
         }
+        #page-content-wrapper {
+            margin-left: 260px !important;
+        }
     </style>
 </head>
 
 <body>
 <div th:replace="fragments/navbar :: navbar"></div>
 
-<div class="container py-5">
+<div id="page-content-wrapper" class="container py-5">
     <div class="card mx-auto shadow-sm p-4" style="max-width: 780px;">
         <h3 class="mb-4">Create New Post</h3>
 

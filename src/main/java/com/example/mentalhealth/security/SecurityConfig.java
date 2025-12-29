@@ -51,6 +51,8 @@ public class SecurityConfig {
                     "/images/**",
                     "/resources/**"
                 ).permitAll()
+                .requestMatchers("/counselling/book", "/counselling/schedule").hasAuthority("ROLE_STUDENT")
+                .requestMatchers("/counselling/approval", "/counselling/approve/**").hasAuthority("ROLE_COUNSELOR")
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form

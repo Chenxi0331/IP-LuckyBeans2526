@@ -19,23 +19,39 @@ public class ForumService {
         this.commentRepo = commentRepo;
     }
 
-    public ForumPost createPost(ForumPost post) {
-        return postRepo.save(post);
-    }
+    // --- CRUD ---
+    public void savePost(ForumPost post) { postRepo.save(post); }
+
+    // public ForumPost createPost(ForumPost post) {
+    //     return postRepo.save(post);
+    // }
 
     public List<ForumPost> getAllPosts() {
         return postRepo.findAll();
     }
 
-    public ForumPost getPost(Long id) {
+    public ForumPost getPostById(Long id) {
         return postRepo.findById(id).orElse(null);
     }
 
+    public void deletePost(Long id) { postRepo.deleteById(id); }
+
+    // --- Comments ---
     public List<ForumComment> getComments(Long postId) {
         return commentRepo.findByPostId(postId);
     }
 
     public ForumComment addComment(ForumComment comment) {
         return commentRepo.save(comment);
+    }
+
+    public List<ForumPost> getPostsByUserId(Long userId) {
+        return postRepo.findByUserId(userId);
+    }
+
+    public long countTodayPosts() {
+        return postRepo.findAll().stream()
+                .filter(p -> p.getCreatedAt().toLocalDate().equals(java.time.LocalDate.now()))
+                .count();
     }
 }

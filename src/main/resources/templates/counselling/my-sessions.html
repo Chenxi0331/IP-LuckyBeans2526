@@ -25,9 +25,11 @@
                         </thead>
                         <tbody>
                             <tr th:each="s : ${sessions}">
-                                <td th:text="${#dates.format(s.sessionDate,'MMM dd, yyyy')}"></td>
-                                <td th:text="${#dates.format(s.sessionDate,'HH:mm')}"></td>
-                                <td th:text="${s.status}"></td>
+                                <td th:text="${#temporals.format(s.sessionDate, 'MMM dd, yyyy')}"></td>
+                                <td th:text="${#temporals.format(s.sessionDate, 'HH:mm')}"></td>
+                                <td>
+                                    <span class="badge bg-info" th:text="${s.status}"></span>
+                                </td>
                                 <td th:text="${s.counsellorId}"></td>
                             </tr>
                         </tbody>
