@@ -66,8 +66,8 @@ public class User {
     public boolean isActive() {
         return active;
     }
-    
-    public boolean getActive() {  // 某些框架可能需要这个
+
+    public boolean getActive() {
         return active;
     }
 

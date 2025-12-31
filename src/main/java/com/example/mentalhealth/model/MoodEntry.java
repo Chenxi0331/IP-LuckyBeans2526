@@ -12,12 +12,15 @@ public class MoodEntry {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-
+    private String activity;
     private LocalDate date;
     private String mood;
     private String note;
 
     // Getters and setters
+    public String getActivity() { return activity; }
+
+    public void setActivity(String activity) { this.activity = activity; }
     public Long getId() {
         return id;
     }

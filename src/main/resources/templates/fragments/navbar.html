@@ -1,18 +1,20 @@
-<div th:fragment="navbar" xmlns:th="http://www.thymeleaf.org" 
-     xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<div th:fragment="navbar" xmlns:th="http://www.thymeleaf.org"
+    xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
     <!-- Add Google Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    
+
     <style>
         .sidebar .nav-link {
             padding: 0.5rem 0;
             transition: all 0.3s ease;
         }
+
         .sidebar .nav-link:hover {
             background-color: rgba(255, 255, 255, 0.1);
             padding-left: 0.5rem;
             border-radius: 4px;
         }
+
         .material-icons {
             font-size: 20px;
         }
@@ -22,14 +24,14 @@
             margin-left: 260px !important;
         }
     </style>
-    
+
     <div class="d-flex">
         <!-- ========== STUDENT SIDEBAR ========== -->
-        <nav sec:authorize="hasRole('STUDENT')" 
-             class="sidebar bg-primary text-white p-3" 
-             style="width: 260px; min-height: 100vh; position: fixed; top: 0; left: 0;">
+        <nav sec:authorize="hasRole('STUDENT')" class="sidebar bg-primary text-white p-3"
+            style="width: 260px; min-height: 100vh; position: fixed; top: 0; left: 0;">
             <a class="navbar-brand d-flex align-items-center gap-2 mb-4" th:href="@{/}" style="text-decoration: none;">
-                <img src="/resources/static/logoinnerly.png" alt="Innerly Logo" class="sidebar-logo" style="width: 40px; height: 40px;">
+                <img src="/resources/static/logoinnerly.png" alt="Innerly Logo" class="sidebar-logo"
+                    style="width: 40px; height: 40px;">
                 <span class="fs-3 fw-bold text-white">Innerly</span>
             </a>
             <ul class="nav flex-column" style="gap: 0.25rem;">
@@ -76,7 +78,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/awareness/resources}">
+                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/awareness/library}">
                         <span class="material-icons">menu_book</span>
                         <span>Educational Resources</span>
                     </a>
@@ -89,7 +91,8 @@
             </div>
             <div>
                 <form th:action="@{/logout}" method="post">
-                    <button type="submit" class="btn btn-outline-light btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2">
+                    <button type="submit"
+                        class="btn btn-outline-light btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2">
                         <span class="material-icons" style="font-size: 18px;">logout</span>
                         <span>Logout</span>
                     </button>
@@ -98,11 +101,11 @@
         </nav>
 
         <!-- ========== COUNSELOR SIDEBAR ========== -->
-        <nav sec:authorize="hasRole('COUNSELOR')" 
-             class="sidebar bg-success text-white p-3" 
-             style="width: 260px; min-height: 100vh; position: fixed; top: 0; left: 0;">
+        <nav sec:authorize="hasRole('COUNSELOR')" class="sidebar bg-success text-white p-3"
+            style="width: 260px; min-height: 100vh; position: fixed; top: 0; left: 0;">
             <a class="navbar-brand d-flex align-items-center gap-2 mb-4" th:href="@{/}" style="text-decoration: none;">
-                <img src="/resources/static/logoinnerly.png" alt="Innerly Logo" class="sidebar-logo" style="width: 40px; height: 40px;">
+                <img src="/resources/static/logoinnerly.png" alt="Innerly Logo" class="sidebar-logo"
+                    style="width: 40px; height: 40px;">
                 <span class="fs-3 fw-bold text-white">Innerly</span>
             </a>
             <ul class="nav flex-column" style="gap: 0.25rem;">
@@ -137,7 +140,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/awareness/resources}">
+                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/awareness/library}">
                         <span class="material-icons">menu_book</span>
                         <span>Resources</span>
                     </a>
@@ -150,7 +153,8 @@
             </div>
             <div>
                 <form th:action="@{/logout}" method="post">
-                    <button type="submit" class="btn btn-outline-light btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2">
+                    <button type="submit"
+                        class="btn btn-outline-light btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2">
                         <span class="material-icons" style="font-size: 18px;">logout</span>
                         <span>Logout</span>
                     </button>
@@ -159,11 +163,11 @@
         </nav>
 
         <!-- ========== ADMIN SIDEBAR ========== -->
-        <nav sec:authorize="hasRole('ADMIN')" 
-             class="sidebar bg-dark text-white p-3" 
-             style="width: 260px; min-height: 100vh; position: fixed; top: 0; left: 0;">
+        <nav sec:authorize="hasRole('ADMIN')" class="sidebar bg-dark text-white p-3"
+            style="width: 260px; min-height: 100vh; position: fixed; top: 0; left: 0;">
             <a class="navbar-brand d-flex align-items-center gap-2 mb-4" th:href="@{/}" style="text-decoration: none;">
-                <img src="/resources/static/logoinnerly.png" alt="Innerly Logo" class="sidebar-logo" style="width: 40px; height: 40px;">
+                <img src="/resources/static/logoinnerly.png" alt="Innerly Logo" class="sidebar-logo"
+                    style="width: 40px; height: 40px;">
                 <span class="fs-3 fw-bold text-white">Innerly</span>
             </a>
             <ul class="nav flex-column" style="gap: 0.25rem;">
@@ -198,7 +202,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/awareness/resources}">
+                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/awareness/manage}">
                         <span class="material-icons">menu_book</span>
                         <span>Manage Resources</span>
                     </a>
@@ -217,7 +221,8 @@
             </div>
             <div>
                 <form th:action="@{/logout}" method="post">
-                    <button type="submit" class="btn btn-outline-light btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2">
+                    <button type="submit"
+                        class="btn btn-outline-light btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2">
                         <span class="material-icons" style="font-size: 18px;">logout</span>
                         <span>Logout</span>
                     </button>

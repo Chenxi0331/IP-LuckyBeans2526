@@ -11,6 +11,7 @@ public class EducationalResource {
     private String description;
     private String url;
     private String type;
+    private String category;
 
     // Getters and setters
     public Long getId() {
@@ -51,5 +52,13 @@ public class EducationalResource {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 }

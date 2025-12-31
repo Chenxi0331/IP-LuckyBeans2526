@@ -1,12 +1,11 @@
 package com.example.mentalhealth.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Data
 public class CounsellingSession {
 
     @Id
