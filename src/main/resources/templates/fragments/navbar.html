@@ -88,11 +88,12 @@
                 <span>Hello, <strong th:text="${#authentication?.name}">Student</strong></span>
             </div>
             <div>
-                <a class="btn btn-outline-light btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2" 
-                   th:href="@{/logout}">
-                    <span class="material-icons" style="font-size: 18px;">logout</span>
-                    <span>Logout</span>
-                </a>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn btn-outline-light btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2">
+                        <span class="material-icons" style="font-size: 18px;">logout</span>
+                        <span>Logout</span>
+                    </button>
+                </form>
             </div>
         </nav>
 
@@ -148,11 +149,12 @@
                 <span>Hello, <strong th:text="${#authentication?.name}">Counselor</strong></span>
             </div>
             <div>
-                <a class="btn btn-outline-light btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2" 
-                   th:href="@{/logout}">
-                    <span class="material-icons" style="font-size: 18px;">logout</span>
-                    <span>Logout</span>
-                </a>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn btn-outline-light btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2">
+                        <span class="material-icons" style="font-size: 18px;">logout</span>
+                        <span>Logout</span>
+                    </button>
+                </form>
             </div>
         </nav>
 
@@ -214,11 +216,12 @@
                 <span>Hello, <strong th:text="${#authentication?.name}">Admin</strong></span>
             </div>
             <div>
-                <a class="btn btn-outline-light btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2" 
-                   th:href="@{/logout}">
-                    <span class="material-icons" style="font-size: 18px;">logout</span>
-                    <span>Logout</span>
-                </a>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn btn-outline-light btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2">
+                        <span class="material-icons" style="font-size: 18px;">logout</span>
+                        <span>Logout</span>
+                    </button>
+                </form>
             </div>
         </nav>
     </div>

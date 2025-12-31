@@ -23,16 +23,17 @@ public class SecurityConfig {
     @Autowired
     private AuthenticationSuccessHandler loginSuccessHandler;
 
+    @Autowired
+    private CustomLoginFailureHandler loginFailureHandler;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        AuthenticationManagerBuilder auth = http.getSharedObject(AuthenticationManagerBuilder.class);
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
-        return auth.build();
+    public AuthenticationManager authenticationManager(org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
@@ -60,7 +61,7 @@ public class SecurityConfig {
                 .usernameParameter("email")
                 .passwordParameter("password")
                 .successHandler(loginSuccessHandler)
-                .failureUrl("/login?error=true")
+                .failureHandler(loginFailureHandler)
                 .permitAll()
             )
             .logout(logout -> logout

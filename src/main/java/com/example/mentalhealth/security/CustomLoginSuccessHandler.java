@@ -16,6 +16,20 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException {
 
-        response.sendRedirect("/progress/dashboard");
+        var authorities = authentication.getAuthorities();
+        String redirectUrl = "/progress/dashboard"; // Default for STUDENT
+
+        for (var authority : authorities) {
+            String role = authority.getAuthority();
+            if (role.equals("ROLE_COUNSELOR")) {
+                redirectUrl = "/counselling/approval";
+                break;
+            } else if (role.equals("ROLE_ADMIN")) {
+                redirectUrl = "/forum";
+                break;
+            }
+        }
+
+        response.sendRedirect(redirectUrl);
     }
 }

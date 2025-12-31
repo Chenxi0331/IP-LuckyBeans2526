@@ -32,18 +32,22 @@ public class DataLoader {
             System.out.println("Login with: student@innerly.com / password");
             System.out.println("           counselor@innerly.com / password");
             System.out.println("           admin@innerly.com / password");
+
+            System.out.println("--- CURRENT USERS IN DB ---");
+            userRepository.findAll().forEach(u -> {
+                System.out.println("User: " + u.getEmail() + " | Role: " + u.getRole() + " | Active: " + u.isActive());
+            });
+            System.out.println("---------------------------");
         };
     }
 
     private void createUser(UserRepository repo, PasswordEncoder encoder, 
                             String fullName, String email, String password, Role role) {
-        if (repo.findByEmail(email).isEmpty()) {
-            User user = new User();
-            user.setFullName(fullName);
-            user.setEmail(email);
-            user.setPassword(encoder.encode(password));
-            user.setRole(role);
-            repo.save(user);
-        }
+        User user = repo.findByEmail(email).orElse(new User());
+        user.setFullName(fullName);
+        user.setEmail(email);
+        user.setPassword(encoder.encode(password));
+        user.setRole(role);
+        repo.save(user);
     }
 }

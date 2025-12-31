@@ -18,6 +18,10 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    @org.springframework.context.annotation.Lazy
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         System.out.println("=== Login Attempt ===");
@@ -38,6 +42,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         );
         
         System.out.println("Assigned authorities: " + authorities);
+        
+        boolean pwCheck = passwordEncoder.matches("password", user.getPassword());
+        System.out.println("DEBUG CHECK: Input 'password' matches Hash? " + pwCheck);
+        
         System.out.println("====================");
 
         // Return Spring Security User object
