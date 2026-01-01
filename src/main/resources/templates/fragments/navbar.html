@@ -4,6 +4,11 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <style>
+        .sidebar {
+            z-index: 1040;
+            /* High z-index to prevent overlap */
+        }
+
         .sidebar .nav-link {
             padding: 0.5rem 0;
             transition: all 0.3s ease;
@@ -19,9 +24,20 @@
             font-size: 20px;
         }
 
+        /* Enforce specific button styling for sidebar to override global .btn padding from style.css */
+        .sidebar-btn {
+            padding: 0.375rem 0.75rem !important;
+            /* Bootstrap btn-sm standard */
+            font-size: 0.875rem !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+        }
+
         /* Push page content to the right so sidebar does not block it */
         #page-content-wrapper {
             margin-left: 260px !important;
+            position: relative;
+            z-index: 1;
         }
     </style>
 
@@ -72,7 +88,8 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/counselling/my-sessions}">
+                    <a class="nav-link text-white d-flex align-items-center gap-3"
+                        th:href="@{/counselling/my-sessions}">
                         <span class="material-icons">visibility</span>
                         <span>My Counselling Sessions</span>
                     </a>
@@ -98,8 +115,7 @@
             <div>
                 <form th:action="@{/logout}" method="post">
                     <button type="submit"
-                        class="btn bg-white text-primary btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2"
-                        style="border-radius: 8px; font-weight: 600;">
+                        class="btn bg-white text-primary btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2 sidebar-btn">
                         <span class="material-icons" style="font-size: 18px;">logout</span>
                         <span>Logout</span>
                     </button>
@@ -162,8 +178,7 @@
             <div>
                 <form th:action="@{/logout}" method="post">
                     <button type="submit"
-                        class="btn bg-white text-primary btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2"
-                        style="border-radius: 8px; font-weight: 600;">
+                        class="btn bg-white text-primary btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2 sidebar-btn">
                         <span class="material-icons" style="font-size: 18px;">logout</span>
                         <span>Logout</span>
                     </button>
@@ -232,8 +247,7 @@
             <div>
                 <form th:action="@{/logout}" method="post">
                     <button type="submit"
-                        class="btn bg-white text-primary btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2"
-                        style="border-radius: 8px; font-weight: 600;">
+                        class="btn bg-white text-primary btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2 sidebar-btn">
                         <span class="material-icons" style="font-size: 18px;">logout</span>
                         <span>Logout</span>
                     </button>

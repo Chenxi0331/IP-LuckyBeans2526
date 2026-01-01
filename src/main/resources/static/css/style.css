@@ -17,6 +17,7 @@ body {
     top: 0px;
     bottom: 0;
     width: 260px;
+    z-index: 1000;
     /* background: #ffffff; Removed to allow bg-primary to work */
     border-right: 1px solid #e5e5e7;
     overflow-y: auto;
