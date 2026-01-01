@@ -8,4 +8,6 @@ import java.util.List;
 public interface ForumCommentRepository extends JpaRepository<ForumComment, Long> {
 
     List<ForumComment> findByPostId(Long postId);
+
+    long countByCreatedAtAfter(java.time.LocalDateTime date);
 }

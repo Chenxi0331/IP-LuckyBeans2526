@@ -57,7 +57,43 @@
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="fw-bold">Peer Forum Module</h2>
-            <a class="btn btn-primary px-4" href="/forum/new">+ Create Post</a>
+            <div>
+                <a href="/forum/my-posts" class="btn btn-outline-primary px-4 me-2">My Posts</a>
+                <a class="btn btn-primary px-4" href="/forum/new">+ Create Post</a>
+            </div>
+        </div>
+
+        <!-- Admin / Counselor Dashboard (Visible only to authorized roles) -->
+        <div class="card mb-5 shadow-sm border-0 bg-light" th:if="${isAdminOrCounselor}">
+            <div class="card-body">
+                <h4 class="fw-bold mb-3"><i class="bi bi-speedometer2"></i> Admin & Counselor Dashboard</h4>
+                <div class="row text-center g-3">
+                    <div class="col-md-4">
+                        <div class="bg-white p-3 rounded shadow-sm h-100">
+                            <h6 class="text-muted text-uppercase small ls-1">Posts Today</h6>
+                            <h2 class="fw-bold text-primary mb-0" th:text="${statsToday}">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="bg-white p-3 rounded shadow-sm h-100">
+                            <h6 class="text-muted text-uppercase small ls-1">Comments (Last 7 Days)</h6>
+                            <h2 class="fw-bold text-success mb-0" th:text="${statsCommentsWeek}">0</h2>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="bg-white p-3 rounded shadow-sm h-100">
+                            <h6 class="text-muted text-uppercase small ls-1">Top Category</h6>
+                            <div th:if="${statsCategories != null and !statsCategories.isEmpty()}">
+                                <h3 class="fw-bold text-warning mb-0" th:text="${statsCategories[0][0]}">Category</h3>
+                                <small class="text-muted" th:text="${statsCategories[0][1]} + ' posts'">0 posts</small>
+                            </div>
+                            <div th:unless="${statsCategories != null and !statsCategories.isEmpty()}">
+                                <span class="text-muted">No Data</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="mb-4">
@@ -129,13 +165,21 @@
                         Post content preview...
                     </p>
 
-                    <div class="d-flex gap-3 text-muted small">
-                        <!-- <span><i class="bi bi-hand-thumbs-up"></i> 0</span> -->
-                        <!-- <span><i class="bi bi-chat"></i> 0</span> -->
-                        <span>Click to view details</span>
+                    <div class="d-flex gap-3 text-muted small align-items-center">
+                        <span class="badge bg-secondary" th:if="${post.status == 'ARCHIVED'}">ARCHIVED</span>
+                        <span class="badge bg-danger" th:if="${post.status == 'FLAGGED'}">FLAGGED</span>
+
+                        <!-- Show Edit/Delete if Author OR Admin OR Counselor -->
+                        <div th:if="${#authentication.name == post.author?.email or #authorization.expression('hasAnyRole(''ADMIN'', ''COUNSELOR'')')}"
+                            class="ms-auto">
+                            <a th:href="@{/forum/edit/{id}(id=${post.id})}"
+                                class="btn btn-sm btn-outline-warning me-1">Edit</a>
+                            <a th:href="@{/forum/delete/{id}(id=${post.id})}" class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('Are you sure you want to delete this post?');">Delete</a>
+                        </div>
                     </div>
 
-                    <a th:href="@{/forum/post/{id}(id=${post.id})}" class="stretched-link"></a>
+                    <a th:href="@{/forum/post/{id}(id=${post.id})}" class="stretched-link" style="z-index: 1;"></a>
                 </div>
             </div>
 

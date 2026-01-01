@@ -29,11 +29,20 @@ public class ForumController {
     @GetMapping
     public String viewForum(@RequestParam(required = false) String category,
                             @RequestParam(required = false) String search,
-                            Model model) {
+                            Model model, Authentication auth) {
         model.addAttribute("posts", service.filterPosts(category, search));
         // Pass current category/search to view for highlighting
         model.addAttribute("currentCategory", category);
         model.addAttribute("currentSearch", search);
+        if (auth != null) {
+            User user = userRepository.findByEmail(auth.getName()).orElse(null);
+            if (user != null && (user.getRole() == Role.ADMIN || user.getRole() == Role.COUNSELOR)) {
+                 model.addAttribute("statsCategories", service.getPostStats()); // List<Object[]>
+                 model.addAttribute("statsCommentsWeek", service.countCommentsLastWeek());
+                 model.addAttribute("statsToday", service.countTodayPosts());
+                 model.addAttribute("isAdminOrCounselor", true);
+            }
+        }
         return "forum/list";
     }
 
@@ -72,9 +81,49 @@ public class ForumController {
         User user = userRepository.findByEmail(auth.getName()).orElseThrow();
         ForumPost post = service.getPostById(id);
         
-        if (post.getAuthor().getId().equals(user.getId()) || user.getRole() == Role.ADMIN) {
+        if (post != null && (post.getAuthor().getId().equals(user.getId()) || user.getRole() == Role.ADMIN || user.getRole() == Role.COUNSELOR)) {
             service.deletePost(id);
         }
+        return "redirect:/forum";
+    }
+
+    @GetMapping("/edit/{id}")
+    public String editPost(@PathVariable Long id, Model model, Authentication auth) {
+        User user = userRepository.findByEmail(auth.getName()).orElseThrow();
+        ForumPost post = service.getPostById(id);
+
+        if (post == null) return "redirect:/forum";
+
+        // Authorization: Author OR Admin OR Counselor
+        boolean isAuthor = post.getAuthor().getId().equals(user.getId());
+        boolean isAdminOrCounselor = user.getRole() == Role.ADMIN || user.getRole() == Role.COUNSELOR;
+
+        if (isAuthor || isAdminOrCounselor) {
+            model.addAttribute("post", post);
+            return "forum/edit";
+        }
+
+        return "redirect:/forum";
+    }
+
+    @PostMapping("/update")
+    public String updatePost(@ModelAttribute ForumPost post, Authentication auth) {
+        User user = userRepository.findByEmail(auth.getName()).orElseThrow();
+        ForumPost existingPost = service.getPostById(post.getId());
+
+        if (existingPost == null) return "redirect:/forum";
+
+        boolean isAuthor = existingPost.getAuthor().getId().equals(user.getId());
+        boolean isAdminOrCounselor = user.getRole() == Role.ADMIN || user.getRole() == Role.COUNSELOR;
+
+        if (isAuthor || isAdminOrCounselor) {
+            existingPost.setTitle(post.getTitle());
+            existingPost.setContent(post.getContent());
+            existingPost.setCategory(post.getCategory());
+            existingPost.setStatus(post.getStatus());
+            service.updatePost(existingPost);
+        }
+        
         return "redirect:/forum";
     }
 

@@ -22,9 +22,9 @@ public class ForumService {
     // --- CRUD ---
     public void savePost(ForumPost post) { postRepo.save(post); }
 
-    // public ForumPost createPost(ForumPost post) {
-    //     return postRepo.save(post);
-    // }
+    public void updatePost(ForumPost post) {
+        postRepo.save(post);
+    }
 
     public List<ForumPost> getAllPosts() {
         return postRepo.findAll();
@@ -63,5 +63,13 @@ public class ForumService {
         return postRepo.findAll().stream()
                 .filter(p -> p.getCreatedAt().toLocalDate().equals(java.time.LocalDate.now()))
                 .count();
+    }
+
+    public List<Object[]> getPostStats() {
+        return postRepo.countPostsByCategory();
+    }
+
+    public long countCommentsLastWeek() {
+        return commentRepo.countByCreatedAtAfter(java.time.LocalDateTime.now().minusWeeks(1));
     }
 }

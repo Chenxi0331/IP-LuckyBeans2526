@@ -25,6 +25,14 @@
                     <a href="/forum" class="btn btn-outline-secondary btn-sm">Back to Forum</a>
                 </div>
 
+                <!-- Action Buttons: Author/Admin/Counselor -->
+                <div class="mb-4"
+                    th:if="${#authentication.name == post.author?.email or #authorization.expression('hasAnyRole(''ADMIN'', ''COUNSELOR'')')}">
+                    <a th:href="@{/forum/edit/{id}(id=${post.id})}" class="btn btn-warning btn-sm me-2">Edit Post</a>
+                    <a th:href="@{/forum/delete/{id}(id=${post.id})}" class="btn btn-danger btn-sm"
+                        onclick="return confirm('Delete this post permanently?');">Delete Post</a>
+                </div>
+
                 <p class="fs-5" th:text="${post.content}">
                     Post content goes here...
                 </p>
