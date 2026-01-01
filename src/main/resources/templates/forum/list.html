@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -8,23 +9,48 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
-        .search-box { border-radius: 12px; padding: 12px 18px; }
-        .category-chip { padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; }
-        .category-chip.active { background-color: #0d6efd; color: white; }
-        .category-chip.inactive { background-color: #f1f3f5; color: #333; }
-        .forum-card { border-radius: 14px; }
-        .badge-category { background-color: #e9ecef; color: #333; border-radius: 20px; padding: 3px 10px; font-size: 0.75rem; }
-        #page-content-wrapper {
-            margin-left: 260px !important;
+        .search-box {
+            border-radius: 12px;
+            padding: 12px 18px;
+        }
+
+        .category-chip {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .category-chip.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .category-chip.inactive {
+            background-color: #f1f3f5;
+            color: #333;
+        }
+
+        .forum-card {
+            border-radius: 14px;
+        }
+
+        .badge-category {
+            background-color: #e9ecef;
+            color: #333;
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: 0.75rem;
         }
     </style>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body>
 
     <div th:replace="fragments/navbar :: navbar"></div>
 
-    <div id="page-content-wrapper" class="container py-5">
+    <div id="page-content-wrapper" class="main-content">
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="fw-bold">Peer Forum Module</h2>
@@ -58,7 +84,7 @@
 
                     <div class="d-flex align-items-center gap-3 mb-3">
                         <div class="bg-secondary text-white rounded-circle d-flex justify-content-center align-items-center"
-                             style="width:45px; height:45px; font-weight:600;">
+                            style="width:45px; height:45px; font-weight:600;">
                             AM
                         </div>
 
@@ -93,7 +119,7 @@
 
                     <div class="d-flex align-items-center gap-3 mb-3">
                         <div class="bg-secondary text-white rounded-circle d-flex justify-content-center align-items-center"
-                             style="width:45px; height:45px; font-weight:600;">
+                            style="width:45px; height:45px; font-weight:600;">
                             JH
                         </div>
 
@@ -125,4 +151,5 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.js"></script>
 
 </body>
+
 </html>

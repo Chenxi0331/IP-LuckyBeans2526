@@ -56,4 +56,8 @@ public class CounsellingService {
     public List<CounsellingSession> getHistoryForUser(Long userId) {
         return repo.findByStudentId(userId); 
     }
+
+    public List<CounsellingSession> findAllSessions() {
+        return repo.findAll();
+    }
 }

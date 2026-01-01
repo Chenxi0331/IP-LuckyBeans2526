@@ -98,24 +98,28 @@ public class SampleDataLoader {
             campaign1.setName("Mental Health Week");
             campaign1.setDescription("Join our campaign to raise awareness.");
             campaign1.setStatus("Active");
+            campaign1.setParticipantCount(0);
             campaignRepo.save(campaign1);
 
             AwarenessCampaign campaign2 = new AwarenessCampaign();
             campaign2.setName("Stress Awareness Month");
             campaign2.setDescription("Participate in events all month.");
             campaign2.setStatus("Upcoming");
+            campaign2.setParticipantCount(0);
             campaignRepo.save(campaign2);
 
             AwarenessCampaign campaign3 = new AwarenessCampaign();
             campaign3.setName("World Suicide Prevention Day");
             campaign3.setDescription("Events and resources to support suicide prevention.");
             campaign3.setStatus("Ended");
+            campaign3.setParticipantCount(0);
             campaignRepo.save(campaign3);
 
             AwarenessCampaign campaign4 = new AwarenessCampaign();
             campaign4.setName("Youth Mental Wellness Drive");
             campaign4.setDescription("Special activities for youth mental wellness.");
             campaign4.setStatus("Active");
+            campaign4.setParticipantCount(0);
             campaignRepo.save(campaign4);
         };
     }

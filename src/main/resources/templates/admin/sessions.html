@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Counselling Sessions</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+
+<body>
+    <nav th:replace="fragments/navbar :: navbar"></nav>
+
+    <div id="page-content-wrapper" class="main-content">
+        <div class="page-header">
+            <h1 class="page-title"><i class="fas fa-list"></i> All Counselling Sessions</h1>
+            <p class="text-muted">View history of all counselling sessions across the platform.</p>
+        </div>
+
+        <div class="table-container">
+            <div th:if="${sessions != null and !sessions.isEmpty()}">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Student</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Counselor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="s : ${sessions}">
+                            <td th:text="'#' + ${s.id}"></td>
+                            <td th:text="${s.studentId}"></td>
+                            <td th:text="${#temporals.format(s.sessionDate, 'MMM dd, yyyy')}"></td>
+                            <td th:text="${#temporals.format(s.sessionDate, 'HH:mm')}"></td>
+                            <td>
+                                <span th:if="${s.counsellorId}" th:text="'Counsellor ' + ${s.counsellorId}"></span>
+                                <span th:unless="${s.counsellorId}" class="text-muted">Not Assigned</span>
+                            </td>
+                            <td>
+                                <span class="status-badge"
+                                    th:classappend="${s.status == 'PENDING' ? 'status-pending' : (s.status == 'APPROVED' ? 'status-approved' : 'status-rejected')}"
+                                    th:text="${s.status}"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div th:unless="${sessions != null and !sessions.isEmpty()}" class="text-center py-5 text-muted">
+                <i class="fas fa-inbox fa-3x mb-3"></i>
+                <p>No sessions found.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <title>My Mood Tracker 🌈</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
@@ -16,46 +17,60 @@
             --bs-btn-color: #28a745;
             --bs-btn-border-color: #28a745;
         }
+
         .btn-outline-custom-sad {
             --bs-btn-color: #007bff;
             --bs-btn-border-color: #007bff;
         }
+
         .btn-outline-custom-angry {
             --bs-btn-color: #dc3545;
             --bs-btn-border-color: #dc3545;
         }
+
         .btn-outline-custom-excited {
             --bs-btn-color: #ffc107;
             --bs-btn-border-color: #ffc107;
         }
+
         .btn-outline-custom-neutral {
             --bs-btn-color: #6c757d;
             --bs-btn-border-color: #6c757d;
         }
 
         /* Mood Buttons Hover & Active */
-        .btn-outline-custom-happy:hover, .btn-check:checked + .btn-outline-custom-happy {
+        .btn-outline-custom-happy:hover,
+        .btn-check:checked+.btn-outline-custom-happy {
             background-color: #28a745;
             color: white;
         }
-        .btn-outline-custom-sad:hover, .btn-check:checked + .btn-outline-custom-sad {
+
+        .btn-outline-custom-sad:hover,
+        .btn-check:checked+.btn-outline-custom-sad {
             background-color: #007bff;
             color: white;
         }
-        .btn-outline-custom-angry:hover, .btn-check:checked + .btn-outline-custom-angry {
+
+        .btn-outline-custom-angry:hover,
+        .btn-check:checked+.btn-outline-custom-angry {
             background-color: #dc3545;
             color: white;
         }
-        .btn-outline-custom-excited:hover, .btn-check:checked + .btn-outline-custom-excited {
+
+        .btn-outline-custom-excited:hover,
+        .btn-check:checked+.btn-outline-custom-excited {
             background-color: #ffc107;
             color: #212529;
         }
-        .btn-outline-custom-neutral:hover, .btn-check:checked + .btn-outline-custom-neutral {
+
+        .btn-outline-custom-neutral:hover,
+        .btn-check:checked+.btn-outline-custom-neutral {
             background-color: #6c757d;
             color: white;
         }
 
-        .btn-check:checked + .btn, .btn:hover {
+        .btn-check:checked+.btn,
+        .btn:hover {
             font-weight: bold;
             transform: scale(1.05);
             transition: all 0.3s ease;
@@ -74,258 +89,295 @@
             font-size: 0.9rem;
             padding: 0.5em 0.75em;
         }
-        #page-content-wrapper {
-            margin-left: 260px !important;
+
+        .badge {
+            font-size: 0.9rem;
+            padding: 0.5em 0.75em;
         }
     </style>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
+
 <body>
 
-<div th:replace="fragments/navbar :: navbar"></div>
+    <div th:replace="fragments/navbar :: navbar"></div>
 
-<div id="page-content-wrapper" class="container py-5">
-    <div class="row">
+    <div id="page-content-wrapper" class="main-content">
+        <div class="row">
 
-        <!-- Mood Selection -->
-        <div class="col-lg-6 col-md-8 mx-auto mb-5">
-            <div class="card shadow-lg border-0">
-                <div class="card-header bg-primary text-white text-center py-3">
-                    <h2 class="mb-0 fs-3">How are you feeling right now? 🤔</h2>
-                </div>
-                <div class="card-body p-4">
-                    <form th:action="@{/progress/mood}" method="post">
-                        <div class="mb-4">
-                            <label class="form-label fs-5 fw-bold mb-3">Choose your mood:</label>
-                            <div class="row row-cols-3 row-cols-sm-5 g-3 justify-content-center">
+            <!-- Mood Selection -->
+            <div class="col-lg-6 col-md-8 mx-auto mb-5">
+                <div class="card shadow-lg border-0">
+                    <div class="card-header bg-primary text-white text-center py-3">
+                        <h2 class="mb-0 fs-3">How are you feeling right now? 🤔</h2>
+                    </div>
+                    <div class="card-body p-4">
+                        <form th:action="@{/progress/mood}" method="post">
+                            <div class="mb-4">
+                                <label class="form-label fs-5 fw-bold mb-3">Choose your mood:</label>
+                                <div class="row row-cols-3 row-cols-sm-5 g-3 justify-content-center">
 
-                                <div class="col">
-                                    <input type="radio" class="btn-check" name="mood" id="happy" value="Happy 😊" autocomplete="off" required>
-                                    <label class="btn btn-outline-custom-happy w-100 py-3 d-flex flex-column align-items-center" for="happy">
-                                        <span class="fs-2">😊</span>
-                                        <span class="fs-6 mt-1">Happy</span>
-                                    </label>
-                                </div>
+                                    <div class="col">
+                                        <input type="radio" class="btn-check" name="mood" id="happy" value="Happy 😊"
+                                            autocomplete="off" required>
+                                        <label
+                                            class="btn btn-outline-custom-happy w-100 py-3 d-flex flex-column align-items-center"
+                                            for="happy">
+                                            <span class="fs-2">😊</span>
+                                            <span class="fs-6 mt-1">Happy</span>
+                                        </label>
+                                    </div>
 
-                                <div class="col">
-                                    <input type="radio" class="btn-check" name="mood" id="excited" value="Excited 🤩" autocomplete="off">
-                                    <label class="btn btn-outline-custom-excited w-100 py-3 d-flex flex-column align-items-center" for="excited">
-                                        <span class="fs-2">🤩</span>
-                                        <span class="fs-6 mt-1">Excited</span>
-                                    </label>
-                                </div>
+                                    <div class="col">
+                                        <input type="radio" class="btn-check" name="mood" id="excited"
+                                            value="Excited 🤩" autocomplete="off">
+                                        <label
+                                            class="btn btn-outline-custom-excited w-100 py-3 d-flex flex-column align-items-center"
+                                            for="excited">
+                                            <span class="fs-2">🤩</span>
+                                            <span class="fs-6 mt-1">Excited</span>
+                                        </label>
+                                    </div>
 
-                                <div class="col">
-                                    <input type="radio" class="btn-check" name="mood" id="neutral" value="Neutral 😐" autocomplete="off">
-                                    <label class="btn btn-outline-custom-neutral w-100 py-3 d-flex flex-column align-items-center" for="neutral">
-                                        <span class="fs-2">😐</span>
-                                        <span class="fs-6 mt-1">Neutral</span>
-                                    </label>
-                                </div>
+                                    <div class="col">
+                                        <input type="radio" class="btn-check" name="mood" id="neutral"
+                                            value="Neutral 😐" autocomplete="off">
+                                        <label
+                                            class="btn btn-outline-custom-neutral w-100 py-3 d-flex flex-column align-items-center"
+                                            for="neutral">
+                                            <span class="fs-2">😐</span>
+                                            <span class="fs-6 mt-1">Neutral</span>
+                                        </label>
+                                    </div>
 
-                                <div class="col">
-                                    <input type="radio" class="btn-check" name="mood" id="sad" value="Sad 😢" autocomplete="off">
-                                    <label class="btn btn-outline-custom-sad w-100 py-3 d-flex flex-column align-items-center" for="sad">
-                                        <span class="fs-2">😢</span>
-                                        <span class="fs-6 mt-1">Sad</span>
-                                    </label>
-                                </div>
+                                    <div class="col">
+                                        <input type="radio" class="btn-check" name="mood" id="sad" value="Sad 😢"
+                                            autocomplete="off">
+                                        <label
+                                            class="btn btn-outline-custom-sad w-100 py-3 d-flex flex-column align-items-center"
+                                            for="sad">
+                                            <span class="fs-2">😢</span>
+                                            <span class="fs-6 mt-1">Sad</span>
+                                        </label>
+                                    </div>
 
-                                <div class="col">
-                                    <input type="radio" class="btn-check" name="mood" id="angry" value="Angry 😠" autocomplete="off">
-                                    <label class="btn btn-outline-custom-angry w-100 py-3 d-flex flex-column align-items-center" for="angry">
-                                        <span class="fs-2">😠</span>
-                                        <span class="fs-6 mt-1">Angry</span>
-                                    </label>
+                                    <div class="col">
+                                        <input type="radio" class="btn-check" name="mood" id="angry" value="Angry 😠"
+                                            autocomplete="off">
+                                        <label
+                                            class="btn btn-outline-custom-angry w-100 py-3 d-flex flex-column align-items-center"
+                                            for="angry">
+                                            <span class="fs-2">😠</span>
+                                            <span class="fs-6 mt-1">Angry</span>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="mb-4">
-                            <label for="note-input" class="form-label fs-5 fw-bold">Note / Thoughts (Optional)</label>
-                            <textarea id="note-input" name="note" class="form-control" rows="3" placeholder="What led to this mood?" maxlength="255"></textarea>
-                        </div>
+                            <div class="mb-4">
+                                <label for="note-input" class="form-label fs-5 fw-bold">Note / Thoughts
+                                    (Optional)</label>
+                                <textarea id="note-input" name="note" class="form-control" rows="3"
+                                    placeholder="What led to this mood?" maxlength="255"></textarea>
+                            </div>
 
-                        <button type="submit" class="btn btn-primary btn-lg w-100 mt-2">Log My Mood 📝</button>
-                    </form>
+                            <button type="submit" class="btn btn-primary btn-lg w-100 mt-2">Log My Mood 📝</button>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Dashboard -->
-        <div class="col-lg-10 mx-auto">
-            <div class="row g-4">
+            <!-- Dashboard -->
+            <div class="col-lg-10 mx-auto">
+                <div class="row g-4">
 
-                <!-- Monthly Overview -->
-                <div class="col-lg-6">
-                    <div class="card shadow border-primary">
-                        <div class="card-header bg-primary text-white py-3">
-                            <h3 class="mb-0 fs-4">Monthly Overview 📊</h3>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="monthlyOverviewChart" height="100"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Average Mood by Week -->
-                <div class="col-lg-6">
-                    <div class="card shadow border-warning">
-                        <div class="card-header bg-warning text-dark py-3">
-                            <h3 class="mb-0 fs-4">Average Mood by Week 📅</h3>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="avgMoodWeekChart" height="100"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Mood Calendar -->
-                <div class="col-lg-6">
-                    <div class="card shadow border-success">
-                        <div class="card-header bg-success text-white py-3">
-                            <h3 class="mb-0 fs-4">Mood Calendar 🗓️</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex flex-wrap gap-2">
-                                <span class="badge bg-primary text-center">😊 1</span>
-                                <span class="badge bg-warning text-center">😐 2</span>
-                                <span class="badge bg-success text-center">😄 3</span>
-                                <span class="badge bg-danger text-center">😢 4</span>
-                                <span class="badge bg-primary text-center">😊 5</span>
-                                <span class="badge bg-success text-center">😄 6</span>
-                                <span class="badge bg-warning text-center">😐 7</span>
-                                <span class="badge bg-primary text-center">😊 8</span>
-                                <span class="badge bg-success text-center">😄 9</span>
-                                <span class="badge bg-danger text-center">😢 10</span>
+                    <!-- Monthly Overview -->
+                    <div class="col-lg-6">
+                        <div class="card shadow border-primary">
+                            <div class="card-header bg-primary text-white py-3">
+                                <h3 class="mb-0 fs-4">Monthly Overview 📊</h3>
                             </div>
-                            <div class="mt-2 text-muted">View your mood history with a calendar display</div>
+                            <div class="card-body">
+                                <canvas id="monthlyOverviewChart" height="100"></canvas>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Activity Impact -->
-                <div class="col-lg-6">
-                    <div class="card shadow border-secondary">
-                        <div class="card-header bg-secondary text-white py-3">
-                            <h3 class="mb-0 fs-4">Activity Impact 🏆</h3>
-                        </div>
-                        <div class="card-body">
-                            <table class="table table-bordered table-sm table-hover mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Activity</th>
-                                        <th>Avg Mood Score</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr><td>Exercise</td><td>4.5/5</td></tr>
-                                    <tr><td>Meditation</td><td>4.3/5</td></tr>
-                                    <tr><td>Sleep 8h+</td><td>4.2/5</td></tr>
-                                    <tr><td>Social Time</td><td>4.0/5</td></tr>
-                                    <tr><td>Work &lt; 8h</td><td>3.8/5</td></tr>
-                                </tbody>
-                            </table>
-                            <div class="text-muted mt-1">How activities affect your mood</div>
+                    <!-- Average Mood by Week -->
+                    <div class="col-lg-6">
+                        <div class="card shadow border-warning">
+                            <div class="card-header bg-warning text-dark py-3">
+                                <h3 class="mb-0 fs-4">Average Mood by Week 📅</h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="avgMoodWeekChart" height="100"></canvas>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Recent Entries -->
-                <div class="col-12">
-                    <div class="card shadow mb-4 border-secondary">
-                        <div class="card-header bg-secondary text-white py-3">
-                            <h3 class="mb-0 fs-4">Your Recent Entries 📅</h3>
+                    <!-- Mood Calendar -->
+                    <div class="col-lg-6">
+                        <div class="card shadow border-success">
+                            <div class="card-header bg-success text-white py-3">
+                                <h3 class="mb-0 fs-4">Mood Calendar 🗓️</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex flex-wrap gap-2">
+                                    <span class="badge bg-primary text-center">😊 1</span>
+                                    <span class="badge bg-warning text-center">😐 2</span>
+                                    <span class="badge bg-success text-center">😄 3</span>
+                                    <span class="badge bg-danger text-center">😢 4</span>
+                                    <span class="badge bg-primary text-center">😊 5</span>
+                                    <span class="badge bg-success text-center">😄 6</span>
+                                    <span class="badge bg-warning text-center">😐 7</span>
+                                    <span class="badge bg-primary text-center">😊 8</span>
+                                    <span class="badge bg-success text-center">😄 9</span>
+                                    <span class="badge bg-danger text-center">😢 10</span>
+                                </div>
+                                <div class="mt-2 text-muted">View your mood history with a calendar display</div>
+                            </div>
                         </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover mb-0">
-                                    <thead class="table-light">
+                    </div>
+
+                    <!-- Activity Impact -->
+                    <div class="col-lg-6">
+                        <div class="card shadow border-secondary">
+                            <div class="card-header bg-secondary text-white py-3">
+                                <h3 class="mb-0 fs-4">Activity Impact 🏆</h3>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-bordered table-sm table-hover mb-0">
+                                    <thead>
                                         <tr>
-                                            <th scope="col" class="w-25">Date</th>
-                                            <th scope="col" class="w-25">Mood</th>
-                                            <th scope="col">Note</th>
+                                            <th>Activity</th>
+                                            <th>Avg Mood Score</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr th:each="entry : ${entries}">
-                                            <td th:text="${entry.date}"></td>
-                                            <td th:text="${entry.mood}"></td>
-                                            <td th:text="${entry.note}"></td>
+                                        <tr>
+                                            <td>Exercise</td>
+                                            <td>4.5/5</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Meditation</td>
+                                            <td>4.3/5</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sleep 8h+</td>
+                                            <td>4.2/5</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Social Time</td>
+                                            <td>4.0/5</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Work &lt; 8h</td>
+                                            <td>3.8/5</td>
                                         </tr>
                                     </tbody>
                                 </table>
+                                <div class="text-muted mt-1">How activities affect your mood</div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Recent Entries -->
+                    <div class="col-12">
+                        <div class="card shadow mb-4 border-secondary">
+                            <div class="card-header bg-secondary text-white py-3">
+                                <h3 class="mb-0 fs-4">Your Recent Entries 📅</h3>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th scope="col" class="w-25">Date</th>
+                                                <th scope="col" class="w-25">Mood</th>
+                                                <th scope="col">Note</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="entry : ${entries}">
+                                                <td th:text="${entry.date}"></td>
+                                                <td th:text="${entry.mood}"></td>
+                                                <td th:text="${entry.note}"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
-
             </div>
+
         </div>
-
     </div>
-</div>
 
-<!-- JS Libraries -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- Chart Logic -->
-<script th:inline="javascript">
-/*<![CDATA[*/
+    <!-- Chart Logic -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
 
-// Monthly Overview
-var ctxMonthly = document.getElementById('monthlyOverviewChart').getContext('2d');
-new Chart(ctxMonthly, {
-    type: 'bar',
-    data: {
-        labels: ['Week 1','Week 2','Week 3','Week 4'],
-        datasets: [{
-            label: 'Avg Mood',
-            data: [3.8, 4.0, 3.6, 4.2],
-            backgroundColor: 'rgba(0,123,255,0.5)',
-            borderColor: 'rgba(0,123,255,1)',
-            borderWidth: 2,
-            borderRadius: 8
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: { y: { min: 0, max: 5, stepSize: 1 } }
-    }
-});
-
-// Average Mood by Week
-var ctxAvgMood = document.getElementById('avgMoodWeekChart').getContext('2d');
-new Chart(ctxAvgMood, {
-    type: 'line',
-    data: {
-        labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-        datasets: [{
-            label: 'Mood',
-            data: [4.0, 3.8, 4.2, 4.1, 3.9, 4.3, 4.0],
-            backgroundColor: function(ctx) {
-                var gradient = ctx.chart.ctx.createLinearGradient(0,0,0,100);
-                gradient.addColorStop(0,'rgba(255,193,7,0.4)');
-                gradient.addColorStop(1,'rgba(255,193,7,0.1)');
-                return gradient;
+        // Monthly Overview
+        var ctxMonthly = document.getElementById('monthlyOverviewChart').getContext('2d');
+        new Chart(ctxMonthly, {
+            type: 'bar',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [{
+                    label: 'Avg Mood',
+                    data: [3.8, 4.0, 3.6, 4.2],
+                    backgroundColor: 'rgba(0,123,255,0.5)',
+                    borderColor: 'rgba(0,123,255,1)',
+                    borderWidth: 2,
+                    borderRadius: 8
+                }]
             },
-            borderColor: 'rgba(255,193,7,1)',
-            borderWidth: 2,
-            tension: 0.4,
-            fill: true
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: { y: { min: 0, max: 5, stepSize: 1 } }
-    }
-});
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { min: 0, max: 5, stepSize: 1 } }
+            }
+        });
 
-/*]]>*/
-</script>
+        // Average Mood by Week
+        var ctxAvgMood = document.getElementById('avgMoodWeekChart').getContext('2d');
+        new Chart(ctxAvgMood, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Mood',
+                    data: [4.0, 3.8, 4.2, 4.1, 3.9, 4.3, 4.0],
+                    backgroundColor: function (ctx) {
+                        var gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, 100);
+                        gradient.addColorStop(0, 'rgba(255,193,7,0.4)');
+                        gradient.addColorStop(1, 'rgba(255,193,7,0.1)');
+                        return gradient;
+                    },
+                    borderColor: 'rgba(255,193,7,1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { min: 0, max: 5, stepSize: 1 } }
+            }
+        });
+
+        /*]]>*/
+    </script>
 
 </body>
+
 </html>

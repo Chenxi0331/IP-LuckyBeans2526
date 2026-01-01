@@ -20,6 +20,7 @@ body {
     background: #ffffff;
     border-right: 1px solid #e5e5e7;
     overflow-y: auto;
+    z-index: 1000;
 }
 
 .sidebar-header {
@@ -192,6 +193,8 @@ body {
     margin-top: 56px;
     padding: 32px 40px;
     min-height: calc(100vh - 56px);
+    width: calc(100% - 260px);
+    overflow-x: hidden;
 }
 
 .main-content.centered {
@@ -340,7 +343,7 @@ body {
     padding: 20px 24px;
     margin-bottom: 12px;
     border-left: 4px solid #a855f7;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     position: relative;
 }
 
@@ -450,6 +453,7 @@ body {
     border-color: #8000ff;
     box-shadow: 0 4px 12px rgba(0, 123, 255, 0.1);
 }
+
 .progress-section h2 {
     font-size: 18px;
     font-weight: 600;
@@ -538,13 +542,13 @@ body {
     background: white;
     border-radius: 12px;
     padding: 24px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     transition: all 0.2s;
     position: relative;
 }
 
 .module-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     transform: translateY(-2px);
 }
 
@@ -665,7 +669,7 @@ body {
     background: white;
     border-radius: 16px;
     padding: 40px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .question-header {
@@ -746,7 +750,7 @@ body {
     background: #fafafa;
 }
 
-.option-input:checked + .option-label {
+.option-input:checked+.option-label {
     border-color: #a855f7;
     background: #f5f0ff;
     font-weight: 500;
@@ -770,7 +774,7 @@ body {
     background: white;
     border-radius: 16px;
     padding: 32px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     display: flex;
     gap: 32px;
     align-items: center;
@@ -817,12 +821,13 @@ body {
     font-size: 30px;
     font-weight: 700;
     color: #1d1d1f;
-    margin-right: 5px;  
+    margin-right: 5px;
 }
 
 .score-max {
     font-size: 18px;
-    color: #86868b;}
+    color: #86868b;
+}
 
 .severity-label {
     padding: 6px 16px;
@@ -905,7 +910,7 @@ body {
     background: white;
     border-radius: 16px;
     padding: 48px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     text-align: center;
 }
 
@@ -993,12 +998,12 @@ body {
     background: white;
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     transition: all 0.2s;
 }
 
 .timeline-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .timeline-header {
@@ -1119,7 +1124,7 @@ body {
     border-radius: 16px;
     padding: 80px 40px;
     text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .empty-icon {
@@ -1181,7 +1186,7 @@ body {
     background: white;
     border-radius: 16px;
     padding: 40px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .score-section {
@@ -1368,12 +1373,12 @@ body {
     background: white;
     border-radius: 12px;
     padding: 24px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     transition: all 0.2s;
 }
 
 .history-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .history-header {
@@ -1506,7 +1511,7 @@ body {
     padding: 80px 20px;
     background: white;
     border-radius: 16px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .empty-icon {

@@ -1,215 +1,229 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Symptoms Recognition - Innerly</title>
     <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 
 <body>
-<div th:replace="fragments/navbar :: navbar"></div>
+    <div th:replace="fragments/navbar :: navbar"></div>
 
-<main class="main-content">
-    <div class="assessment-container">
+    <main class="main-content" id="page-content-wrapper">
+        <div class="assessment-container">
 
-        <!-- Page Header -->
-        <div class="page-header">
-            <h1 th:text="${currentQuestion != null} ? 'Symptoms Recognition Module' : 'Symptoms Dashboard'"></h1>
-            <p th:text="${currentQuestion != null} ? 'Access Mental Health Assessment and Analyse Results' : 'View your assessment results and track your wellbeing'"></p>
-        </div>
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 th:text="${currentQuestion != null} ? 'Symptoms Recognition Module' : 'Symptoms Dashboard'"></h1>
+                <p
+                    th:text="${currentQuestion != null} ? 'Access Mental Health Assessment and Analyse Results' : 'View your assessment results and track your wellbeing'">
+                </p>
+            </div>
 
-        <!-- Question Mode -->
-        <div th:if="${currentQuestion != null}" class="question-card">
-            <form th:action="@{/symptoms/submit}" method="post" th:object="${questionForm}">
-                <input type="hidden" th:field="*{questionId}" />
+            <!-- Question Mode -->
+            <div th:if="${currentQuestion != null}" class="question-card">
+                <form th:action="@{/symptoms/submit}" method="post" th:object="${questionForm}">
+                    <input type="hidden" th:field="*{questionId}" />
 
-                <div class="question-header">
-                    <div class="question-progress">
-                        <span class="question-number" th:text="'Question ' + ${currentQuestion} + ' of ' + ${totalQuestions}"></span>
-                        <span class="progress-percentage" th:text="${progressPercentage} + '% Complete'"></span>
-                    </div>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar-fill" th:style="'width: ' + ${progressPercentage} + '%'"></div>
-                    </div>
-                </div>
-
-                <div class="question-text" th:text="${question.text}"></div>
-
-                <div class="options-container">
-                    <div class="option-item" th:each="option : ${question.options}">
-                        <input type="radio"
-                               th:field="*{answer}"
-                               th:value="${option.value}"
-                               th:id="'option' + ${option.value}"
-                               th:checked="${selectedAnswer != null && selectedAnswer == option.value}"
-                               class="option-input" />
-                        <label th:for="'option' + ${option.value}" class="option-label"
-                               th:text="${option.text}"></label>
-                    </div>
-                </div>
-
-                <div class="question-nav">
-                    <a th:href="@{/symptoms/previous}"
-                       class="btn btn-secondary"
-                       th:classappend="${currentQuestion == 1} ? 'disabled' : ''"
-                       th:if="${currentQuestion > 1}">Previous</a>
-
-                    <button type="submit" class="btn btn-primary">Next</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Dashboard Mode -->
-        <div th:if="${currentQuestion == null}">
-            <div class="latest-result-section" th:if="${totalScore != null}">
-                <div class="section-header">
-                    <span class="icon">📊</span>
-                    <h2>Your Latest Assessment Result</h2>
-                </div>
-
-                <div class="result-summary-card">
-                    <div class="result-left">
-                        <div class="score-display" th:classappend="${severityLevel}">
-                            <div class="score-big" th:text="${totalScore}"></div>
-                            <div class="score-max">/20</div>
+                    <div class="question-header">
+                        <div class="question-progress">
+                            <span class="question-number"
+                                th:text="'Question ' + ${currentQuestion} + ' of ' + ${totalQuestions}"></span>
+                            <span class="progress-percentage" th:text="${progressPercentage} + '% Complete'"></span>
                         </div>
-                        <div class="severity-info">
-                            <div class="severity-label" th:classappend="${severityLevel}">
-                                <span th:text="${#strings.capitalize(severityLevel)}"></span>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" th:style="'width: ' + ${progressPercentage} + '%'"></div>
+                        </div>
+                    </div>
+
+                    <div class="question-text" th:text="${question.text}"></div>
+
+                    <div class="options-container">
+                        <div class="option-item" th:each="option : ${question.options}">
+                            <input type="radio" th:field="*{answer}" th:value="${option.value}"
+                                th:id="'option' + ${option.value}"
+                                th:checked="${selectedAnswer != null && selectedAnswer == option.value}"
+                                class="option-input" />
+                            <label th:for="'option' + ${option.value}" class="option-label"
+                                th:text="${option.text}"></label>
+                        </div>
+                    </div>
+
+                    <div class="question-nav">
+                        <a th:href="@{/symptoms/previous}" class="btn btn-secondary"
+                            th:classappend="${currentQuestion == 1} ? 'disabled' : ''"
+                            th:if="${currentQuestion > 1}">Previous</a>
+
+                        <button type="submit" class="btn btn-primary">Next</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Dashboard Mode -->
+            <div th:if="${currentQuestion == null}">
+                <div class="latest-result-section" th:if="${totalScore != null}">
+                    <div class="section-header">
+                        <span class="icon">📊</span>
+                        <h2>Your Latest Assessment Result</h2>
+                    </div>
+
+                    <div class="result-summary-card">
+                        <div class="result-left">
+                            <div class="score-display" th:classappend="${severityLevel}">
+                                <div class="score-big" th:text="${totalScore}"></div>
+                                <div class="score-max">/20</div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="result-right">
-                        <p class="result-description" th:text="${assessment}"></p>
-                        <div class="result-actions">
-                            <a href="/self-care" class="btn-small btn-primary">Explore Self-Care</a>
-                            <a th:href="@{/symptoms/start}" class="btn-small btn-secondary">Take New Assessment</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- No Assessment Yet -->
-            <div th:if="${totalScore == null}" class="empty-state" style="text-align: center; padding: 60px 20px; background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                <div style="font-size: 64px; margin-bottom: 16px; opacity: 0.5;">📋</div>
-                <h2 style="font-size: 24px; font-weight: 600; color: #1d1d1f; margin-bottom: 12px;">No Assessment Completed Yet</h2>
-                <p style="font-size: 16px; color: #86868b; margin-bottom: 32px;">Take your first mental health assessment to understand your wellbeing</p>
-                <a th:href="@{/symptoms/start}" class="btn btn-primary" style="padding: 12px 32px;">Start Assessment</a>
-            </div>
-        </div>
-
-        <!-- Show Previous Results Button -->
-        <div th:if="${currentQuestion != null}" style="text-align: center; margin-top: 32px;">
-            <button onclick="toggleHistory(event)" class="btn btn-secondary" style="padding: 12px 32px;">
-                📊 Show Previous Results
-            </button>
-        </div>
-
-        <!-- History Section -->
-        <div id="historySection"
-             th:style="${currentQuestion != null} ? 'display: none; margin-top: 40px;' : 'margin-top: 40px;'">
-
-            <!-- Latest Result During Question Mode -->
-            <div th:if="${currentQuestion != null and latestScore != null}" class="latest-result-section">
-                <div class="section-header">
-                    <span class="icon">📊</span>
-                    <h2>Your Latest Assessment Result</h2>
-                </div>
-                <div class="result-summary-card">
-                    <div class="result-left">
-                        <div class="score-display" th:classappend="${latestSeverity}">
-                            <div class="score-big" th:text="${latestScore}"></div>
-                            <div class="score-max">/20</div>
-                        </div>
-                        <div class="severity-info">
-                            <div class="severity-label" th:classappend="${latestSeverity}">
-                                <span th:text="${#strings.capitalize(latestSeverity)}"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="result-right">
-                        <p class="result-description" th:text="${latestAssessment}"></p>
-                        <div class="result-actions">
-                            <a href="/self-care" class="btn-small btn-secondary">Explore Self-Care</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Assessment History -->
-            <div class="history-section"
-                 th:if="${assessmentHistory != null and !assessmentHistory.isEmpty()}"
-                 th:style="${currentQuestion != null} ? 'margin-top: 40px;' : 'margin-top: 0;'">
-
-                <div class="section-header">
-                    <span class="icon">📈</span>
-                    <h2>Assessment History</h2>
-                </div>
-
-                <p class="section-subtitle">Track your progress over time</p>
-
-                <div class="history-timeline">
-                    <div class="timeline-item" th:each="item, iterStat : ${assessmentHistory}">
-                        <div class="timeline-dot" th:classappend="${item.severityLevel}"></div>
-
-                        <div class="timeline-card">
-                            <div class="timeline-header">
-                                <div class="timeline-date">
-                                    <span th:text="${#temporals.format(item.assessmentDate, 'MMM dd, yyyy')}"></span>
-                                    <span class="timeline-time" th:text="${#temporals.format(item.assessmentDate, 'hh:mm a')}"></span>
-                                </div>
-                                <div class="timeline-score" th:classappend="${item.severityLevel}">
-                                    <span th:text="${item.totalScore}"></span>
+                            <div class="severity-info">
+                                <div class="severity-label" th:classappend="${severityLevel}">
+                                    <span th:text="${#strings.capitalize(severityLevel)}"></span>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="timeline-body">
-                                <span class="timeline-severity"
-                                      th:classappend="${item.severityLevel}"
-                                      th:text="${#strings.capitalize(item.severityLevel)}"></span>
-                                <p th:text="${item.assessmentResult}"></p>
-                            </div>
-
-                            <div class="timeline-trend" th:if="${!iterStat.last}">
-                                <span th:if="${item.totalScore < assessmentHistory.get(iterStat.index + 1).totalScore}" class="trend-improving">↓ Improving</span>
-                                <span th:if="${item.totalScore > assessmentHistory.get(iterStat.index + 1).totalScore}" class="trend-worsening">↑ Needs attention</span>
-                                <span th:if="${item.totalScore == assessmentHistory.get(iterStat.index + 1).totalScore}" class="trend-stable">→ Stable</span>
+                        <div class="result-right">
+                            <p class="result-description" th:text="${assessment}"></p>
+                            <div class="result-actions">
+                                <a href="/self-care" class="btn-small btn-primary">Explore Self-Care</a>
+                                <a th:href="@{/symptoms/start}" class="btn-small btn-secondary">Take New Assessment</a>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- No Assessment Yet -->
+                <div th:if="${totalScore == null}" class="empty-state"
+                    style="text-align: center; padding: 60px 20px; background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                    <div style="font-size: 64px; margin-bottom: 16px; opacity: 0.5;">📋</div>
+                    <h2 style="font-size: 24px; font-weight: 600; color: #1d1d1f; margin-bottom: 12px;">No Assessment
+                        Completed Yet</h2>
+                    <p style="font-size: 16px; color: #86868b; margin-bottom: 32px;">Take your first mental health
+                        assessment to understand your wellbeing</p>
+                    <a th:href="@{/symptoms/start}" class="btn btn-primary" style="padding: 12px 32px;">Start
+                        Assessment</a>
+                </div>
             </div>
 
-            <!-- No History Message -->
-            <div th:if="${(assessmentHistory == null or assessmentHistory.isEmpty()) and currentQuestion != null}"
-                 style="text-align: center; padding: 40px 20px; background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                <div style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">📊</div>
-                <h3 style="font-size: 18px; font-weight: 600; color: #1d1d1f; margin-bottom: 8px;">No Previous Results</h3>
-                <p style="font-size: 14px; color: #86868b;">Complete this assessment to start tracking your wellbeing</p>
+            <!-- Show Previous Results Button -->
+            <div th:if="${currentQuestion != null}" style="text-align: center; margin-top: 32px;">
+                <button onclick="toggleHistory(event)" class="btn btn-secondary" style="padding: 12px 32px;">
+                    📊 Show Previous Results
+                </button>
+            </div>
+
+            <!-- History Section -->
+            <div id="historySection"
+                th:style="${currentQuestion != null} ? 'display: none; margin-top: 40px;' : 'margin-top: 40px;'">
+
+                <!-- Latest Result During Question Mode -->
+                <div th:if="${currentQuestion != null and latestScore != null}" class="latest-result-section">
+                    <div class="section-header">
+                        <span class="icon">📊</span>
+                        <h2>Your Latest Assessment Result</h2>
+                    </div>
+                    <div class="result-summary-card">
+                        <div class="result-left">
+                            <div class="score-display" th:classappend="${latestSeverity}">
+                                <div class="score-big" th:text="${latestScore}"></div>
+                                <div class="score-max">/20</div>
+                            </div>
+                            <div class="severity-info">
+                                <div class="severity-label" th:classappend="${latestSeverity}">
+                                    <span th:text="${#strings.capitalize(latestSeverity)}"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="result-right">
+                            <p class="result-description" th:text="${latestAssessment}"></p>
+                            <div class="result-actions">
+                                <a href="/self-care" class="btn-small btn-secondary">Explore Self-Care</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assessment History -->
+                <div class="history-section" th:if="${assessmentHistory != null and !assessmentHistory.isEmpty()}"
+                    th:style="${currentQuestion != null} ? 'margin-top: 40px;' : 'margin-top: 0;'">
+
+                    <div class="section-header">
+                        <span class="icon">📈</span>
+                        <h2>Assessment History</h2>
+                    </div>
+
+                    <p class="section-subtitle">Track your progress over time</p>
+
+                    <div class="history-timeline">
+                        <div class="timeline-item" th:each="item, iterStat : ${assessmentHistory}">
+                            <div class="timeline-dot" th:classappend="${item.severityLevel}"></div>
+
+                            <div class="timeline-card">
+                                <div class="timeline-header">
+                                    <div class="timeline-date">
+                                        <span
+                                            th:text="${#temporals.format(item.assessmentDate, 'MMM dd, yyyy')}"></span>
+                                        <span class="timeline-time"
+                                            th:text="${#temporals.format(item.assessmentDate, 'hh:mm a')}"></span>
+                                    </div>
+                                    <div class="timeline-score" th:classappend="${item.severityLevel}">
+                                        <span th:text="${item.totalScore}"></span>
+                                    </div>
+                                </div>
+
+                                <div class="timeline-body">
+                                    <span class="timeline-severity" th:classappend="${item.severityLevel}"
+                                        th:text="${#strings.capitalize(item.severityLevel)}"></span>
+                                    <p th:text="${item.assessmentResult}"></p>
+                                </div>
+
+                                <div class="timeline-trend" th:if="${!iterStat.last}">
+                                    <span
+                                        th:if="${item.totalScore < assessmentHistory.get(iterStat.index + 1).totalScore}"
+                                        class="trend-improving">↓ Improving</span>
+                                    <span
+                                        th:if="${item.totalScore > assessmentHistory.get(iterStat.index + 1).totalScore}"
+                                        class="trend-worsening">↑ Needs attention</span>
+                                    <span
+                                        th:if="${item.totalScore == assessmentHistory.get(iterStat.index + 1).totalScore}"
+                                        class="trend-stable">→ Stable</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- No History Message -->
+                <div th:if="${(assessmentHistory == null or assessmentHistory.isEmpty()) and currentQuestion != null}"
+                    style="text-align: center; padding: 40px 20px; background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                    <div style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">📊</div>
+                    <h3 style="font-size: 18px; font-weight: 600; color: #1d1d1f; margin-bottom: 8px;">No Previous
+                        Results</h3>
+                    <p style="font-size: 14px; color: #86868b;">Complete this assessment to start tracking your
+                        wellbeing</p>
+                </div>
             </div>
         </div>
-    </div>
-</main>
+    </main>
 
-<script>
-    function toggleHistory(event) {
-        const historySection = document.getElementById('historySection');
-        const button = event.target;
+    <script>
+        function toggleHistory(event) {
+            const historySection = document.getElementById('historySection');
+            const button = event.target;
 
-        if (historySection.style.display === 'none') {
-            historySection.style.display = 'block';
-            button.textContent = '📊 Hide Previous Results';
-        } else {
-            historySection.style.display = 'none';
-            button.textContent = '📊 Show Previous Results';
+            if (historySection.style.display === 'none') {
+                historySection.style.display = 'block';
+                button.textContent = '📊 Hide Previous Results';
+            } else {
+                historySection.style.display = 'none';
+                button.textContent = '📊 Show Previous Results';
+            }
         }
-    }
-</script>
+    </script>
 
 </body>
+
 </html>

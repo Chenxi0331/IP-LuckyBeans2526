@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +13,7 @@
             display: flex;
             flex-direction: column;
         }
+
         .container-main {
             flex: 1;
             display: flex;
@@ -19,6 +21,7 @@
             justify-content: center;
             padding: 20px;
         }
+
         .card-container {
             background: white;
             border-radius: 12px;
@@ -27,6 +30,7 @@
             width: 100%;
             max-width: 500px;
         }
+
         .card-title {
             color: #333;
             font-weight: 600;
@@ -34,12 +38,14 @@
             text-align: center;
             font-size: 28px;
         }
+
         .form-label {
             color: #555;
             font-weight: 500;
             margin-bottom: 8px;
             display: block;
         }
+
         .form-control {
             border: 2px solid #e0e0e0;
             border-radius: 8px;
@@ -47,13 +53,16 @@
             font-size: 16px;
             transition: border-color 0.3s ease;
         }
+
         .form-control:focus {
             border-color: #667eea;
             box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
         }
+
         .form-group {
             margin-bottom: 20px;
         }
+
         .btn-submit {
             width: 100%;
             padding: 12px;
@@ -66,36 +75,45 @@
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             font-size: 16px;
         }
+
         .btn-submit:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
             color: white;
         }
+
         .btn-submit:active {
             transform: translateY(0);
         }
+
         .alert {
             border-radius: 8px;
             margin-bottom: 20px;
         }
+
         .info-text {
             color: #666;
             font-size: 14px;
             margin-top: 8px;
         }
+
         .required {
             color: #e74c3c;
         }
-        #page-content-wrapper {
-            margin-left: 260px !important;
+
+        .required {
+            color: #e74c3c;
         }
     </style>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
+
 <body>
     <!-- Navbar -->
     <nav th:replace="fragments/navbar :: navbar"></nav>
 
-    <div id="page-content-wrapper" class="container-main">
+    <div id="page-content-wrapper" class="main-content d-flex align-items-center justify-content-center"
+        style="min-height: calc(100vh - 56px);">
         <div class="card-container">
             <h2 class="card-title">Schedule a Counselling Session</h2>
 
@@ -117,14 +135,7 @@
                     <label for="date" class="form-label">
                         Select Date <span class="required">*</span>
                     </label>
-                    <input 
-                        class="form-control" 
-                        id="date"
-                        name="date" 
-                        type="date" 
-                        required
-                        th:min="${todayDate}"
-                    >
+                    <input class="form-control" id="date" name="date" type="date" required th:min="${todayDate}">
                     <small class="info-text">Please select an available date for your session</small>
                 </div>
 
@@ -133,13 +144,7 @@
                     <label for="time" class="form-label">
                         Select Time <span class="required">*</span>
                     </label>
-                    <input 
-                        class="form-control" 
-                        id="time"
-                        name="time" 
-                        type="time" 
-                        required
-                    >
+                    <input class="form-control" id="time" name="time" type="time" required>
                     <small class="info-text">Business hours: 9:00 AM - 5:00 PM</small>
                 </div>
 
@@ -174,14 +179,9 @@
                     <label for="notes" class="form-label">
                         Additional Notes <span class="text-muted">(Optional)</span>
                     </label>
-                    <textarea 
-                        class="form-control" 
-                        id="notes"
-                        name="notes" 
-                        rows="3"
+                    <textarea class="form-control" id="notes" name="notes" rows="3"
                         placeholder="Any specific concerns or topics you'd like to discuss..."
-                        maxlength="500"
-                    ></textarea>
+                        maxlength="500"></textarea>
                     <small class="info-text">Maximum 500 characters</small>
                 </div>
 
@@ -200,10 +200,10 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- Form Validation Script -->
     <script>
-        document.querySelector('form').addEventListener('submit', function(e) {
+        document.querySelector('form').addEventListener('submit', function (e) {
             const date = document.getElementById('date').value;
             const time = document.getElementById('time').value;
             const sessionType = document.getElementById('sessionType').value;
@@ -240,4 +240,5 @@
         document.getElementById('date').setAttribute('min', today);
     </script>
 </body>
+
 </html>

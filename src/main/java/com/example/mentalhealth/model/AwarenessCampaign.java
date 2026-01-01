@@ -10,6 +10,8 @@ public class AwarenessCampaign {
     private String name;
     private String description;
     private String status;
+    @Column(name = "participant_count", nullable = false)
+    private Integer participantCount = 0;
 
     // Getters and setters
     public Long getId() {
@@ -42,5 +44,13 @@ public class AwarenessCampaign {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Integer getParticipantCount() {
+        return participantCount;
+    }
+
+    public void setParticipantCount(Integer participantCount) {
+        this.participantCount = participantCount;
     }
 }

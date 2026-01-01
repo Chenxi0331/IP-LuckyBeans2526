@@ -63,7 +63,7 @@ public class CounsellingController {
         return "redirect:/counselling/my-sessions";
     }
 
-    @PreAuthorize("hasAnyRole('COUNSELOR')")
+    @PreAuthorize("hasAnyRole('COUNSELOR', 'ADMIN')")
     @GetMapping("/approval")
     public String listApproval(Model model) {
         List<CounsellingSession> pendingSessions = service.findPending();
@@ -109,7 +109,10 @@ public class CounsellingController {
     public String mySessions(Model model, Authentication authentication) {
         String email = authentication.getName();
         User user = userRepository.findByEmail(email).orElseThrow();
-        model.addAttribute("sessions", service.getSessionsForStudent(user.getId()));
+        model.addAttribute("sessions",
+                user.getRole() == Role.COUNSELOR 
+                    ? service.getSessionsForCounsellor(user.getId())
+                    : service.getSessionsForStudent(user.getId()));
         return "counselling/my-sessions";
     }
 }
