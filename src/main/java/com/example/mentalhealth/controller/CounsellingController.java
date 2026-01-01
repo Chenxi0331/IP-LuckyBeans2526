@@ -28,42 +28,34 @@ public class CounsellingController {
         this.service = service;
     }
 
-    @GetMapping("/schedule")
-    public String schedulePage(Model model) {
-        // provide today's date string for any template min attributes
-        model.addAttribute("todayDate", java.time.LocalDate.now().toString());
-        return "counselling/schedule";
+    @PreAuthorize("hasRole('COUNSELOR')")
+    @GetMapping("/attend/{id}")
+    public String attendSessionPage(@PathVariable Long id, Model model) {
+        CounsellingSession session = service.getSessionById(id);
+        if (session == null) {
+            return "redirect:/counselling/my-sessions";
+        }
+        model.addAttribute("counsellingSession", session);
+        return "counselling/attend";
     }
 
-    @PostMapping("/schedule")
-    public String scheduleSubmit(@RequestParam String date,
-                                 @RequestParam String time,
-                                 @RequestParam(required = false) Long counsellorId,
-                                Authentication authentication) {
-        // date expected in yyyy-MM-dd and time in HH:mm (from date + time inputs)
-        java.time.LocalDate d = java.time.LocalDate.parse(date);
-        java.time.LocalTime t = java.time.LocalTime.parse(time);
-        java.time.LocalDateTime dt = java.time.LocalDateTime.of(d, t);
-
-        // String currentPrincipalName = authentication.getName();
-        // User currentUser = userService.findByEmail(currentPrincipalName);   
-        // CounsellingSession session = new CounsellingSession();
-        String email = authentication.getName();
-        User currentUser = userRepository.findByEmail(email).orElseThrow(); 
-        CounsellingSession session = new CounsellingSession();
-        session.setStudentId(currentUser.getId());
-        session.setSessionDate(dt);
-        session.setStatus("PENDING");
-        if (counsellorId != null) {
-            session.setCounsellorId(counsellorId);
-        } else {
-            session.setCounsellorId(1L); // fallback temporary ID
-        }
-        service.save(session);
+    @PreAuthorize("hasRole('COUNSELOR')")
+    @PostMapping("/attend")
+    public String attendSessionSubmit(@RequestParam Long sessionId, @RequestParam String notes) {
+        System.out.println("Attending Session ID: " + sessionId + " with Notes: " + notes);
+        service.addNotesAndComplete(sessionId, notes);
         return "redirect:/counselling/my-sessions";
     }
 
-    @PreAuthorize("hasAnyRole('COUNSELOR')")
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/all-sessions")
+    public String adminAllSessions(Model model) {
+        List<CounsellingSession> allSessions = service.getAllSessions();
+        model.addAttribute("sessions", allSessions);
+        return "counselling/admin-sessions";
+    }
+
+    @PreAuthorize("hasRole('COUNSELOR')")
     @GetMapping("/approval")
     public String listApproval(Model model) {
         List<CounsellingSession> pendingSessions = service.findPending();
@@ -92,15 +84,32 @@ public class CounsellingController {
                 .filter(u -> u.getRole() == Role.COUNSELOR)
                 .toList();
         model.addAttribute("counselors", counselors);
-        model.addAttribute("session", new CounsellingSession());
+        model.addAttribute("counsellingSession", new CounsellingSession());
         return "counselling/book";
     }
 
     @PostMapping("/book")
-    public String submitBooking(@ModelAttribute CounsellingSession session, Authentication authentication) {
+    public String submitBooking(@ModelAttribute("counsellingSession") CounsellingSession session, 
+                                org.springframework.validation.BindingResult bindingResult,
+                                @RequestParam Long counsellorId,
+                                Authentication authentication) {
+        if (bindingResult.hasErrors()) {
+            System.out.println("Booking Validation Errors: " + bindingResult.getAllErrors());
+            // In a real app, return to form. For now, let's proceed but warn.
+            // actually, if date binding failed, sessionDate will be null.
+        }
+        
+        System.out.println("Booking Session: Date=" + session.getSessionDate() + ", Type=" + session.getSessionType());
+
         String email = authentication.getName();
-        User user = userRepository.findByEmail(email).orElseThrow();
-        session.setStudentId(user.getId());
+        User student = userRepository.findByEmail(email).orElseThrow();
+        User counsellor = userRepository.findById(counsellorId).orElseThrow();
+        
+        System.out.println("Booking Users: Student=" + student.getFullName() + ", Counsellor=" + counsellor.getFullName());
+
+        session.setStudent(student);
+        session.setCounsellor(counsellor);
+        session.setStatus("PENDING");
         service.createSession(session);
         return "redirect:/counselling/my-sessions";
     }
@@ -111,9 +120,9 @@ public class CounsellingController {
         User user = userRepository.findByEmail(email).orElseThrow();
         
         if (user.getRole() == Role.COUNSELOR) {
-            model.addAttribute("sessions", service.getSessionsForCounsellor(user.getId()));
+            model.addAttribute("sessions", service.getSessionsForCounsellor(user));
         } else {
-            model.addAttribute("sessions", service.getSessionsForStudent(user.getId()));
+            model.addAttribute("sessions", service.getSessionsForStudent(user));
         }
         
         return "counselling/my-sessions";

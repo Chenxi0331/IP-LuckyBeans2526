@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Attend Session</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <div id="page-content-wrapper" class="container py-5" style="margin-left: 260px;">
+        <div class="card mx-auto" style="max-width: 720px;">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Conduct Counselling Session</h4>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <strong>Student:</strong> <span
+                            th:text="${counsellingSession.student != null ? counsellingSession.student.fullName : 'N/A'}"
+                            class="text-primary"></span>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <strong>Date:</strong> <span
+                            th:text="${counsellingSession.sessionDate != null ? #temporals.format(counsellingSession.sessionDate, 'MMM dd, yyyy HH:mm') : 'Not Scheduled'}"></span>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <strong>Session Type:</strong> <span
+                            th:text="${counsellingSession.sessionType ?: 'Not Specified'}"
+                            class="badge bg-secondary"></span>
+                    </div>
+                    <div class="col-12 mt-2"
+                        th:if="${counsellingSession.studentNotes != null and counsellingSession.studentNotes != ''}">
+                        <strong>Student Notes:</strong>
+                        <p class="text-muted" th:text="${counsellingSession.studentNotes}"></p>
+                    </div>
+                </div>
+
+                <form th:action="@{/counselling/attend}" method="post">
+                    <input type="hidden" name="sessionId" th:value="${counsellingSession.id}" />
+
+                    <div class="mb-3">
+                        <label for="notes" class="form-label"><strong>Session Notes</strong></label>
+                        <textarea class="form-control" id="notes" name="notes" rows="6"
+                            placeholder="Enter session notes here..." required></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a th:href="@{/counselling/my-sessions}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-success">Complete Session</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

@@ -15,13 +15,29 @@
         <div class="card mx-auto" style="max-width:720px;">
             <div class="card-body">
                 <h4 class="card-title">Book Counselling Session</h4>
-                <form th:action="@{/counselling/book}" th:object="${session}" method="post">
+                <form th:action="@{/counselling/book}" th:object="${counsellingSession}" method="post">
                     <div class="mb-3">
                         <label class="form-label">Select Preferred Counsellor</label>
-                        <select class="form-select" th:field="*{counsellorId}" required>
+                        <select class="form-select" name="counsellorId" required>
                             <option value="">-- Choose a Counsellor --</option>
                             <option th:each="c : ${counselors}" th:value="${c.id}" th:text="${c.fullName}"></option>
                         </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Session Type</label>
+                        <select class="form-select" th:field="*{sessionType}" required>
+                            <option value="">-- Select Session Type --</option>
+                            <option value="individual">Individual Counselling</option>
+                            <option value="group">Group Session</option>
+                            <option value="follow-up">Follow-up Session</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Additional Notes (Optional)</label>
+                        <textarea class="form-control" th:field="*{studentNotes}" rows="3"
+                            placeholder="Write something to the counselor..."></textarea>
                     </div>
 
                     <div class="mb-3">

@@ -1,9 +1,10 @@
 package com.example.mentalhealth.model;
 
 import jakarta.persistence.*;
-import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 public class CounsellingSession {
@@ -12,14 +13,24 @@ public class CounsellingSession {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long studentId;
-    private Long counsellorId;
+    @ManyToOne
+    @JoinColumn(name = "student_id")
+    private User student;
 
+    @ManyToOne
+    @JoinColumn(name = "counsellor_id")
+    private User counsellor;
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime sessionDate;
-    private String status = "PENDING"; // PENDING / APPROVED / COMPLETED
+    private String status = "PENDING"; // PENDING / APPROVED / COMPLETED / REJECTED
 
     private String sessionType;
-    private String notes;      
+    private String notes; // Counsellor notes
+    
+    @Column(columnDefinition = "TEXT")
+    private String studentNotes; // Notes from student during booking
+
     private LocalDateTime createdAt = LocalDateTime.now();
     public Long getId() {
         return id;
@@ -29,20 +40,20 @@ public class CounsellingSession {
         this.id = id;
     }
 
-    public Long getStudentId() {
-        return studentId;
+    public User getStudent() {
+        return student;
     }
 
-    public void setStudentId(Long studentId) {
-        this.studentId = studentId;
+    public void setStudent(User student) {
+        this.student = student;
     }
 
-    public Long getCounsellorId() {
-        return counsellorId;
+    public User getCounsellor() {
+        return counsellor;
     }
 
-    public void setCounsellorId(Long counsellorId) {
-        this.counsellorId = counsellorId;
+    public void setCounsellor(User counsellor) {
+        this.counsellor = counsellor;
     }
 
     public LocalDateTime getSessionDate() {
@@ -75,6 +86,14 @@ public class CounsellingSession {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public String getStudentNotes() {
+        return studentNotes;
+    }
+
+    public void setStudentNotes(String studentNotes) {
+        this.studentNotes = studentNotes;
     }
 
     public LocalDateTime getCreatedAt() {

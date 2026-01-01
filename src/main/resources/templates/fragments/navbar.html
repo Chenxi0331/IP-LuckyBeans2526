@@ -66,9 +66,15 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/counselling/schedule}">
+                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/counselling/book}">
                         <span class="material-icons">event</span>
                         <span>Schedule Counselling</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/counselling/my-sessions}">
+                        <span class="material-icons">visibility</span>
+                        <span>My Counselling Sessions</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -193,7 +199,8 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white d-flex align-items-center gap-3" th:href="@{/admin/sessions}">
+                    <a class="nav-link text-white d-flex align-items-center gap-3"
+                        th:href="@{/counselling/all-sessions}">
                         <span class="material-icons">event_note</span>
                         <span>View All Sessions</span>
                     </a>

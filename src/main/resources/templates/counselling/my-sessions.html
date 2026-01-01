@@ -21,18 +21,82 @@
                             <tr>
                                 <th>Date</th>
                                 <th>Time</th>
+                                <th>Session Type</th>
+                                <!-- Show Counsellor Name for Students, Student Name for Counsellors/Admin -->
+                                <th th:if="${#authorization.expression('hasRole(''STUDENT'')')}">Counsellor</th>
+                                <th th:unless="${#authorization.expression('hasRole(''STUDENT'')')}">Student</th>
                                 <th>Status</th>
-                                <th>Counsellor</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr th:each="s : ${sessions}">
                                 <td th:text="${#temporals.format(s.sessionDate, 'MMM dd, yyyy')}"></td>
                                 <td th:text="${#temporals.format(s.sessionDate, 'HH:mm')}"></td>
+                                <td th:text="${s.sessionType}"></td>
+
+                                <td th:if="${#authorization.expression('hasRole(''STUDENT'')')}"
+                                    th:text="${s.counsellor != null ? s.counsellor.fullName : 'N/A'}"></td>
+                                <td th:unless="${#authorization.expression('hasRole(''STUDENT'')')}"
+                                    th:text="${s.student != null ? s.student.fullName : 'N/A'}"></td>
+
                                 <td>
-                                    <span class="badge bg-info" th:text="${s.status}"></span>
+                                    <span class="badge"
+                                        th:classappend="${s.status == 'APPROVED' ? 'bg-success' : (s.status == 'PENDING' ? 'bg-warning' : 'bg-secondary')}"
+                                        th:text="${s.status}"></span>
                                 </td>
-                                <td th:text="${s.counsellorId}"></td>
+                                <td>
+                                    <!-- Counsellor Action: Attend -->
+                                    <a th:if="${#authorization.expression('hasRole(''COUNSELOR'')') and s.status == 'APPROVED'}"
+                                        th:href="@{/counselling/attend/{id}(id=${s.id})}"
+                                        class="btn btn-sm btn-primary">Attend</a>
+
+                                    <!-- View Student Notes (Reason) -->
+                                    <button th:if="${s.studentNotes != null and s.studentNotes != ''}"
+                                        class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
+                                        th:data-bs-target="'#studentNotesModal' + ${s.id}">Booking Details</button>
+
+                                    <!-- View Session Notes (for both if completed) -->
+                                    <button th:if="${s.status == 'COMPLETED'}" class="btn btn-sm btn-outline-info"
+                                        data-bs-toggle="modal" th:data-bs-target="'#notesModal' + ${s.id}">View
+                                        Report</button>
+
+                                    <!-- Modal for Session Notes -->
+                                    <div class="modal fade" th:id="'notesModal' + ${s.id}" tabindex="-1"
+                                        aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Session Details</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <h6>Counselor Notes:</h6>
+                                                    <p th:text="${s.notes}"></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Modal for Student Booking Notes -->
+                                    <div class="modal fade" th:id="'studentNotesModal' + ${s.id}" tabindex="-1"
+                                        aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Booking Details</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <h6>Student's Reason/Notes:</h6>
+                                                    <p th:text="${s.studentNotes}"></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
                             </tr>
                         </tbody>
                     </table>

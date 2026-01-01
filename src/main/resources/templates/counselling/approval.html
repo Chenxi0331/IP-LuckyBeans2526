@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,10 +13,12 @@
             min-height: 100vh;
             padding: 20px 0;
         }
+
         .page-container {
             max-width: 1200px;
             margin: 0 auto;
         }
+
         .page-header {
             background: white;
             border-radius: 12px;
@@ -23,16 +26,19 @@
             margin-bottom: 30px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
         }
+
         .page-title {
             color: #333;
             font-weight: 700;
             font-size: 32px;
             margin-bottom: 10px;
         }
+
         .page-subtitle {
             color: #666;
             font-size: 16px;
         }
+
         .table-container {
             background: white;
             border-radius: 12px;
@@ -40,13 +46,16 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
             overflow-x: auto;
         }
+
         .table {
             margin-bottom: 0;
         }
+
         .table thead {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
+
         .table thead th {
             border: none;
             padding: 15px;
@@ -55,32 +64,40 @@
             font-size: 13px;
             letter-spacing: 0.5px;
         }
+
         .table tbody tr {
             border-bottom: 1px solid #e0e0e0;
             transition: background-color 0.3s ease;
         }
+
         .table tbody tr:hover {
             background-color: #f8f9fa;
         }
+
         .table tbody td {
             padding: 15px;
             vertical-align: middle;
             color: #333;
         }
+
         .session-id {
             font-weight: 600;
             color: #667eea;
         }
+
         .student-name {
             font-weight: 500;
         }
+
         .session-date {
             color: #666;
         }
+
         .action-buttons {
             display: flex;
             gap: 8px;
         }
+
         .btn-approve {
             background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
             border: none;
@@ -96,11 +113,13 @@
             align-items: center;
             gap: 5px;
         }
+
         .btn-approve:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
             color: white;
         }
+
         .btn-reject {
             background: linear-gradient(135deg, #f44336 0%, #da190b 100%);
             border: none;
@@ -116,40 +135,48 @@
             align-items: center;
             gap: 5px;
         }
+
         .btn-reject:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3);
             color: white;
         }
+
         .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: #999;
         }
+
         .empty-state-icon {
             font-size: 64px;
             margin-bottom: 20px;
             color: #ddd;
         }
+
         .empty-state-text {
             font-size: 18px;
             font-weight: 500;
             margin-bottom: 10px;
         }
+
         .empty-state-subtext {
             font-size: 14px;
             color: #bbb;
         }
+
         .alert {
             border-radius: 8px;
             margin-bottom: 20px;
         }
+
         .stats-row {
             display: flex;
             gap: 15px;
             margin-top: 15px;
             flex-wrap: wrap;
         }
+
         .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -158,15 +185,18 @@
             flex: 1;
             min-width: 150px;
         }
+
         .stat-value {
             font-size: 24px;
             font-weight: 700;
         }
+
         .stat-label {
             font-size: 12px;
             opacity: 0.9;
             margin-top: 5px;
         }
+
         .status-badge {
             display: inline-block;
             padding: 4px 8px;
@@ -174,16 +204,19 @@
             font-size: 12px;
             font-weight: 600;
         }
+
         .status-pending {
             background-color: #fff3cd;
             color: #856404;
         }
+
         .filter-row {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
         }
+
         .filter-row input,
         .filter-row select {
             padding: 8px 12px;
@@ -191,11 +224,13 @@
             border-radius: 6px;
             font-size: 14px;
         }
+
         #page-content-wrapper {
             margin-left: 260px !important;
         }
     </style>
 </head>
+
 <body>
     <!-- Navbar -->
     <nav th:replace="fragments/navbar :: navbar"></nav>
@@ -207,7 +242,7 @@
                 <i class="fas fa-check-circle"></i> Counselling Session Approvals
             </h1>
             <p class="page-subtitle">Review and approve pending counselling session requests from students</p>
-            
+
             <!-- Stats Row -->
             <div class="stats-row">
                 <div class="stat-card">
@@ -227,7 +262,8 @@
 
         <!-- Success/Error Messages -->
         <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle"></i> <strong>Success!</strong> The counselling session has been updated successfully.
+            <i class="fas fa-check-circle"></i> <strong>Success!</strong> The counselling session has been updated
+            successfully.
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 
@@ -239,7 +275,8 @@
         <!-- Filter Row -->
         <div class="table-container">
             <div class="filter-row">
-                <input type="text" id="searchInput" placeholder="Search by Student ID..." class="form-control" style="max-width: 250px;">
+                <input type="text" id="searchInput" placeholder="Search by Student ID..." class="form-control"
+                    style="max-width: 250px;">
                 <input type="date" id="dateFilter" class="form-control" style="max-width: 200px;">
                 <select id="statusFilter" class="form-control" style="max-width: 150px;">
                     <option value="">All Status</option>
@@ -254,11 +291,11 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th><i class="fas fa-id-card"></i> Session ID</th>
+                            <th><i class="fas fa-id-card"></i> ID</th>
                             <th><i class="fas fa-user"></i> Student</th>
+                            <th><i class="fas fa-info"></i> Type</th>
                             <th><i class="fas fa-calendar"></i> Date</th>
-                            <th><i class="fas fa-clock"></i> Time</th>
-                            <th><i class="fas fa-user-tie"></i> Counselor</th>
+                            <th><i class="fas fa-comment"></i> Note/Reason</th>
                             <th><i class="fas fa-info-circle"></i> Status</th>
                             <th><i class="fas fa-cogs"></i> Action</th>
                         </tr>
@@ -266,29 +303,31 @@
                     <tbody>
                         <tr th:each="s : ${sessions}">
                             <td class="session-id" th:text="'#' + ${s.id}"></td>
-                            <td class="student-name" th:text="${s.studentId}"></td>
-                            <td class="session-date" 
-    th:text="${#temporals.format(s.sessionDate, 'MMM dd, yyyy')}"></td>
-
-<td th:text="${#temporals.format(s.sessionDate, 'HH:mm')}"></td>
-
+                            <td class="student-name" th:text="${s.student != null ? s.student.fullName : s.studentId}">
+                            </td>
+                            <td><span class="badge bg-secondary" th:text="${s.sessionType}"></span></td>
                             <td>
-                                <span th:if="${s.counsellorId}" th:text="'Counsellor ' + ${s.counsellorId}"></span>
-                                <span th:unless="${s.counsellorId}" class="text-muted">Not Assigned</span>
+                                <div th:text="${#temporals.format(s.sessionDate, 'MMM dd, yyyy')}"></div>
+                                <div class="text-muted small" th:text="${#temporals.format(s.sessionDate, 'HH:mm')}">
+                                </div>
                             </td>
                             <td>
-                                <span th:classappend="${s.status == 'PENDING'} ? ' status-badge status-pending' : ''" th:text="${s.status}"></span>
+                                <span th:if="${s.studentNotes}" th:text="${#strings.abbreviate(s.studentNotes, 30)}"
+                                    data-bs-toggle="tooltip" th:title="${s.studentNotes}"></span>
+                                <span th:unless="${s.studentNotes}" class="text-muted">-</span>
+                            </td>
+                            <td>
+                                <span th:classappend="${s.status == 'PENDING'} ? ' status-badge status-pending' : ''"
+                                    th:text="${s.status}"></span>
                             </td>
                             <td>
                                 <div class="action-buttons">
-                                    <a th:href="@{/counselling/approve/{id}(id=${s.id})}" 
-                                       class="btn-approve"
-                                       onclick="return confirm('Are you sure you want to approve this session?');">
+                                    <a th:href="@{/counselling/approve/{id}(id=${s.id})}" class="btn-approve"
+                                        onclick="return confirm('Are you sure you want to approve this session?');">
                                         <i class="fas fa-check"></i> Approve
                                     </a>
-                                    <a th:href="@{/counselling/reject/{id}(id=${s.id})}" 
-                                       class="btn-reject"
-                                       onclick="return confirm('Are you sure you want to reject this session?');">
+                                    <a th:href="@{/counselling/reject/{id}(id=${s.id})}" class="btn-reject"
+                                        onclick="return confirm('Are you sure you want to reject this session?');">
                                         <i class="fas fa-times"></i> Reject
                                     </a>
                                 </div>
@@ -311,7 +350,7 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- Table Filter Script -->
     <script>
         document.getElementById('searchInput')?.addEventListener('keyup', filterTable);
@@ -322,34 +361,35 @@
             const searchValue = document.getElementById('searchInput')?.value.toLowerCase() || '';
             const dateValue = document.getElementById('dateFilter')?.value || '';
             const statusValue = document.getElementById('statusFilter')?.value || '';
-            
+
             const table = document.querySelector('.table tbody');
             if (!table) return;
 
             const rows = table.querySelectorAll('tr');
-            
+
             rows.forEach(row => {
                 const studentId = row.cells[1]?.textContent.toLowerCase() || '';
                 const date = row.cells[2]?.textContent || '';
                 const status = row.cells[5]?.textContent.toLowerCase() || '';
-                
+
                 let show = true;
-                
+
                 if (searchValue && !studentId.includes(searchValue)) {
                     show = false;
                 }
-                
+
                 if (dateValue && !date.includes(dateValue)) {
                     show = false;
                 }
-                
+
                 if (statusValue && !status.includes(statusValue)) {
                     show = false;
                 }
-                
+
                 row.style.display = show ? '' : 'none';
             });
         }
     </script>
 </body>
+
 </html>

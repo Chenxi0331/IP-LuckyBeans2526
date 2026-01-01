@@ -1,6 +1,7 @@
 package com.example.mentalhealth.service;
 
 import com.example.mentalhealth.model.CounsellingSession;
+import com.example.mentalhealth.model.User;
 import com.example.mentalhealth.repository.CounsellingSessionRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,12 +25,12 @@ public class CounsellingService {
         return repo.save(session);
     }
 
-    public List<CounsellingSession> getSessionsForStudent(Long studentId) {
-        return repo.findByStudentId(studentId);
+    public List<CounsellingSession> getSessionsForStudent(User student) {
+        return repo.findByStudent(student);
     }
 
-    public List<CounsellingSession> getSessionsForCounsellor(Long counsellorId) {
-        return repo.findByCounsellorId(counsellorId);
+    public List<CounsellingSession> getSessionsForCounsellor(User counsellor) {
+        return repo.findByCounsellor(counsellor);
     }
 
     public void save(CounsellingSession session) {
@@ -53,11 +54,24 @@ public class CounsellingService {
                 .count();
     }
 
-    public List<CounsellingSession> getHistoryForUser(Long userId) {
-        return repo.findByStudentId(userId); 
+    public List<CounsellingSession> getHistoryForUser(User user) {
+        return repo.findByStudent(user); 
     }
 
     public List<CounsellingSession> getAllSessions() {
         return repo.findAll();
+    }
+
+    public CounsellingSession getSessionById(Long id) {
+        return repo.findById(id).orElse(null);
+    }
+
+    public void addNotesAndComplete(Long id, String notes) {
+        repo.findById(id).ifPresentOrElse(s -> {
+            System.out.println("Updating session " + id + " to COMPLETED");
+            s.setNotes(notes);
+            s.setStatus("COMPLETED");
+            repo.save(s);
+        }, () -> System.out.println("Session " + id + " not found for update"));
     }
 }
