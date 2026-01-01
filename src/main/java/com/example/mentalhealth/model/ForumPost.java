@@ -10,16 +10,6 @@ public class ForumPost {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId;
-
-    private String title;
-
-    @Column(columnDefinition = "TEXT")
-    private String content;
-
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    // Manual Getters and Setters
     public Long getId() {
         return id;
     }
@@ -28,13 +18,34 @@ public class ForumPost {
         this.id = id;
     }
 
-    public Long getUserId() {
-        return userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User author;
+
+    public User getAuthor() {
+        return author;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setAuthor(User author) {
+        this.author = author;
     }
+
+    private String category;
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    private String title;
+
+    @Column(columnDefinition = "TEXT")
+    private String content;
+
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     public String getTitle() {
         return title;

@@ -16,9 +16,14 @@
             <div class="card-body">
                 <h2 class="fw-bold mb-3" th:text="${post.title}">Post Title</h2>
 
-                <p class="text-muted small mb-4">
-                    Posted on <span th:text="${#dates.format(post.createdAt, 'MMM dd, yyyy HH:mm')}">Date</span>
-                </p>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <p class="text-muted small mb-0">
+                        Posted by <span class="fw-semibold"
+                            th:text="${post.author?.fullName} ?: 'Unknown User'">Author</span>
+                        on <span th:text="${#temporals.format(post.createdAt, 'MMM dd, yyyy HH:mm')}">Date</span>
+                    </p>
+                    <a href="/forum" class="btn btn-outline-secondary btn-sm">Back to Forum</a>
+                </div>
 
                 <p class="fs-5" th:text="${post.content}">
                     Post content goes here...
@@ -35,13 +40,30 @@
         <div class="d-flex flex-column gap-3" th:each="c : ${comments}">
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <p class="mb-1 fw-semibold" th:text="${c.author}">Author Name</p>
-                    <p th:text="${c.text}">Comment text...</p>
+                    <div class="d-flex justify-content-between">
+                        <p class="mb-1 fw-semibold" th:text="${c.author?.fullName} ?: 'Unknown User'">Author Name</p>
+                        <span class="text-muted small"
+                            th:text="${#temporals.format(c.createdAt, 'MMM dd, yyyy HH:mm')}">
+                            Time
+                        </span>
+                    </div>
 
-                    <span class="text-muted small" th:text="${#dates.format(c.createdAt, 'MMM dd, yyyy HH:mm')}">
-                        Time
-                    </span>
+                    <p class="mt-2" th:text="${c.content}">Comment text...</p>
                 </div>
+            </div>
+        </div>
+
+        <div class="card mt-5 shadow-sm">
+            <div class="card-body">
+                <h5 class="mb-3">Leave a Comment</h5>
+                <form th:action="@{/forum/comment}" th:object="${comment}" method="post">
+                    <input type="hidden" th:value="${post.id}" name="postId" />
+                    <div class="mb-3">
+                        <textarea class="form-control" rows="3" th:field="*{content}"
+                            placeholder="Type your comment here..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Comment</button>
+                </form>
             </div>
         </div>
 

@@ -27,8 +27,13 @@ public class ForumController {
     }
 
     @GetMapping
-    public String viewForum(Model model) {
-        model.addAttribute("posts", service.getAllPosts());
+    public String viewForum(@RequestParam(required = false) String category,
+                            @RequestParam(required = false) String search,
+                            Model model) {
+        model.addAttribute("posts", service.filterPosts(category, search));
+        // Pass current category/search to view for highlighting
+        model.addAttribute("currentCategory", category);
+        model.addAttribute("currentSearch", search);
         return "forum/list";
     }
 
@@ -41,39 +46,13 @@ public class ForumController {
     @PostMapping("/new")
     public String createPost(@ModelAttribute ForumPost post, Authentication auth) {
         User user = userRepository.findByEmail(auth.getName()).orElseThrow();
-        post.setUserId(user.getId());
+        post.setAuthor(user);
         service.savePost(post);
         return "redirect:/forum";
     }
 
     @GetMapping("/post/{id}")
     public String viewPost(@PathVariable Long id, Model model) {
-        // Use mock data for demo/testing if id == 999
-        if (id == 999) {
-            ForumPost mockPost = new ForumPost();
-            mockPost.setId(999L);
-            mockPost.setTitle("Mock Title");
-            mockPost.setContent("This is mock content for testing.");
-            mockPost.setCreatedAt(java.time.LocalDateTime.now());
-
-            ForumComment c1 = new ForumComment();
-            c1.setUserId(1L);
-            c1.setContent("Nice post!");
-            c1.setCreatedAt(java.time.LocalDateTime.now());
-
-            ForumComment c2 = new ForumComment();
-            c2.setUserId(2L);
-            c2.setContent("Thanks for sharing.");
-            c2.setCreatedAt(java.time.LocalDateTime.now());
-
-            java.util.List<ForumComment> mockComments = java.util.List.of(c1, c2);
-
-            model.addAttribute("post", mockPost);
-            model.addAttribute("comments", mockComments);
-            model.addAttribute("comment", new ForumComment());
-            return "forum/post";
-        }
-        // ...existing code...
         model.addAttribute("post", service.getPostById(id));
         model.addAttribute("comments", service.getComments(id));
         model.addAttribute("comment", new ForumComment());
@@ -83,7 +62,7 @@ public class ForumController {
     @PostMapping("/comment")
     public String addComment(@ModelAttribute ForumComment comment, Authentication auth) {
         User user = userRepository.findByEmail(auth.getName()).orElseThrow();
-        comment.setUserId(user.getId());
+        comment.setAuthor(user);
         service.addComment(comment);
         return "redirect:/forum/post/" + comment.getPostId();
     }
@@ -93,7 +72,7 @@ public class ForumController {
         User user = userRepository.findByEmail(auth.getName()).orElseThrow();
         ForumPost post = service.getPostById(id);
         
-        if (post.getUserId().equals(user.getId()) || user.getRole() == Role.ADMIN) {
+        if (post.getAuthor().getId().equals(user.getId()) || user.getRole() == Role.ADMIN) {
             service.deletePost(id);
         }
         return "redirect:/forum";

@@ -30,6 +30,16 @@ public class ForumService {
         return postRepo.findAll();
     }
 
+    public List<ForumPost> filterPosts(String category, String search) {
+        if (search != null && !search.isEmpty()) {
+            return postRepo.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(search, search);
+        } else if (category != null && !category.isEmpty()) {
+            return postRepo.findByCategory(category);
+        } else {
+            return postRepo.findAll();
+        }
+    }
+
     public ForumPost getPostById(Long id) {
         return postRepo.findById(id).orElse(null);
     }
@@ -46,7 +56,7 @@ public class ForumService {
     }
 
     public List<ForumPost> getPostsByUserId(Long userId) {
-        return postRepo.findByUserId(userId);
+        return postRepo.findByAuthorId(userId);
     }
 
     public long countTodayPosts() {

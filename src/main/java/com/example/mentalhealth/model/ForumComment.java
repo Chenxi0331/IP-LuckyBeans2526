@@ -11,20 +11,16 @@ public class ForumComment {
     private Long id;
 
     private Long postId;
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User author;
 
-    @Column(columnDefinition = "TEXT")
-    private String content;
-
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    // Manual Getters and Setters
-    public Long getId() {
-        return id;
+    public User getAuthor() {
+        return author;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setAuthor(User author) {
+        this.author = author;
     }
 
     public Long getPostId() {
@@ -35,13 +31,10 @@ public class ForumComment {
         this.postId = postId;
     }
 
-    public Long getUserId() {
-        return userId;
-    }
+    @Column(columnDefinition = "TEXT")
+    private String content;
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     public String getContent() {
         return content;
