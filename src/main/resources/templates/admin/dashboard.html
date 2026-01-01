@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Innerly | Admin Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <div id="page-content-wrapper" class="main-content" style="margin-left: 260px;">
+        <div class="container-fluid p-4">
+            <h2 class="mb-4 fw-bold">Admin Dashboard</h2>
+
+            <div class="row g-4">
+                <!-- Card 1: Users -->
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4 d-flex align-items-center gap-3">
+                            <span class="material-icons text-primary" style="font-size: 48px;">people</span>
+                            <div>
+                                <h5 class="card-title fw-bold mb-1">Manage Users</h5>
+                                <p class="text-muted mb-0">View and manage all registered users.</p>
+                                <a th:href="@{/admin/users}" class="stretched-link"></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Sessions -->
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4 d-flex align-items-center gap-3">
+                            <span class="material-icons text-success" style="font-size: 48px;">event_note</span>
+                            <div>
+                                <h5 class="card-title fw-bold mb-1">All Sessions</h5>
+                                <p class="text-muted mb-0">Monitor all counselling sessions.</p>
+                                <a th:href="@{/admin/sessions}" class="stretched-link"></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Reports -->
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4 d-flex align-items-center gap-3">
+                            <span class="material-icons text-warning" style="font-size: 48px;">analytics</span>
+                            <div>
+                                <h5 class="card-title fw-bold mb-1">Reports</h5>
+                                <p class="text-muted mb-0">View system analytics and reports.</p>
+                                <a th:href="@{/admin/reports}" class="stretched-link"></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

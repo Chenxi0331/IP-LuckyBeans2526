@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,94 +8,14 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
 </head>
+
 <body>
-    <!-- Top Navigation -->
-    <nav class="top-nav">
-        <div class="brand">
-            <div class="logo">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
-                </svg>
-            </div>
-            <span class="platform-name">Innerly Mental Health Platform</span>
-        </div>
-        <div class="student-badge">
-            <span>👨‍🎓</span>
-            <span>Student</span>
-        </div>
-    </nav>
-
-   <!-- Sidebar -->
-<aside class="sidebar">
-    <div class="sidebar-header">
-        <div class="sidebar-brand">
-            <div class="sidebar-logo">I</div>
-            <div class="sidebar-brand-info">
-                <h3>Innerly</h3>
-                <p>Mental Health Platform</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="sidebar-section">
-        <div class="sidebar-title">Navigation</div>
-        <a href="/dashboard" class="nav-item">
-            <span class="icon">🏠</span>
-            <span>Dashboard</span>
-        </a>
-        <a href="/peer-forum" class="nav-item">
-            <span class="icon">👥</span>
-            <span>Peer Forum</span>
-        </a>
-        <a href="/schedule-counseling" class="nav-item">
-            <span class="icon">📅</span>
-            <span>Schedule Counseling</span>
-        </a>
-        <a href="/approve-sessions" class="nav-item">
-            <span class="icon">✅</span>
-            <span>Approve Sessions</span>
-        </a>
-        <a href="/mood-tracker" class="nav-item">
-            <span class="icon">📈</span>
-            <span>Mood Tracker</span>
-        </a>
-        <a href="/dashboard" class="nav-item">
-            <span class="icon">📊</span>
-            <span>Dashboard</span>
-        </a>
-        <a href="/educational-resources" class="nav-item">
-            <span class="icon">📚</span>
-            <span>Educational Resources</span>
-        </a>
-    </div>
-
-    <div class="quick-info">
-        <div class="sidebar-title">Quick Info</div>
-        <div class="progress-widget">
-            <div class="title">
-                <span>🎯</span>
-                <span>Your Progress</span>
-            </div>
-            <div class="subtitle">Keep up the great work!</div>
-        </div>
-        <div class="user-widget">
-            <div class="user-avatar">S</div>
-            <div class="user-info">
-                <div class="label">student</div>
-                <div class="name">Student</div>
-            </div>
-        </div>
-        <a href="/logout" class="logout-btn">
-            <span>↪</span>
-            <span>Logout</span>
-        </a>
-    </div>
-</aside>
+    <div th:replace="fragments/navbar :: navbar"></div>
 
 
 
     <!-- Main Content -->
-    <main class="main-content">
+    <main id="page-content-wrapper" class="main-content" style="margin-left: 260px; padding: 2rem;">
         <div class="page-header">
             <h1>Student Progress</h1>
             <p th:text="'Detailed progress for ' + ${student.username}">Student progress tracking</p>
@@ -103,7 +24,8 @@
         <div class="row justify-content-center">
             <div class="col-md-10">
                 <div class="card shadow-sm border-0" style="border-radius: 12px;">
-                    <div class="card-header text-white py-3" style="background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); border-radius: 12px 12px 0 0;">
+                    <div class="card-header text-white py-3"
+                        style="background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); border-radius: 12px 12px 0 0;">
                         <h2 th:text="'Progress for ' + ${student.username}" class="mb-0 fs-4">Progress for Student</h2>
                     </div>
                     <div class="card-body p-0">
@@ -133,7 +55,8 @@
                         </div>
                     </div>
                     <div class="card-footer bg-light text-center py-3">
-                        <a href="/dashboard" class="btn btn-sm" style="background: #6b7280; color: white; padding: 8px 24px; border-radius: 8px; text-decoration: none;">
+                        <a href="/dashboard" class="btn btn-sm"
+                            style="background: #6b7280; color: white; padding: 8px 24px; border-radius: 8px; text-decoration: none;">
                             Back to Dashboard
                         </a>
                     </div>
@@ -144,4 +67,5 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

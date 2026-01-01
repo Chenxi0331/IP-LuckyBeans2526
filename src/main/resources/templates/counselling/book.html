@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Book Session</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
+
 <body>
     <div th:replace="fragments/navbar :: navbar"></div>
 
-    <div class="container py-5">
+    <div id="page-content-wrapper" class="container py-5" style="margin-left: 260px;">
         <div class="card mx-auto" style="max-width:720px;">
             <div class="card-body">
                 <h4 class="card-title">Book Counselling Session</h4>
@@ -18,9 +20,7 @@
                         <label class="form-label">Select Preferred Counsellor</label>
                         <select class="form-select" th:field="*{counsellorId}" required>
                             <option value="">-- Choose a Counsellor --</option>
-                            <option th:each="c : ${counselors}" 
-                                    th:value="${c.id}" 
-                                    th:text="${c.fullName}"></option>
+                            <option th:each="c : ${counselors}" th:value="${c.id}" th:text="${c.fullName}"></option>
                         </select>
                     </div>
 
@@ -40,4 +40,5 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

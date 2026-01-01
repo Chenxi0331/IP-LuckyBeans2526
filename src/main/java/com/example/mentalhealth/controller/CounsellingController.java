@@ -109,7 +109,13 @@ public class CounsellingController {
     public String mySessions(Model model, Authentication authentication) {
         String email = authentication.getName();
         User user = userRepository.findByEmail(email).orElseThrow();
-        model.addAttribute("sessions", service.getSessionsForStudent(user.getId()));
+        
+        if (user.getRole() == Role.COUNSELOR) {
+            model.addAttribute("sessions", service.getSessionsForCounsellor(user.getId()));
+        } else {
+            model.addAttribute("sessions", service.getSessionsForStudent(user.getId()));
+        }
+        
         return "counselling/my-sessions";
     }
 }
