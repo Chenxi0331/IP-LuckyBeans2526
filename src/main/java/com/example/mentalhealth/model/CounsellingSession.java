@@ -32,6 +32,16 @@ public class CounsellingSession {
     private String studentNotes; // Notes from student during booking
 
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    private String meetingLink;
+
+    public String getMeetingLink() {
+        return meetingLink;
+    }
+
+    public void setMeetingLink(String meetingLink) {
+        this.meetingLink = meetingLink;
+    }
     public Long getId() {
         return id;
     }

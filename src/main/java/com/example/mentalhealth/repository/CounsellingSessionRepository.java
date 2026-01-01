@@ -12,4 +12,10 @@ public interface CounsellingSessionRepository extends JpaRepository<CounsellingS
 
     List<CounsellingSession> findByCounsellor(User counsellor);
     List<CounsellingSession> findByStatus(String status);
+    List<CounsellingSession> findByCounsellorAndStatus(User counsellor, String status);
+
+    long countByCreatedAtBetween(java.time.LocalDateTime start, java.time.LocalDateTime end);
+
+    @org.springframework.data.jpa.repository.Query("SELECT s.counsellor FROM CounsellingSession s GROUP BY s.counsellor ORDER BY COUNT(s) DESC LIMIT 1")
+    User findMostRequestedCounselor();
 }

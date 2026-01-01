@@ -57,24 +57,45 @@ public class CounsellingController {
 
     @PreAuthorize("hasRole('COUNSELOR')")
     @GetMapping("/approval")
-    public String listApproval(Model model) {
-        List<CounsellingSession> pendingSessions = service.findPending();
+    public String listApproval(Model model, Authentication authentication) {
+        String email = authentication.getName();
+        User currentUser = userRepository.findByEmail(email).orElseThrow();
+        
+        // Personalization: Only show sessions assigned to this counselor
+        List<CounsellingSession> pendingSessions = service.findPendingForCounselor(currentUser);
         model.addAttribute("sessions", pendingSessions);
-        model.addAttribute("approvedCount", service.countMonthlyStatus("APPROVED"));
-        model.addAttribute("rejectedCount", service.countMonthlyStatus("REJECTED"));
+        
+        // Reporting: Add analytics data
+        model.addAttribute("analytics", service.getAnalytics());
+        
         return "counselling/approval";
     }
 
-    @GetMapping("/approve/{id}")
-    public String approve(@PathVariable Long id) {
-        service.updateStatus(id, "APPROVED");
+    @PreAuthorize("hasRole('COUNSELOR')")
+    @PostMapping("/approve")
+    public String approve(@RequestParam Long id, @RequestParam(required = false) String meetingLink) {
+        service.approveSession(id, meetingLink);
         return "redirect:/counselling/approval";
     }
 
+    @PreAuthorize("hasRole('COUNSELOR')")
     @GetMapping("/reject/{id}")
     public String reject(@PathVariable Long id) {
         service.updateStatus(id, "REJECTED");
         return "redirect:/counselling/approval";
+    }
+
+    @GetMapping("/cancel/{id}")
+    public String cancelSession(@PathVariable Long id, Authentication authentication) {
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email).orElseThrow();
+        try {
+            service.deleteSession(id, user);
+        } catch (Exception e) {
+            System.err.println("Error cancelling session: " + e.getMessage());
+            // In a real app, add a flash message here
+        }
+        return "redirect:/counselling/my-sessions";
     }
 
     @PreAuthorize("hasRole('STUDENT')")
@@ -88,6 +109,7 @@ public class CounsellingController {
         return "counselling/book";
     }
 
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/book")
     public String submitBooking(@ModelAttribute("counsellingSession") CounsellingSession session, 
                                 org.springframework.validation.BindingResult bindingResult,
