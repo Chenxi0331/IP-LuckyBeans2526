@@ -26,55 +26,57 @@
 <body>
     <div th:replace="fragments/navbar :: navbar"></div>
 
-    <div id="page-content-wrapper" class="container py-5">
-        <div class="card mx-auto shadow-sm p-4" style="max-width: 780px;">
-            <h3 class="mb-4">Edit Post</h3>
+    <div id="page-content-wrapper">
+        <div class="container py-5" style="max-width: 900px;">
+            <div class="card mx-auto shadow-sm p-4" style="max-width: 780px;">
+                <h3 class="mb-4">Edit Post</h3>
 
-            <form th:action="@{/forum/update}" th:object="${post}" method="post">
-                <input type="hidden" th:field="*{id}" />
-                <input type="hidden" th:field="*{status}"
-                    th:if="${!#authorization.expression('hasAnyRole(''ADMIN'', ''COUNSELOR'')')}" />
+                <form th:action="@{/forum/update}" th:object="${post}" method="post">
+                    <input type="hidden" th:field="*{id}" />
+                    <input type="hidden" th:field="*{status}"
+                        th:if="${!#authorization.expression('hasAnyRole(''ADMIN'', ''COUNSELOR'')')}" />
 
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Title</label>
-                    <input class="form-control form-control-lg" th:field="*{title}" placeholder="Enter your post title"
-                        required>
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Title</label>
+                        <input class="form-control form-control-lg" th:field="*{title}"
+                            placeholder="Enter your post title" required>
+                    </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Category</label>
-                    <select class="form-select" th:field="*{category}">
-                        <option value="General">General</option>
-                        <option value="Anxiety">Anxiety</option>
-                        <option value="Depression">Depression</option>
-                        <option value="Stress">Stress</option>
-                        <option value="Success Story">Success Story</option>
-                        <option value="Community">Community</option>
-                    </select>
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Category</label>
+                        <select class="form-select" th:field="*{category}">
+                            <option value="General">General</option>
+                            <option value="Anxiety">Anxiety</option>
+                            <option value="Depression">Depression</option>
+                            <option value="Stress">Stress</option>
+                            <option value="Success Story">Success Story</option>
+                            <option value="Community">Community</option>
+                        </select>
+                    </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Content</label>
-                    <textarea class="form-control" th:field="*{content}" rows="8"
-                        placeholder="Write your post content..." required></textarea>
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Content</label>
+                        <textarea class="form-control" th:field="*{content}" rows="8"
+                            placeholder="Write your post content..." required></textarea>
+                    </div>
 
-                <!-- Admin/Counselor only: Status Field -->
-                <div class="mb-3" th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''COUNSELOR'')')}">
-                    <label class="form-label fw-semibold">Status (Admin/Counselor)</label>
-                    <select class="form-select" th:field="*{status}">
-                        <option value="ACTIVE">ACTIVE</option>
-                        <option value="ARCHIVED">ARCHIVED</option>
-                        <option value="FLAGGED">FLAGGED</option>
-                    </select>
-                </div>
+                    <!-- Admin/Counselor only: Status Field -->
+                    <div class="mb-3" th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''COUNSELOR'')')}">
+                        <label class="form-label fw-semibold">Status (Admin/Counselor)</label>
+                        <select class="form-select" th:field="*{status}">
+                            <option value="ACTIVE">ACTIVE</option>
+                            <option value="ARCHIVED">ARCHIVED</option>
+                            <option value="FLAGGED">FLAGGED</option>
+                        </select>
+                    </div>
 
-                <div class="d-flex gap-2 mt-3">
-                    <button class="btn btn-primary px-4">Save Changes</button>
-                    <a th:href="@{/forum}" class="btn btn-outline-secondary px-4">Cancel</a>
-                </div>
+                    <div class="d-flex gap-2 mt-3">
+                        <button class="btn btn-primary px-4">Save Changes</button>
+                        <a th:href="@{/forum}" class="btn btn-outline-secondary px-4">Cancel</a>
+                    </div>
 
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 
