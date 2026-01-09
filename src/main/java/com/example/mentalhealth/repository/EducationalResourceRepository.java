@@ -12,4 +12,11 @@ public interface EducationalResourceRepository extends JpaRepository<Educational
     // Searches for keyword in title OR description, ignoring case (A == a)
     List<EducationalResource> findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String title,
             String description);
+
+    List<EducationalResource> findByStatus(String status);
+
+    List<EducationalResource> findByCategoryAndStatus(String category, String status);
+
+    List<EducationalResource> findByStatusAndTitleContainingIgnoreCaseOrStatusAndDescriptionContainingIgnoreCase(
+            String status1, String title, String status2, String description);
 }

@@ -18,4 +18,10 @@ public interface AwarenessCampaignRepository extends JpaRepository<AwarenessCamp
 
     // 4. Find the most recent campaigns
     List<AwarenessCampaign> findTop3ByOrderByStartDateDesc();
+
+    List<AwarenessCampaign> findByStatus(String status);
+
+    List<AwarenessCampaign> findByCategoryAndStatus(String category, String status);
+
+    List<AwarenessCampaign> findByStatusAndTitleContainingIgnoreCase(String status, String title);
 }

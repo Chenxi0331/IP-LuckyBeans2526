@@ -17,61 +17,72 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private UserDetailsService userDetailsService;
-    
-    @Autowired
-    private AuthenticationSuccessHandler loginSuccessHandler;
+        @Autowired
+        private UserDetailsService userDetailsService;
 
-    @Autowired
-    private CustomLoginFailureHandler loginFailureHandler;
+        @Autowired
+        private AuthenticationSuccessHandler loginSuccessHandler;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        @Autowired
+        private CustomLoginFailureHandler loginFailureHandler;
 
-    @Bean
-    public AuthenticationManager authenticationManager(org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/",
-                    "/login",
-                    "/register",
-                    "/reset-password",      // Allow password reset
-                    "/generate-password",   // Allow password generation
-                    "/h2-console/**",
-                    "/css/**",
-                    "/js/**",
-                    "/images/**",
-                    "/resources/**"
-                ).permitAll()
-                .requestMatchers("/counselling/book", "/counselling/schedule").hasAuthority("ROLE_STUDENT")
-                .requestMatchers("/counselling/approval", "/counselling/approve/**").hasAuthority("ROLE_COUNSELOR")
-                .anyRequest().authenticated()
-            )
-            .formLogin(form -> form
-                .loginPage("/login")
-                .usernameParameter("email")
-                .passwordParameter("password")
-                .successHandler(loginSuccessHandler)
-                .failureHandler(loginFailureHandler)
-                .permitAll()
-            )
-            .logout(logout -> logout
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/login")
-                .permitAll()
-            )
-            .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
-            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
+        @Bean
+        public AuthenticationManager authenticationManager(
+                        org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration authenticationConfiguration)
+                        throws Exception {
+                return authenticationConfiguration.getAuthenticationManager();
+        }
 
-        return http.build();
-    }
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+                http
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers(
+                                                                "/",
+                                                                "/login",
+                                                                "/register",
+                                                                "/reset-password", // Allow password reset
+                                                                "/generate-password", // Allow password generation
+                                                                "/h2-console/**",
+                                                                "/css/**",
+                                                                "/js/**",
+                                                                "/images/**",
+                                                                "/resources/**")
+                                                .permitAll()
+                                                .requestMatchers("/counselling/book", "/counselling/schedule")
+                                                .hasAuthority("ROLE_STUDENT")
+                                                .requestMatchers("/counselling/approval", "/counselling/approve/**")
+                                                .hasAuthority("ROLE_COUNSELOR")
+                                                .requestMatchers("/awareness/library").authenticated()
+                                                .requestMatchers("/awareness/resource/view/**",
+                                                                "/awareness/campaign/view/**",
+                                                                "/awareness/campaigns/join/**")
+                                                .hasAnyAuthority("ROLE_STUDENT", "ROLE_COUNSELOR", "ROLE_ADMIN")
+                                                .requestMatchers("/awareness/manage", "/awareness/resource/**",
+                                                                "/awareness/campaign/**")
+                                                .hasAnyAuthority("ROLE_COUNSELOR", "ROLE_ADMIN")
+                                                .requestMatchers("/progress/search", "/progress/students/**")
+                                                .hasAuthority("ROLE_COUNSELOR")
+                                                .anyRequest().authenticated())
+                                .formLogin(form -> form
+                                                .loginPage("/login")
+                                                .usernameParameter("email")
+                                                .passwordParameter("password")
+                                                .successHandler(loginSuccessHandler)
+                                                .failureHandler(loginFailureHandler)
+                                                .permitAll())
+                                .logout(logout -> logout
+                                                .logoutUrl("/logout")
+                                                .logoutSuccessUrl("/login")
+                                                .permitAll())
+                                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+                                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
+
+                return http.build();
+        }
 }

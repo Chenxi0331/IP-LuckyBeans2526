@@ -38,6 +38,9 @@ public class User {
     @Column(name = "phone")
     private String phone;
 
+    @Column(name = "consent_mood_sharing")
+    private Boolean consentMoodSharing = false;
+
     // Constructors
     public User() {
     }
@@ -91,6 +94,10 @@ public class User {
         return id != null ? id.intValue() : null;
     }
 
+    public boolean isConsentMoodSharing() {
+        return consentMoodSharing != null && consentMoodSharing;
+    }
+
     // Setters
     public void setId(Long id) {
         this.id = id;
@@ -130,5 +137,9 @@ public class User {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public void setConsentMoodSharing(Boolean consentMoodSharing) {
+        this.consentMoodSharing = consentMoodSharing;
     }
 }

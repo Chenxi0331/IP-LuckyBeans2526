@@ -7,7 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class MoodEntryService {
@@ -24,5 +27,14 @@ public class MoodEntryService {
 
     public MoodEntry saveEntry(MoodEntry entry) {
         return moodEntryRepository.save(entry);
+    }
+
+    public Map<String, Long> getMoodSummary(User user) {
+        List<MoodEntry> entries = getEntriesForUser(user);
+        if (entries == null)
+            return Collections.emptyMap();
+        return entries.stream()
+                .filter(e -> e.getMood() != null)
+                .collect(Collectors.groupingBy(MoodEntry::getMood, Collectors.counting()));
     }
 }

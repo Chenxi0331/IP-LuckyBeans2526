@@ -12,6 +12,7 @@ public class EducationalResource {
     private String url;
     private String type;
     private String category;
+    private String status = "PENDING"; // Default status
 
     // Getters and setters
     public Long getId() {
@@ -60,5 +61,13 @@ public class EducationalResource {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

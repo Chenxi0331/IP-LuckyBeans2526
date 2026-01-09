@@ -129,10 +129,16 @@
                                     <div class="d-flex align-items-center mb-3">
                                         <span class="badge bg-info-subtle text-info me-2"
                                             th:text="${res.category}">Anxiety</span>
-                                        <span class="text-muted small">10 min read</span>
                                     </div>
-                                    <a th:href="${res.url}" target="_blank" class="btn btn-dark w-100 py-2">Read
-                                        More</a>
+                                    <div class="d-flex gap-2 mb-3">
+                                        <a th:href="${res.url}" target="_blank" class="btn btn-dark flex-grow-1 py-2">
+                                            Read More
+                                        </a>
+                                        <a th:href="@{/awareness/resource/view/{id}(id=${res.id})}"
+                                            class="btn btn-outline-secondary py-2">
+                                            Details
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -158,11 +164,25 @@
                                         <span th:text="${camp.startDate}">Date</span> - <span
                                             th:text="${camp.endDate}">Date</span>
                                     </p>
-                                    <div class="text-end">
-                                        <form th:action="@{/awareness/campaigns/join/{id}(id=${camp.id})}"
-                                            method="post">
+                                    <div class="text-end d-flex justify-content-end gap-2">
+                                        <a th:href="@{/awareness/campaign/view/{id}(id=${camp.id})}"
+                                            class="btn btn-outline-secondary py-2 px-4">
+                                            View Details
+                                        </a>
+
+                                        <!-- Join Button (if not joined) -->
+                                        <form
+                                            th:if="${joinedCampaignIds == null || !joinedCampaignIds.contains(camp.id)}"
+                                            th:action="@{/awareness/campaigns/join/{id}(id=${camp.id})}" method="post">
                                             <button type="submit" class="btn btn-join py-2 px-4">Join Campaign</button>
                                         </form>
+
+                                        <!-- Joined Button (if joined) -->
+                                        <button
+                                            th:if="${joinedCampaignIds != null && joinedCampaignIds.contains(camp.id)}"
+                                            type="button" class="btn btn-success text-white py-2 px-4" disabled>
+                                            <i class="fas fa-check me-2"></i>Joined
+                                        </button>
                                     </div>
                                 </div>
                             </div>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <title>Innerly | Campaign Details</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .card {
+            border-radius: 1.25rem;
+            border: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .detail-card-header {
+            background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+            color: white;
+            border-radius: 1.25rem 1.25rem 0 0;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .info-label {
+            font-weight: 700;
+            color: #64748b;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-label i {
+            margin-right: 0.5rem;
+            color: #6366f1;
+        }
+
+        .info-value {
+            color: #1e293b;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .location-box {
+            background-color: #f1f5f9;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        #page-content-wrapper {
+            margin-left: 260px !important;
+        }
+
+        .status-pill {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <div id="page-content-wrapper" class="py-5">
+        <div class="container" style="max-width: 900px;">
+            <div class="mb-4 d-flex justify-content-between align-items-center">
+                <a th:href="${#authorization.expression('hasAnyAuthority(''ROLE_COUNSELOR'', ''ROLE_ADMIN'')')} ? '/awareness/manage' : '/awareness/library'"
+                    class="text-decoration-none text-muted fw-500">
+                    <i class="fas fa-arrow-left me-2"></i> Back to List
+                </a>
+            </div>
+
+            <div class="card overflow-hidden">
+                <!-- Header -->
+                <div class="detail-card-header position-relative">
+                    <span
+                        th:class="'badge status-pill rounded-pill px-3 py-2 ' + (${campaign.status} == 'APPROVED' ? 'bg-success' : (${campaign.status} == 'REJECTED' ? 'bg-danger' : 'bg-warning text-dark'))"
+                        th:text="${campaign.status}">PENDING</span>
+
+                    <span class="badge bg-white/20 text-white rounded-pill px-3 py-1 mb-3"
+                        th:text="${campaign.category}">Category</span>
+                    <h1 class="fw-bold mb-2" th:text="${campaign.title}">Campaign Title</h1>
+                    <p class="opacity-75 mb-0" th:text="${campaign.campaignType}">Campaign Type</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <div class="row">
+                        <!-- Primary Info -->
+                        <div class="col-lg-8 border-end-lg">
+                            <div class="info-label"><i class="fas fa-bullseye"></i>Objective</div>
+                            <div class="info-value"
+                                th:text="${campaign.objective != null && !campaign.objective.isEmpty() ? campaign.objective : 'No specific objective stated.'}">
+                                Objective text goes here...
+                            </div>
+
+                            <div class="info-label"><i class="fas fa-align-left"></i>Description</div>
+                            <div class="info-value" th:text="${campaign.description}">
+                                Description text goes here...
+                            </div>
+
+                            <div class="info-label"><i class="fas fa-info-circle"></i>How to Participate</div>
+                            <div class="info-value"
+                                th:text="${campaign.registrationInfo != null && !campaign.registrationInfo.isEmpty() ? campaign.registrationInfo : 'Registration info not available.'}">
+                                Registration text...
+                            </div>
+                        </div>
+
+                        <!-- Sidebar Info -->
+                        <div class="col-lg-4 ps-lg-4 mt-4 mt-lg-0">
+                            <div class="info-label"><i class="fas fa-calendar-alt"></i>Date & Time</div>
+                            <div class="info-value mb-1 fw-bold">
+                                <span th:text="${campaign.startDate}">Start</span> - <span
+                                    th:text="${campaign.endDate}">End</span>
+                            </div>
+                            <div class="info-value text-muted small" th:text="${campaign.time}">2:00 PM - 4:00 PM</div>
+
+                            <div class="location-box mt-3">
+                                <div class="info-label mb-2"><i class="fas fa-map-marker-alt"></i>Location / Platform
+                                </div>
+
+                                <!-- Physical -->
+                                <div th:if="${campaign.locationType == 'Physical'}">
+                                    <div class="fw-bold text-primary mb-1" th:text="${campaign.physicalBuilding}">
+                                        Building Name</div>
+                                    <div class="small" th:text="${campaign.physicalRoom}">Room 101</div>
+                                    <div class="text-muted extra-small" th:text="${campaign.physicalCampus}">Campus
+                                        Location</div>
+                                </div>
+
+                                <!-- Online -->
+                                <div th:if="${campaign.locationType == 'Online'}">
+                                    <div class="fw-bold text-primary mb-1" th:text="${campaign.onlinePlatform}">Platform
+                                        Name</div>
+                                    <a th:href="${campaign.onlineLink}" target="_blank"
+                                        class="btn btn-sm btn-outline-primary mt-2 w-100 rounded-pill">
+                                        Join Online <i class="fas fa-external-link-alt ms-1 small"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="info-label"><i class="fas fa-user-tie"></i>Organizer</div>
+                            <div class="info-value mb-1" th:text="${campaign.organizer}">Organizer Name</div>
+                            <div class="text-muted extra-small"><i class="fas fa-envelope me-1"></i><span
+                                    th:text="${campaign.contactInfo}">contact@email.com</span></div>
+                        </div>
+                    </div>
+
+                    <!-- ADMIN ACTIONS -->
+                    <div sec:authorize="hasAuthority('ROLE_ADMIN')" class="mt-5 pt-4 border-top">
+                        <h5 class="fw-bold mb-4">Content Moderation</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            <form th:if="${campaign.status != 'APPROVED'}"
+                                th:action="@{/awareness/campaign/approve/{id}(id=${campaign.id})}" method="post">
+                                <button type="submit" class="btn btn-success px-4 rounded-pill">
+                                    <i class="fas fa-check me-2"></i> Approve
+                                </button>
+                            </form>
+                            <form th:if="${campaign.status != 'REJECTED'}"
+                                th:action="@{/awareness/campaign/reject/{id}(id=${campaign.id})}" method="post">
+                                <button type="submit" class="btn btn-warning px-4 rounded-pill">
+                                    <i class="fas fa-times me-2"></i> Reject
+                                </button>
+                            </form>
+                            <form th:action="@{/awareness/campaign/delete/{id}(id=${campaign.id})}" method="post"
+                                onsubmit="return confirm('Delete this campaign permanently?');">
+                                <button type="submit" class="btn btn-outline-danger px-4 rounded-pill">
+                                    <i class="fas fa-trash me-2"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- STUDENT ACTION -->
+                    <div sec:authorize="hasAuthority('ROLE_STUDENT')" class="mt-5 pt-4 border-top text-center">
+                        <form th:if="${!isJoined}" th:action="@{/awareness/campaigns/join/{id}(id=${campaign.id})}"
+                            method="post">
+                            <button type="submit" class="btn btn-primary px-5 py-2 rounded-pill fw-bold shadow">
+                                Register Interest / Join Campaign
+                            </button>
+                        </form>
+                        <button th:if="${isJoined}" type="button"
+                            class="btn btn-success px-5 py-2 rounded-pill fw-bold shadow" disabled>
+                            <i class="fas fa-check me-2"></i> Joined
+                        </button>
+                    </div>
+
+                    <!-- COUNSELOR: PARTICIPANT LIST -->
+                    <div sec:authorize="hasAuthority('ROLE_COUNSELOR')" class="mt-5 pt-4 border-top">
+                        <h5 class="fw-bold mb-4"><i class="fas fa-users me-2 text-primary"></i>Registered Participants
+                            <span class="badge bg-secondary rounded-pill ms-2"
+                                th:text="${campaign.participants.size()}">0</span></h5>
+
+                        <div th:if="${campaign.participants.empty}" class="alert alert-light text-center">
+                            No students have registered for this campaign yet.
+                        </div>
+
+                        <div th:if="${!campaign.participants.empty}" class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="student : ${campaign.participants}">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-circle bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center"
+                                                    style="width: 32px; height: 32px; font-size: 0.8rem;"
+                                                    th:text="${student.initial != null ? student.initial : 'U'}">U</div>
+                                                <span class="fw-bold" th:text="${student.fullName}">Student Name</span>
+                                            </div>
+                                        </td>
+                                        <td th:text="${student.email}">student@email.com</td>
+                                        <td><span class="badge bg-success bg-opacity-10 text-success">Registered</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Success Toast -->
+                    <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3"
+                        style="z-index: 10000; margin-top: 60px;">
+                        <div id="liveToast" class="toast align-items-center text-white bg-success border-0" role="alert"
+                            aria-live="assertive" aria-atomic="true" th:if="${param.success == 'joined'}">
+                            <div class="d-flex">
+                                <div class="toast-body fs-6">
+                                    <i class="fas fa-check-circle me-2"></i> You've successfully joined this campaign!
+                                </div>
+                                <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                                    data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', (event) => {
+                            const toastElList = [].slice.call(document.querySelectorAll('.toast'))
+                            const toastList = toastElList.map(function (toastEl) {
+                                return new bootstrap.Toast(toastEl, { delay: 3000 })
+                            })
+                            toastList.forEach(toast => toast.show())
+                        });
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

@@ -1,13 +1,77 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
-    <title>Innerly | Manage Resources</title>
+    <title>Innerly | Manage Content</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <style>
         body {
             background-color: #f8f9fa;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .card {
+            border-radius: 1rem;
+            overflow: hidden;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .table thead th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            padding: 1.25rem 1rem;
+            background-color: #fdfdfd;
+        }
+
+        .table tbody td {
+            padding: 1.25rem 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.6rem;
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            color: #64748b;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+            margin-bottom: -2px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #6366f1;
+            background: none;
+            border-bottom: 2px solid #6366f1;
+        }
+
+        .nav-tabs .nav-link:hover:not(.active) {
+            color: #334155;
+            background: none;
+            border-bottom: 2px solid #cbd5e1;
         }
     </style>
 </head>
@@ -15,50 +79,209 @@
 <body>
     <div th:replace="fragments/navbar :: navbar"></div>
 
-    <div id="page-content-wrapper" class="container-fluid p-4" style="margin-left: 260px;">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Manage Educational Resources</h2>
-            <a href="/awareness/resource/new" class="btn btn-primary"><i class="fas fa-plus me-2"></i> Add New
-                Resource</a>
-        </div>
+    <div id="page-content-wrapper" class="py-5" style="margin-left: 260px;">
+        <div class="container" style="max-width: 1100px;">
+            <div class="mb-5">
+                <h2 class="fw-bold">Management Dashboard</h2>
+                <p class="text-muted">Manage educational materials and awareness campaigns in one place.</p>
+            </div>
 
-        <div th:if="${param.success}" class="alert alert-success">Action completed successfully!</div>
+            <div th:if="${param.success}" class="alert alert-success alert-dismissible fade show rounded-3 mb-4"
+                role="alert">
+                <i class="fas fa-check-circle me-2"></i> Action completed successfully!
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
 
-        <div class="card shadow-sm border-0">
-            <div class="card-body">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Title</th>
-                            <th>Category</th>
-                            <th>Type</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="res : ${resources}">
-                            <td>
-                                <div class="fw-bold" th:text="${res.title}">Title</div>
-                                <small class="text-muted" th:text="${res.description}">Desc</small>
-                            </td>
-                            <td><span class="badge bg-info-subtle text-info" th:text="${res.category}">Category</span>
-                            </td>
-                            <td th:text="${res.type}">Article</td>
-                            <td>
-                                <a th:href="@{/awareness/resource/edit/{id}(id=${res.id})}"
-                                    class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
-                                <form th:action="@{/awareness/resource/delete/{id}(id=${res.id})}" method="post"
-                                    class="d-inline" onsubmit="return confirm('Are you sure?');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i
-                                            class="fas fa-trash"></i></button>
-                                </form>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <!-- TAB NAVIGATION -->
+            <ul class="nav nav-tabs mb-4" id="managementTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="resources-tab" data-bs-toggle="tab"
+                        data-bs-target="#resources-pane" type="button" role="tab">
+                        <i class="fas fa-book-open me-2"></i> Educational Resources
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="campaigns-tab" data-bs-toggle="tab" data-bs-target="#campaigns-pane"
+                        type="button" role="tab">
+                        <i class="fas fa-bullhorn me-2"></i> Awareness Campaigns
+                    </button>
+                </li>
+            </ul>
+
+            <!-- TAB CONTENT -->
+            <div class="tab-content" id="managementTabsContent">
+
+                <!-- RESOURCES PANE -->
+                <div class="tab-pane fade show active" id="resources-pane" role="tabpanel"
+                    aria-labelledby="resources-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="mb-0 fw-bold">Manage Resources</h5>
+                        <div sec:authorize="hasAuthority('ROLE_COUNSELOR')">
+                            <a href="/awareness/resource/new" class="btn btn-primary rounded-pill px-4">
+                                <i class="fas fa-plus me-2"></i> New Resource
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="card mb-5">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Category</th>
+                                            <th>Status</th>
+                                            <th class="text-end">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="res : ${resources}">
+                                            <td>
+                                                <div class="fw-bold" th:text="${res.title}">Title</div>
+                                                <small class="text-muted" th:text="${res.description}">Desc</small>
+                                            </td>
+                                            <td><span
+                                                    class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill"
+                                                    th:text="${res.category}">Category</span></td>
+                                            <td>
+                                                <span
+                                                    th:class="'badge rounded-pill px-3 py-2 ' + (${res.status} == 'APPROVED' ? 'bg-success-subtle text-success' : (${res.status} == 'REJECTED' ? 'bg-danger-subtle text-danger' : 'bg-warning-subtle text-dark'))"
+                                                    th:text="${res.status}">PENDING</span>
+                                            </td>
+                                            <td class="text-end">
+                                                <div sec:authorize="hasAnyAuthority('ROLE_COUNSELOR', 'ROLE_ADMIN')"
+                                                    class="d-inline">
+                                                    <a th:href="@{/awareness/resource/view/{id}(id=${res.id})}"
+                                                        class="btn btn-sm btn-outline-info rounded-circle"
+                                                        title="View Details"><i class="fas fa-eye"></i></a>
+                                                </div>
+                                                <div sec:authorize="hasAuthority('ROLE_COUNSELOR')"
+                                                    class="d-inline ms-1">
+                                                    <a th:href="@{/awareness/resource/edit/{id}(id=${res.id})}"
+                                                        class="btn btn-sm btn-outline-primary rounded-circle"
+                                                        title="Edit"><i class="fas fa-edit"></i></a>
+                                                </div>
+                                                <div sec:authorize="hasAuthority('ROLE_ADMIN')" class="d-inline ms-1">
+                                                    <form th:if="${res.status != 'APPROVED'}"
+                                                        th:action="@{/awareness/resource/approve/{id}(id=${res.id})}"
+                                                        method="post" class="d-inline">
+                                                        <button type="submit"
+                                                            class="btn btn-sm btn-success rounded-circle"
+                                                            title="Approve"><i class="fas fa-check"></i></button>
+                                                    </form>
+                                                    <form th:if="${res.status != 'REJECTED'}"
+                                                        th:action="@{/awareness/resource/reject/{id}(id=${res.id})}"
+                                                        method="post" class="d-inline">
+                                                        <button type="submit"
+                                                            class="btn btn-sm btn-warning rounded-circle"
+                                                            title="Reject"><i class="fas fa-times"></i></button>
+                                                    </form>
+                                                    <form th:action="@{/awareness/resource/delete/{id}(id=${res.id})}"
+                                                        method="post" class="d-inline"
+                                                        onsubmit="return confirm('Archive this resource?');">
+                                                        <button type="submit"
+                                                            class="btn btn-sm btn-danger rounded-circle"
+                                                            title="Delete"><i class="fas fa-trash"></i></button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CAMPAIGNS PANE -->
+                <div class="tab-pane fade" id="campaigns-pane" role="tabpanel" aria-labelledby="campaigns-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="mb-0 fw-bold">Manage Campaigns</h5>
+                        <div sec:authorize="hasAuthority('ROLE_COUNSELOR')">
+                            <a href="/awareness/campaign/new" class="btn btn-success rounded-pill px-4">
+                                <i class="fas fa-bullhorn me-2"></i> New Campaign
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="card mb-5">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Campaign Title</th>
+                                            <th>Dates</th>
+                                            <th>Status</th>
+                                            <th class="text-end">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="camp : ${campaigns}">
+                                            <td>
+                                                <div class="fw-bold" th:text="${camp.title}">Title</div>
+                                                <small class="text-muted" th:text="${camp.category}">Category</small>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted"
+                                                    th:text="${camp.startDate} + ' to ' + ${camp.endDate}">2024-01-01 to
+                                                    2024-02-01</small>
+                                            </td>
+                                            <td>
+                                                <span
+                                                    th:class="'badge rounded-pill px-3 py-2 ' + (${camp.status} == 'APPROVED' ? 'bg-success-subtle text-success' : (${camp.status} == 'REJECTED' ? 'bg-danger-subtle text-danger' : 'bg-warning-subtle text-dark'))"
+                                                    th:text="${camp.status}">PENDING</span>
+                                            </td>
+                                            <td class="text-end">
+                                                <div sec:authorize="hasAnyAuthority('ROLE_COUNSELOR', 'ROLE_ADMIN')"
+                                                    class="d-inline">
+                                                    <a th:href="@{/awareness/campaign/view/{id}(id=${camp.id})}"
+                                                        class="btn btn-sm btn-outline-info rounded-circle"
+                                                        title="View Details"><i class="fas fa-eye"></i></a>
+                                                </div>
+                                                <div sec:authorize="hasAuthority('ROLE_COUNSELOR')"
+                                                    class="d-inline ms-1">
+                                                    <a th:href="@{/awareness/campaign/edit/{id}(id=${camp.id})}"
+                                                        class="btn btn-sm btn-outline-primary rounded-circle"
+                                                        title="Edit"><i class="fas fa-edit"></i></a>
+                                                </div>
+                                                <div sec:authorize="hasAuthority('ROLE_ADMIN')" class="d-inline ms-1">
+                                                    <form th:if="${camp.status != 'APPROVED'}"
+                                                        th:action="@{/awareness/campaign/approve/{id}(id=${camp.id})}"
+                                                        method="post" class="d-inline">
+                                                        <button type="submit"
+                                                            class="btn btn-sm btn-success rounded-circle"
+                                                            title="Approve"><i class="fas fa-check"></i></button>
+                                                    </form>
+                                                    <form th:if="${camp.status != 'REJECTED'}"
+                                                        th:action="@{/awareness/campaign/reject/{id}(id=${camp.id})}"
+                                                        method="post" class="d-inline">
+                                                        <button type="submit"
+                                                            class="btn btn-sm btn-warning rounded-circle"
+                                                            title="Reject"><i class="fas fa-times"></i></button>
+                                                    </form>
+                                                    <form th:action="@{/awareness/campaign/delete/{id}(id=${camp.id})}"
+                                                        method="post" class="d-inline"
+                                                        onsubmit="return confirm('Archive this campaign?');">
+                                                        <button type="submit"
+                                                            class="btn btn-sm btn-danger rounded-circle"
+                                                            title="Delete"><i class="fas fa-trash"></i></button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

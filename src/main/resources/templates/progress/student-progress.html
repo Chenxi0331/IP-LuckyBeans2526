@@ -1,71 +1,462 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Progress - Innerly</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>Innerly | Student Moodtrack</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --innerly-bg: #f8fafc;
+            --innerly-primary: #6366f1;
+            --innerly-success: #10b981;
+            --innerly-warning: #f59e0b;
+            --innerly-danger: #ef4444;
+            --innerly-text-main: #1e293b;
+            --innerly-text-muted: #64748b;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        body {
+            background-color: var(--innerly-bg);
+            font-family: 'Outfit', sans-serif;
+            color: var(--innerly-text-main);
+        }
+
+        .dashboard-container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .glass-card {
+            background: white;
+            border-radius: 1.25rem;
+            border: 1px solid rgba(226, 232, 240, 0.7);
+            box-shadow: var(--card-shadow);
+            padding: 1.5rem;
+            height: 100%;
+            transition: transform 0.2s ease;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--innerly-text-muted);
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 0.75rem;
+            color: var(--innerly-primary);
+        }
+
+        .consent-badge {
+            background-color: #ecfdf5;
+            color: #065f46;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.4rem 0.8rem;
+            border-radius: 2rem;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .consent-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background-color: #10b981;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .filter-btn {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--innerly-text-muted);
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn.active {
+            background-color: var(--innerly-primary);
+            color: white;
+            border-color: var(--innerly-primary);
+        }
+
+        .insight-pill {
+            background-color: #f1f5f9;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid var(--innerly-primary);
+        }
+
+        .action-card {
+            background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+            color: white;
+            border-radius: 1.25rem;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .btn-innerly-outline {
+            border: 2px solid white;
+            color: white;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-innerly-outline:hover {
+            background: white;
+            color: var(--innerly-primary);
+        }
+
+        #page-content-wrapper {
+            transition: all 0.3s ease;
+        }
+
+        .note-timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .note-timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.75rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e2e8f0;
+        }
+
+        .note-item {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .note-item::before {
+            content: '';
+            position: absolute;
+            left: -1.65rem;
+            top: 0.25rem;
+            width: 12px;
+            height: 12px;
+            background: var(--innerly-primary);
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .note-content {
+            background: white;
+            border: 1px solid #f1f5f9;
+            padding: 1.25rem;
+            border-radius: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .alert-floating {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            min-width: 300px;
+        }
+    </style>
 </head>
 
 <body>
     <div th:replace="fragments/navbar :: navbar"></div>
 
+    <main id="page-content-wrapper" class="py-5" style="margin-left: 260px;">
+        <div class="dashboard-container px-4">
 
-
-    <!-- Main Content -->
-    <main id="page-content-wrapper" class="main-content" style="margin-left: 260px; padding: 2rem;">
-        <div class="page-header">
-            <h1>Student Progress</h1>
-            <p th:text="'Detailed progress for ' + ${student.username}">Student progress tracking</p>
-        </div>
-
-        <div class="row justify-content-center">
-            <div class="col-md-10">
-                <div class="card shadow-sm border-0" style="border-radius: 12px;">
-                    <div class="card-header text-white py-3"
-                        style="background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); border-radius: 12px 12px 0 0;">
-                        <h2 th:text="'Progress for ' + ${student.username}" class="mb-0 fs-4">Progress for Student</h2>
+            <!-- 1. HEADER SECTION -->
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <div>
+                    <a href="/progress/search" class="text-decoration-none small text-muted mb-2 d-inline-block">
+                        <i class="bi bi-chevron-left me-1"></i> Back to Student List
+                    </a>
+                    <h1 class="fw-bold h2 mb-1">Student Moodtrack</h1>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="text-muted"><i class="bi bi-person me-1"></i>
+                            <span th:text="${student.username}">Student Name</span>
+                        </span>
+                        <span th:if="${!noConsent}" class="consent-badge">Data shared by student</span>
                     </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th scope="col" style="width: 25%;">Date</th>
-                                        <th scope="col" style="width: 25%;">Mood</th>
-                                        <th scope="col">Note</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="entry : ${entries}">
-                                        <td th:text="${entry.date}" class="fw-medium"></td>
-                                        <td th:text="${entry.mood}"></td>
-                                        <td th:text="${entry.note}" class="text-muted"></td>
-                                    </tr>
-                                    <tr th:if="${#lists.isEmpty(entries)}">
-                                        <td colspan="3" class="text-center text-muted py-5">
-                                            <div class="mb-3" style="font-size: 48px; opacity: 0.5;">📊</div>
-                                            <p class="mb-0">No progress entries yet</p>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                </div>
+                <!-- 6. TIME RANGE FILTER -->
+                <div class="d-flex gap-2">
+                    <button class="filter-btn">7 Days</button>
+                    <button class="filter-btn active">14 Days</button>
+                    <button class="filter-btn">30 Days</button>
+                </div>
+            </div>
+
+            <!-- NO CONSENT STATE -->
+            <div th:if="${noConsent}" class="row justify-content-center mt-5">
+                <div class="col-md-8 text-center py-5 glass-card">
+                    <div class="mb-4 text-warning" style="font-size: 3rem;"><i class="bi bi-shield-lock"></i></div>
+                    <h3 class="fw-bold">Privacy Restricted</h3>
+                    <p class="text-muted mb-4">The student has not consented to share their mood history.<br>Only
+                        students can initiate data sharing for counselling support.</p>
+                    <button class="btn btn-primary rounded-pill px-4"
+                        onclick="alert('Data request sent successfully.')"><i class="bi bi-send me-2"></i>Request Data
+                        Sharing</button>
+                </div>
+            </div>
+
+            <!-- DASHBOARD CONTENT (CONSENT GRANTED) -->
+            <div th:if="${!noConsent}" class="row g-4">
+
+                <!-- 2. MOOD TREND OVERVIEW -->
+                <div class="col-lg-8">
+                    <div class="glass-card">
+                        <div class="section-title"><i class="bi bi-graph-up"></i>Overall Mood Trend</div>
+                        <div style="height: 300px;">
+                            <canvas id="moodTrendChart"></canvas>
                         </div>
                     </div>
-                    <div class="card-footer bg-light text-center py-3">
-                        <a href="/dashboard" class="btn btn-sm"
-                            style="background: #6b7280; color: white; padding: 8px 24px; border-radius: 8px; text-decoration: none;">
-                            Back to Dashboard
-                        </a>
+                </div>
+
+                <!-- 3. MOOD DISTRIBUTION SUMMARY -->
+                <div class="col-lg-4">
+                    <div class="glass-card">
+                        <div class="section-title"><i class="bi bi-pie-chart"></i>Distribution Summary</div>
+                        <div style="height: 250px;">
+                            <canvas id="moodDistChart"></canvas>
+                        </div>
                     </div>
+                </div>
+
+                <!-- 4. KEY OBSERVATIONS -->
+                <div class="col-lg-6">
+                    <div class="glass-card">
+                        <div class="section-title"><i class="bi bi-lightbulb"></i>System Observations</div>
+                        <div class="insight-pill">
+                            <p class="mb-0 small text-muted"><strong>Consistency Found:</strong> A steady
+                                neutral-to-happy trend has been observed over the past 7 days.</p>
+                        </div>
+                        <div class="insight-pill" style="border-left-color: var(--innerly-warning);">
+                            <p class="mb-0 small text-muted"><strong>Shift Detected:</strong> Recent entries show a
+                                slight increase in "Neutral" moods compared to the previous week.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. SHARED STUDENT NOTES -->
+                <div class="col-lg-6">
+                    <div class="glass-card">
+                        <div class="section-title"><i class="bi bi-chat-left-text"></i>Explicitly Shared Notes</div>
+                        <div class="text-center py-4">
+                            <i class="bi bi-journal-x fs-2 text-light-emphasis mb-2 d-block"></i>
+                            <p class="text-muted small">The student has not shared any specific notes for this period.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. COUNSELLOR ACTIONS & NOTES -->
+                <div class="col-12 mt-4">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="action-card h-100 d-flex flex-column justify-content-center">
+                                <h4 class="fw-bold mb-3">Session Log</h4>
+                                <p class="mb-4 opacity-75 small">Record private insights from your recent session with
+                                    this student.</p>
+                                <button class="btn btn-innerly-outline w-100" data-bs-toggle="modal"
+                                    data-bs-target="#addNoteModal">
+                                    <i class="bi bi-pencil-square me-2"></i>Add Private Note
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="glass-card">
+                                <div class="section-title"><i class="bi bi-journal-text"></i>Note History</div>
+                                <div th:if="${counsellorNotes == null || counsellorNotes.isEmpty()}"
+                                    class="text-center py-5">
+                                    <p class="text-muted small">No session notes recorded yet.</p>
+                                </div>
+                                <div class="note-timeline"
+                                    th:if="${counsellorNotes != null && !counsellorNotes.isEmpty()}">
+                                    <div th:each="note : ${counsellorNotes}" class="note-item">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="small fw-bold text-primary"
+                                                th:text="${note.counsellorEmail}">Counsellor</span>
+                                            <span class="small text-muted"
+                                                th:text="${#temporals.format(note.createdAt, 'dd MMM yyyy, HH:mm')}">Date</span>
+                                        </div>
+                                        <div class="note-content" th:text="${note.content}">
+                                            Sample note content...
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DISCLAIMER -->
+                <div class="col-12 text-center mt-5">
+                    <p class="text-muted" style="font-size: 0.8rem;">
+                        <i class="bi bi-info-circle me-1"></i> Aggregate data is intended for insight, not clinical
+                        diagnosis.
+                    </p>
                 </div>
             </div>
         </div>
     </main>
 
+    <!-- ALERT NOTIFICATIONS (MOVED TO ROOT) -->
+    <div th:if="${param.noteSaved}" class="alert alert-success alert-floating d-flex align-items-center" role="alert">
+        <i class="bi bi-check-circle-fill me-2 fs-4"></i>
+        <div>Note saved successfully!</div>
+    </div>
+    <div th:if="${param.error == 'note_fail'}" class="alert alert-danger alert-floating d-flex align-items-center"
+        role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i>
+        <div>Failed to save note. Please try again.</div>
+    </div>
+
+    <!-- ADD NOTE MODAL (MOVED TO ROOT) -->
+    <div class="modal fade" id="addNoteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header border-0 pb-0 px-4 pt-4">
+                    <h5 class="fw-bold">New Private Note</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <!-- FORM -->
+                <form th:action="@{/progress/students/{id}/notes(id=${student.id})}" method="post">
+                    <div class="modal-body px-4">
+                        <p class="small text-muted mb-3">This note is private to the counselling team and
+                            not visible to the student.</p>
+                        <textarea name="content" class="form-control rounded-3 border-light-subtle" rows="6"
+                            placeholder="Enter session insights or action plan..." required></textarea>
+                    </div>
+                    <div class="modal-footer border-0 px-4 pb-4 pt-0">
+                        <button type="button" class="btn btn-light rounded-pill px-4"
+                            data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4">Save Note</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script th:inline="javascript">
+        const noConsent = [[${ noConsent }]];
+
+        if (!noConsent) {
+            const trendData = [[${ moodChartData }]];
+            const moodStats = [[${ moodSummary }]];
+
+            // 1. Line Chart (Trend)
+            const conversionMap = { 0: 2, 1: 3, 2: 4, 3: 1, 4: 5 };
+            const labels = trendData.map(d => {
+                const date = new Date(d.date);
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            });
+            const values = trendData.map(d => d.moodValue === -1 ? null : conversionMap[d.moodValue]);
+
+            new Chart(document.getElementById('moodTrendChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Mood Progression',
+                        data: values,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.05)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            min: 0, max: 6,
+                            ticks: {
+                                callback: function (val) {
+                                    if (val === 1) return 'Stressed';
+                                    if (val === 2) return 'Low';
+                                    if (val === 3) return 'Neutral';
+                                    if (val === 4) return 'Good';
+                                    if (val === 5) return 'Excited';
+                                    return '';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 2. Doughnut Chart (Distribution)
+            const distLabels = Object.keys(moodStats);
+            const distValues = Object.values(moodStats);
+
+            new Chart(document.getElementById('moodDistChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: distLabels,
+                    datasets: [{
+                        data: distValues,
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#6366f1', '#64748b'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { usePointStyle: true, boxWidth: 8, font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Notification Timeout
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert-floating');
+            alerts.forEach(alert => {
+                alert.style.transition = 'all 0.5s ease';
+                alert.style.opacity = '0';
+                alert.style.transform = 'translate(-50%, -20px)';
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 3000);
+    </script>
 </body>
 
 </html>

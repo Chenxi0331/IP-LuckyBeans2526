@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <title>Innerly | Resource Details</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .card {
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #64748b;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            color: #1e293b;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        #page-content-wrapper {
+            margin-left: 260px !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <div id="page-content-wrapper" class="py-5">
+        <div class="container" style="max-width: 800px;">
+            <div class="mb-4">
+                <a th:href="${#authorization.expression('hasAnyAuthority(''ROLE_COUNSELOR'', ''ROLE_ADMIN'')')} ? '/awareness/manage' : '/awareness/library'"
+                    class="text-decoration-none text-muted">
+                    <i class="fas fa-arrow-left me-2"></i> Back to List
+                </a>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-4 px-5 border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="fw-bold mb-0">Resource Details</h2>
+                        <span sec:authorize="hasAnyAuthority('ROLE_COUNSELOR', 'ROLE_ADMIN')"
+                            th:class="'badge rounded-pill px-3 py-2 ' + (${resource.status} == 'APPROVED' ? 'bg-success-subtle text-success' : (${resource.status} == 'REJECTED' ? 'bg-danger-subtle text-danger' : 'bg-warning-subtle text-dark'))"
+                            th:text="${resource.status}">PENDING</span>
+                    </div>
+                </div>
+                <div class="card-body p-5">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="detail-label">Title</div>
+                            <div class="detail-value fw-bold" th:text="${resource.title}">Understanding Anxiety</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-label">Category</div>
+                            <div class="detail-value">
+                                <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill"
+                                    th:text="${resource.category}">Anxiety</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-label">Type</div>
+                            <div class="detail-value text-capitalize" th:text="${resource.type}">Article</div>
+                        </div>
+                        <div class="col-12">
+                            <div class="detail-label">Description</div>
+                            <div class="detail-value" th:text="${resource.description}">Description text goes here...
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="detail-label">Resource URL</div>
+                            <div class="detail-value">
+                                <a th:href="${resource.url}" target="_blank" class="text-primary text-break"
+                                    th:text="${resource.url}">https://example.com</a>
+                                <i class="fas fa-external-link-alt ms-1 small text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div sec:authorize="hasAuthority('ROLE_ADMIN')" class="mt-5 pt-4 border-top">
+                        <h5 class="fw-bold mb-3">Admin Actions</h5>
+                        <div class="d-flex gap-2">
+                            <form th:if="${resource.status != 'APPROVED'}"
+                                th:action="@{/awareness/resource/approve/{id}(id=${resource.id})}" method="post">
+                                <button type="submit" class="btn btn-success px-4 rounded-pill">
+                                    <i class="fas fa-check me-2"></i> Approve Resource
+                                </button>
+                            </form>
+                            <form th:if="${resource.status != 'REJECTED'}"
+                                th:action="@{/awareness/resource/reject/{id}(id=${resource.id})}" method="post">
+                                <button type="submit" class="btn btn-warning px-4 rounded-pill">
+                                    <i class="fas fa-times me-2"></i> Reject Resource
+                                </button>
+                            </form>
+                            <form th:action="@{/awareness/resource/delete/{id}(id=${resource.id})}" method="post"
+                                onsubmit="return confirm('Delete this resource permanently?');">
+                                <button type="submit" class="btn btn-outline-danger px-4 rounded-pill">
+                                    <i class="fas fa-trash me-2"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

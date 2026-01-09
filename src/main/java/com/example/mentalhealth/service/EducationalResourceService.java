@@ -16,23 +16,46 @@ public class EducationalResourceService {
         return educationalResourceRepository.findAll();
     }
 
+    public List<EducationalResource> getApprovedResources() {
+        return educationalResourceRepository.findByStatus("APPROVED");
+    }
+
+    public List<EducationalResource> getPendingResources() {
+        return educationalResourceRepository.findByStatus("PENDING");
+    }
+
     public EducationalResource saveResource(EducationalResource resource) {
         return educationalResourceRepository.save(resource);
     }
 
-    // NEW: Logic for Category Pills
     public List<EducationalResource> getResourcesByCategory(String category) {
-        return educationalResourceRepository.findByCategory(category);
+        return educationalResourceRepository.findByCategoryAndStatus(category, "APPROVED");
     }
 
-    // NEW: Logic for Search Bar
     public List<EducationalResource> searchResources(String keyword) {
-        return educationalResourceRepository.findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyword,
-                keyword);
+        return educationalResourceRepository
+                .findByStatusAndTitleContainingIgnoreCaseOrStatusAndDescriptionContainingIgnoreCase(
+                        "APPROVED", keyword, "APPROVED", keyword);
     }
 
     public EducationalResource getResourceById(Long id) {
         return educationalResourceRepository.findById(id).orElse(null);
+    }
+
+    public void approveResource(Long id) {
+        EducationalResource resource = getResourceById(id);
+        if (resource != null) {
+            resource.setStatus("APPROVED");
+            educationalResourceRepository.save(resource);
+        }
+    }
+
+    public void rejectResource(Long id) {
+        EducationalResource resource = getResourceById(id);
+        if (resource != null) {
+            resource.setStatus("REJECTED");
+            educationalResourceRepository.save(resource);
+        }
     }
 
     public void deleteResource(Long id) {
