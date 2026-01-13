@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Assessment Detail - Innerly</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+    
+    <main id="page-content-wrapper" class="main-content" style="margin-left: 260px; padding: 2rem;">
+        
+        <a th:href="@{/counselor/assessment}" class="back-btn">← Back to Overview</a>
+        
+        <div class="student-info-card">
+            <h1 th:text="${student.fullName}">Student Name</h1>
+            <p th:text="${student.email}">student@example.com</p>
+            <span class="role-badge" th:text="${student.role}">STUDENT</span>
+        </div>
+
+        <div th:if="${message}" class="alert alert-success" role="alert" th:text="${message}"></div>
+        
+        <div class="trend-chart-section">
+            <h2>Score Trend Over Time</h2>
+            <canvas id="scoreTrendChart" width="400" height="200"></canvas>
+        </div>
+        
+        <div class="comment-section">
+            <h2>Add Comment</h2>
+            <form th:action="@{/counselor/assessment/student/{id}/comment(id=${student.userId})}" 
+                  method="post" class="comment-form">
+                <div class="form-group">
+                    <label for="commentText">Comment:</label>
+                    <textarea id="commentText" name="commentText" 
+                              class="form-control" rows="4" required
+                              placeholder="Enter your professional observation or recommendation..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="visibleToStudent" value="true" checked>
+                        Visible to Student
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Add Comment</button>
+            </form>
+        </div>
+        
+        <div class="comments-history" th:if="${comments != null and !comments.isEmpty()}">
+            <h2>Previous Comments</h2>
+            <div class="comment-item" th:each="comment : ${comments}">
+                <div class="comment-header">
+                    <span class="comment-date" 
+                          th:text="${#temporals.format(comment.createdAt, 'MMM dd, yyyy hh:mm a')}">
+                        Dec 15, 2024 02:30 PM
+                    </span>
+                    <span class="comment-visibility" 
+                          th:text="${comment.isVisibleToStudent ? 'Visible to Student' : 'Private'}">
+                    </span>
+                </div>
+                <p class="comment-text" th:text="${comment.commentText}"></p>
+            </div>
+        </div>
+        
+        <div class="assessment-history-section">
+            <h2>Assessment History</h2>
+            
+            <div class="history-timeline">
+                <div class="timeline-item" th:each="assessment, iterStat : ${assessments}">
+                    <div class="timeline-dot" th:classappend="${assessment.severityLevel}"></div>
+                    
+                    <div class="timeline-card">
+                        <div class="timeline-header">
+                            <div class="timeline-date">
+                                <span th:text="${#temporals.format(assessment.assessmentDate, 'MMM dd, yyyy')}">
+                                    Dec 15, 2024
+                                </span>
+                                <span class="timeline-time" 
+                                      th:text="${#temporals.format(assessment.assessmentDate, 'hh:mm a')}">
+                                    02:30 PM
+                                </span>
+                            </div>
+                            <div class="timeline-score" th:classappend="${assessment.severityLevel}">
+                                <span th:text="${assessment.totalScore} + '/20'">8/20</span>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-body">
+                            <span class="timeline-severity" 
+                                  th:classappend="${assessment.severityLevel}"
+                                  th:text="${#strings.capitalize(assessment.severityLevel)}">
+                                Mild
+                            </span>
+                            <p th:text="${assessment.assessmentResult}">
+                                Mild symptoms. Consider some self-care activities.
+                            </p>
+                        </div>
+                        
+                        <div class="timeline-trend" th:if="${!iterStat.last}">
+                            <span th:if="${assessment.totalScore < assessments.get(iterStat.index + 1).totalScore}"
+                                  class="trend-improving">
+                                ↓ Improving
+                            </span>
+                            <span th:if="${assessment.totalScore > assessments.get(iterStat.index + 1).totalScore}"
+                                  class="trend-worsening">
+                                ↑ Needs attention
+                            </span>
+                            <span th:if="${assessment.totalScore == assessments.get(iterStat.index + 1).totalScore}"
+                                  class="trend-stable">
+                                → Stable
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script th:inline="javascript">
+        const dates = /*[[${trendDates}]]*/ [];
+        const scores = /*[[${trendScores}]]*/ [];
+        
+        dates.reverse();
+        scores.reverse();
+        
+        const ctx = document.getElementById('scoreTrendChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Assessment Score',
+                    data: scores,
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    title: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 20,
+                        ticks: {
+                            stepSize: 5
+                        },
+                        title: {
+                            display: true,
+                            text: 'Score (out of 20)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Assessment Date'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+    
+    <style>
+        .back-btn {
+            color: #8b5cf6;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        .student-info-card {
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        margin-bottom: 32px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .student-info-card h1 {
+        font-size: 24px;
+        margin-bottom: 8px;
+    }
+    
+    .role-badge {
+        background: #f0f0f0;
+        padding: 4px 12px;
+        border-radius: 16px;
+        font-size: 12px;
+    }
+
+    .trend-chart-section {
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        margin-bottom: 32px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .trend-chart-section h2 {
+        font-size: 20px;
+        margin-bottom: 20px;
+    }
+
+    .comment-section {
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        margin-bottom: 32px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .comment-section h2 {
+        font-size: 20px;
+        margin-bottom: 20px;
+    }
+
+    .comment-form .form-group {
+        margin-bottom: 16px;
+    }
+
+    .comment-form label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .comment-form textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #e5e5e7;
+        border-radius: 8px;
+        font-family: inherit;
+    }
+
+    .comments-history {
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        margin-bottom: 32px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .comment-item {
+        border-left: 3px solid #8b5cf6;
+        padding: 16px;
+        margin-bottom: 16px;
+        background: #f9f9fb;
+        border-radius: 8px;
+    }
+
+    .comment-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .comment-visibility {
+        font-weight: 600;
+        color: #8b5cf6;
+    }
+
+    .comment-text {
+        color: #333;
+        line-height: 1.6;
+    }
+    
+    .history-timeline {
+        position: relative;
+        padding-left: 40px;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 32px;
+    }
+    
+    .timeline-item:before {
+        content: '';
+        position: absolute;
+        left: -28px;
+        top: 20px;
+        bottom: -32px;
+        width: 2px;
+        background: #e5e5e7;
+    }
+    
+    .timeline-item:last-child:before {
+        display: none;
+    }
+    
+    .timeline-dot {
+        position: absolute;
+        left: -34px;
+        top: 12px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 0 0 1px #e5e5e7;
+    }
+    
+    .timeline-dot.minimal { background: #0f7333; }
+    .timeline-dot.mild { background: #b86e00; }
+    .timeline-dot.moderate { background: #c7341e; }
+    .timeline-dot.severe { background: #a50e0e; }
+    
+    .timeline-card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .timeline-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+    
+    .timeline-score {
+        font-size: 20px;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 8px;
+    }
+    
+    .timeline-score.minimal { background: #d1f4dd; color: #0f7333; }
+    .timeline-score.mild { background: #fff4ce; color: #b86e00; }
+    .timeline-score.moderate { background: #ffd6cc; color: #c7341e; }
+    .timeline-score.severe { background: #fdd; color: #a50e0e; }
+    
+    .timeline-severity {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 16px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    
+    .timeline-severity.minimal { background: #d1f4dd; color: #0f7333; }
+    .timeline-severity.mild { background: #fff4ce; color: #b86e00; }
+    .timeline-severity.moderate { background: #ffd6cc; color: #c7341e; }
+    .timeline-severity.severe { background: #fdd; color: #a50e0e; }
+    
+    .timeline-trend {
+        margin-top: 12px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    
+    .trend-improving { color: #0f7333; }
+    .trend-worsening { color: #c7341e; }
+    .trend-stable { color: #666; }
+
+    .btn-primary {
+        background: #8b5cf6;
+        color: white;
+        padding: 10px 24px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .btn-primary:hover {
+        background: #7c3aed;
+    }
+</style>
+</body>
+</html>

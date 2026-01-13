@@ -56,3 +56,4 @@ public class UserAssessmentAnswer {
         this.answerValue = answerValue;
     }
 }
+

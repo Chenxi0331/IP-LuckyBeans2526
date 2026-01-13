@@ -46,13 +46,14 @@ public class SecurityConfig {
                                                                 "/",
                                                                 "/login",
                                                                 "/register",
-                                                                "/reset-password", // Allow password reset
-                                                                "/generate-password", // Allow password generation
+                                                                "/reset-password",
+                                                                "/generate-password",
                                                                 "/h2-console/**",
                                                                 "/css/**",
                                                                 "/js/**",
                                                                 "/images/**",
-                                                                "/resources/**")
+                                                                "/resources/**",
+                                                                "/uploads/**") // Allow access to uploaded files
                                                 .permitAll()
                                                 .requestMatchers("/counselling/book", "/counselling/schedule")
                                                 .hasAuthority("ROLE_STUDENT")
@@ -68,7 +69,24 @@ public class SecurityConfig {
                                                 .hasAnyAuthority("ROLE_COUNSELOR", "ROLE_ADMIN")
                                                 .requestMatchers("/progress/search", "/progress/students/**")
                                                 .hasAuthority("ROLE_COUNSELOR")
+                                                .requestMatchers(
+                                                        "/symptoms",
+                                                        "/symptoms/**"
+                                                ).hasAuthority("ROLE_STUDENT")
+            
+                                                // UC008: Counselor Assessment & Analysis
+                                                .requestMatchers(
+                                                        "/counselor/assessment",
+                                                        "/counselor/assessment/**"
+                                                ).hasAuthority("ROLE_COUNSELOR")
+            
+                                                // UC010: Admin View Summary
+                                                .requestMatchers(
+                                                        "/admin/assessment/**"
+                                                ).hasAuthority("ROLE_ADMIN")
                                                 .anyRequest().authenticated())
+                                                // UC007, UC009: Student Assessment Features
+                                                
                                 .formLogin(form -> form
                                                 .loginPage("/login")
                                                 .usernameParameter("email")

@@ -21,4 +21,6 @@ public interface UserModuleProgressRepository extends JpaRepository<UserModulePr
     Double getAverageProgress(@Param("userId") Integer userId);
 
     List<UserModuleProgress> findByUserIdAndStatus(Integer userId, String status);
+    
+    List<UserModuleProgress> findByUserId(Integer userId);
 }

@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Progress Detail - Innerly</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+    
+    <main id="page-content-wrapper" class="main-content" style="margin-left: 260px; padding: 2rem;">
+        
+        <a th:href="@{/counselor/progress}" class="back-btn">← Back to Overview</a>
+        
+        <!-- Success/Error Messages -->
+        <div th:if="${message}" class="alert" 
+             th:classappend="${messageType == 'success'} ? 'alert-success' : 'alert-danger'" 
+             role="alert">
+            <span th:text="${message}"></span>
+        </div>
+        
+        <!-- Student Info Card -->
+        <div class="student-info-card">
+            <h1 th:text="${student.fullName}">Student Name</h1>
+            <p th:text="${student.email}">student@example.com</p>
+        </div>
+        
+        <!-- Overall Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Completed Modules</h3>
+                <div class="stat-value" th:text="${statistics.completedCount}">2</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>In Progress</h3>
+                <div class="stat-value" th:text="${statistics.inProgressCount}">1</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Average Progress</h3>
+                <div class="stat-value" th:text="${statistics.averageProgress} + '%'">48%</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Total Modules</h3>
+                <div class="stat-value" th:text="${statistics.totalModules}">5</div>
+            </div>
+        </div>
+        
+        <!-- Recommend Module Section -->
+        <div class="recommend-section">
+            <h2>📌 Browse & Recommend Modules</h2>
+            <p class="section-subtitle">Review module details before recommending</p>
+            
+            <!-- Available Modules Grid -->
+            <div class="available-modules-grid">
+                <div class="module-card" th:each="module : ${allModules}">
+                    <div class="module-card-header">
+                        <span class="module-icon-large" th:text="${module.icon}">🧘</span>
+                        <div class="module-title-section">
+                            <h3 th:text="${module.title}">Module Title</h3>
+                            <div class="module-badges">
+                                <span class="badge badge-level" th:text="${module.level}">Beginner</span>
+                                <span class="badge badge-duration" th:text="${module.duration} + ' min'">10 min</span>
+                                <span class="badge badge-category" th:text="${module.category}">Mindfulness</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="module-description" th:text="${module.description}">
+                        Module description here
+                    </p>
+                    
+                    <div class="module-actions">
+                        <button class="btn-view-details" 
+                                th:data-module-id="${module.moduleId}"
+                                onclick="toggleModuleDetails(this.dataset.moduleId)">
+                            <i class="bi bi-eye"></i> View Details
+                        </button>
+                        
+                        <button class="btn-recommend-quick" 
+                                th:data-module-id="${module.moduleId}"
+                                th:data-module-title="${module.title}"
+                                onclick="openRecommendModal(this.dataset.moduleId, this.dataset.moduleTitle)">
+                            <i class="bi bi-send"></i> Recommend
+                        </button>
+                    </div>
+                    
+                    <!-- Expandable Details Section -->
+                    <div class="module-details-expanded" th:id="'details-' + ${module.moduleId}" style="display: none;">
+                        <div class="details-content">
+                            <h4>Module Content:</h4>
+                            
+                            <div class="info-row">
+                                <strong>Content Type:</strong>
+                                <span th:text="${module.contentType}">text</span>
+                            </div>
+                            
+                            <!-- Text Content -->
+                            <div th:if="${module.contentType == 'text' && module.textContent != null}" 
+                                 class="content-display">
+                                <div class="content-text" th:utext="${module.textContent}">
+                                    Text content will be displayed here
+                                </div>
+                            </div>
+                            
+                            <!-- YouTube Video -->
+                            <div th:if="${module.contentType == 'video_url' && module.videoUrl != null}" 
+                                 class="content-display">
+                                <div class="video-container">
+                                    <iframe th:src="${module.videoUrl.replace('youtu.be/', 'www.youtube.com/embed/').replace('watch?v=', 'embed/')}"
+                                            frameborder="0" 
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                            allowfullscreen>
+                                    </iframe>
+                                </div>
+                                <div class="content-info">
+                                    <i class="bi bi-link-45deg"></i> 
+                                    <a th:href="${module.videoUrl}" target="_blank">Open in YouTube</a>
+                                </div>
+                            </div>
+                            
+                            <!-- Video File -->
+                            <div th:if="${module.contentType == 'video_file' && module.videoFilePath != null}" 
+                                 class="content-display">
+                                <div class="video-container">
+                                    <video controls width="100%">
+                                        <source th:src="${module.videoFilePath}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                                <div class="content-info">
+                                    <i class="bi bi-download"></i> 
+                                    <a th:href="${module.videoFilePath}" download>Download Video</a>
+                                </div>
+                            </div>
+                            
+                            <!-- PDF Content -->
+                            <div th:if="${module.contentType == 'pdf' && module.pdfFilePath != null}" 
+                                 class="content-display">
+                                <div class="pdf-preview">
+                                    <iframe th:src="${module.pdfFilePath}" 
+                                            width="100%" 
+                                            height="500px" 
+                                            frameborder="0">
+                                    </iframe>
+                                </div>
+                                <div class="content-info">
+                                    <i class="bi bi-download"></i> 
+                                    <a th:href="${module.pdfFilePath}" download>Download PDF</a>
+                                    <span class="separator">|</span>
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                    <a th:href="${module.pdfFilePath}" target="_blank">Open in New Tab</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Module Progress Details -->
+        <div class="module-progress-section">
+            <h2>Student's Current Module Progress</h2>
+            
+            <div th:if="${#lists.isEmpty(progressDetails)}" class="empty-state">
+                <i class="bi bi-inbox" style="font-size: 48px; color: #ccc;"></i>
+                <p>This student hasn't started any modules yet.</p>
+            </div>
+            
+            <div class="module-progress-list">
+                <div class="module-progress-card" th:each="detail : ${progressDetails}">
+                    <div class="module-header">
+                        <div class="module-icon" th:text="${detail.module.icon}">🧘</div>
+                        <div class="module-info">
+                            <h3 th:text="${detail.module.title}">Module Title</h3>
+                            <p th:text="${detail.module.description}">Module description</p>
+                            <div class="module-meta">
+                                <span th:text="${detail.module.level}">Beginner</span>
+                                <span th:text="${detail.module.duration} + ' min'">10 min</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="module-progress-info">
+                        <div class="progress-label">
+                            <span>Progress</span>
+                            <span th:text="${detail.progress.progressPercentage} + '%'">50%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" 
+                                 th:style="'width: ' + ${detail.progress.progressPercentage} + '%'">
+                            </div>
+                        </div>
+                        
+                        <div class="module-dates">
+                            <div th:if="${detail.progress.startDate != null}">
+                                <strong>Started:</strong> 
+                                <span th:text="${#temporals.format(detail.progress.startDate, 'MMM dd, yyyy')}"></span>
+                            </div>
+                            <div th:if="${detail.progress.lastAccessed != null}">
+                                <strong>Last Accessed:</strong> 
+                                <span th:text="${#temporals.format(detail.progress.lastAccessed, 'MMM dd, yyyy')}"></span>
+                            </div>
+                            <div th:if="${detail.progress.completionDate != null}">
+                                <strong>Completed:</strong> 
+                                <span th:text="${#temporals.format(detail.progress.completionDate, 'MMM dd, yyyy')}"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="status-badge" th:classappend="${detail.progress.status}">
+                            <span th:text="${#strings.capitalize(#strings.replace(detail.progress.status, '_', ' '))}">
+                                In Progress
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Recommendation Modal -->
+    <div id="recommendModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeRecommendModal()">&times;</span>
+            <h2>Recommend Module</h2>
+            <p id="modalModuleName" class="modal-subtitle"></p>
+            
+            <form th:action="@{/counselor/progress/student/{id}/recommend(id=${student.userId})}" 
+                  method="post" id="recommendForm">
+                <input type="hidden" name="moduleId" id="modalModuleId">
+                
+                <div class="form-group">
+                    <label for="reason">Why are you recommending this module?</label>
+                    <textarea name="reason" 
+                              id="reason" 
+                              rows="4" 
+                              required 
+                              class="form-control"
+                              placeholder="E.g., 'This module will help you manage stress during exam week' or 'Based on our recent conversation, this mindfulness practice could be beneficial'"></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeRecommendModal()">Cancel</button>
+                    <button type="submit" class="btn-submit">
+                        <i class="bi bi-send"></i> Send Recommendation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <style>
+        .back-btn {
+            color: #8b5cf6;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        
+        .back-btn:hover {
+            color: #7c3aed;
+        }
+        
+        .student-info-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .student-info-card h1 {
+            margin: 0 0 8px 0;
+        }
+        
+        .student-info-card p {
+            margin: 0;
+            color: #666;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #8b5cf6;
+        }
+        
+        .recommend-section {
+            background: linear-gradient(135deg, #f5f3ff 0%, #faf5ff 100%);
+            padding: 32px;
+            border-radius: 12px;
+            border-left: 4px solid #8b5cf6;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .recommend-section h2 {
+            margin: 0 0 8px 0;
+            color: #1d1d1f;
+        }
+        
+        .section-subtitle {
+            color: #666;
+            margin-bottom: 24px;
+        }
+        
+        .available-modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .module-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .module-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .module-card-header {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .module-icon-large {
+            font-size: 40px;
+        }
+        
+        .module-title-section h3 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+        }
+        
+        .module-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-level {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .badge-duration {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        .badge-category {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .module-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+        
+        .module-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        
+        .btn-view-details {
+            flex: 1;
+            background: #f5f5f7;
+            color: #333;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+        
+        .btn-view-details:hover {
+            background: #e5e5e7;
+        }
+        
+        .btn-recommend-quick {
+            flex: 1;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+        
+        .btn-recommend-quick:hover {
+            background: #7c3aed;
+        }
+        
+        .module-details-expanded {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 2px solid #f0f0f0;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                max-height: 2000px;
+            }
+        }
+        
+        .details-content h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #666;
+        }
+        
+        .info-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        
+        .info-row strong {
+            color: #666;
+            min-width: 120px;
+        }
+        
+        .content-display {
+            margin-top: 16px;
+            padding: 16px;
+            background: #fafafa;
+            border-radius: 8px;
+        }
+        
+        .content-text {
+            line-height: 1.8;
+            color: #333;
+            white-space: pre-wrap;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .video-container iframe,
+        .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .pdf-preview {
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        
+        .content-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .content-info a {
+            color: #8b5cf6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .content-info a:hover {
+            text-decoration: underline;
+        }
+        
+        .separator {
+            color: #ddd;
+        }
+        
+        .module-progress-section {
+            margin-top: 40px;
+        }
+        
+        .module-progress-section h2 {
+            margin-bottom: 20px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 12px;
+            color: #666;
+        }
+        
+        .empty-state p {
+            margin-top: 12px;
+        }
+        
+        .module-progress-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .module-progress-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .module-header {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .module-icon {
+            font-size: 48px;
+        }
+        
+        .module-info h3 {
+            font-size: 18px;
+            margin: 0 0 8px 0;
+        }
+        
+        .module-info p {
+            color: #666;
+            margin: 0 0 8px 0;
+        }
+        
+        .module-meta {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .module-meta span {
+            background: #f0f0f0;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .module-dates {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        
+        .module-dates div {
+            margin-bottom: 4px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .status-badge.in_progress {
+            background: #fff4ce;
+            color: #b86e00;
+        }
+        
+        .status-badge.completed {
+            background: #d1f4dd;
+            color: #0f7333;
+        }
+        
+        .status-badge.not_started {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.2s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 8% auto;
+            padding: 32px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s;
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 20px;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .modal h2 {
+            margin: 0 0 8px 0;
+            font-size: 24px;
+        }
+        
+        .modal-subtitle {
+            color: #8b5cf6;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        
+        .btn-cancel {
+            background: #e0e0e0;
+            color: #333;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .btn-cancel:hover {
+            background: #d0d0d0;
+        }
+        
+        .btn-submit {
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-submit:hover {
+            background: #7c3aed;
+        }
+        
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #d1f4dd;
+            color: #0f7333;
+            border: 1px solid #0f7333;
+        }
+        
+        .alert-danger {
+            background: #fdd;
+            color: #a50e0e;
+            border: 1px solid #a50e0e;
+        }
+    </style>
+    
+    <script>
+        function toggleModuleDetails(moduleId) {
+            const detailsDiv = document.getElementById('details-' + moduleId);
+            const button = event.target.closest('button');
+            
+            if (detailsDiv.style.display === 'none' || !detailsDiv.style.display) {
+                detailsDiv.style.display = 'block';
+                button.innerHTML = '<i class="bi bi-eye-slash"></i> Hide Details';
+            } else {
+                detailsDiv.style.display = 'none';
+                button.innerHTML = '<i class="bi bi-eye"></i> View Details';
+            }
+        }
+        
+        function openRecommendModal(moduleId, moduleName) {
+            document.getElementById('modalModuleId').value = moduleId;
+            document.getElementById('modalModuleName').textContent = moduleName;
+            document.getElementById('recommendModal').style.display = 'block';
+        }
+
+        function closeRecommendModal() {
+            document.getElementById('recommendModal').style.display = 'none';
+            document.getElementById('reason').value = '';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('recommendModal');
+            if (event.target == modal) {
+                closeRecommendModal();
+            }
+        }
+    </script>
+</body>
+</html>

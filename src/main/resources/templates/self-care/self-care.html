@@ -9,6 +9,35 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        /* Only essential missing styles */
+        .progress-bar-large {
+            background: #e0e0e0;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .progress-fill-large {
+            background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .content-type-badge {
+            background-color: #e0e7ff !important;
+            color: #4f46e5 !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .content-type-badge i {
+            font-size: 14px;
+        }
+    </style>
 </head>
 
 <body>
@@ -23,7 +52,7 @@
         </div>
 
         <!-- Personalized Recommendations -->
-        <section class="recommendations-section" th:if="${recommendations != null and !recommendations.isEmpty()}">
+        <section class="recommendations-section" th:if="${recommendations != null and !#lists.isEmpty(recommendations)}">
 
             <div class="section-header">
                 <span class="icon">✨</span>
@@ -33,9 +62,12 @@
             <p class="section-subtitle">Based on your activity and mood</p>
 
             <div th:each="rec : ${recommendations}">
-                <div class="recommendation-card">
+                <div class="recommendation-card" th:classappend="${rec.isLocked} ? 'locked' : ''">
 
-                    <!-- <span class="ai-badge" th:if="${rec.isAI}" th:text="${rec.aiBadge}"></span> -->
+                    <div class="module-status locked" th:if="${rec.isLocked}">
+                        <span class="icon">🔒</span>
+                        <span>Locked</span>
+                    </div>
 
                     <div class="recommendation-header">
                         <div class="recommendation-icon" th:text="${rec.icon}"></div>
@@ -55,15 +87,38 @@
                         <span th:text="${rec.level}"></span>
                         <span th:text="${rec.duration} + ' min'"></span>
 
-                        <span class="progress-text" th:if="${rec.progress > 0}">
+                        <!-- Content Type Badge -->
+                        <span class="content-type-badge" th:if="${rec.contentType == 'video_url'}">
+                            <i class="bi bi-play-circle"></i> Video
+                        </span>
+                        <span class="content-type-badge" th:if="${rec.contentType == 'video_file'}">
+                            <i class="bi bi-file-play"></i> Video File
+                        </span>
+                        <span class="content-type-badge" th:if="${rec.contentType == 'pdf'}">
+                            <i class="bi bi-file-pdf"></i> PDF
+                        </span>
+                        <span class="content-type-badge" th:if="${rec.contentType == 'text'}">
+                            <i class="bi bi-file-text"></i> Text
+                        </span>
+
+                        <span class="progress-text" th:if="${rec.progress > 0 and !rec.isLocked}">
                             <span>🔁</span>
                             <span th:text="${rec.progress} + '% complete'"></span>
                         </span>
                     </div>
 
-                    <a th:href="@{/self-care/module/{id}(id=${rec.moduleId})}" class="recommendation-btn"
-                        th:text="${rec.buttonText}">
+                    <a th:if="${!rec.isLocked}"
+                       th:href="@{/self-care/module/{id}(id=${rec.moduleId})}" 
+                       class="recommendation-btn"
+                       th:text="${rec.buttonText}">
                     </a>
+
+                    <button th:if="${rec.isLocked}"
+                            type="button"
+                            class="recommendation-btn locked-btn" 
+                            onclick="alert('🔒 This module is currently unavailable. Please wait admin for unlock.')">
+                        🔒 Locked
+                    </button>
                 </div>
             </div>
         </section>
@@ -81,7 +136,7 @@
 
                 <div class="progress-right">
                     <div class="progress-modules"
-                        th:text="${overallProgress.completed} + '/' + ${overallProgress.total}">
+                        th:text="${overallProgress.completedCount} + '/' + ${overallProgress.totalModules}"
                     </div>
                     <div class="progress-modules-label">Modules Completed</div>
                 </div>
@@ -116,13 +171,18 @@
 
         <!-- Modules Grid -->
         <div class="modules-grid">
-            <div class="module-card" th:each="module : ${allModules}">
-                <!--th:classappend="${module.isLocked} ? 'locked' : ''"-->
+            <div class="module-card" th:each="module : ${allModules}"
+                th:classappend="${module.isLocked} ? 'locked' : ''">
 
                 <!-- Completed -->
                 <div class="module-status" th:if="${module.completed and !module.isLocked}">
                     <span class="icon">✓</span>
                     <span>Completed</span>
+                </div>
+                <!-- Locked -->
+                 <div class="module-status locked" th:if="${module.isLocked}">
+                    <span class="icon">🔒</span>
+                    <span>Locked</span>
                 </div>
 
                 <div class="module-header">
@@ -138,6 +198,20 @@
                 <div class="module-meta">
                     <span class="meta-badge" th:text="${module.level}"></span>
                     <span class="meta-badge" th:text="${module.duration} + ' min'"></span>
+
+                    <!-- Content Type Badge -->
+                    <span class="meta-badge content-type-badge" th:if="${module.contentType == 'video_url'}">
+                        <i class="bi bi-play-circle"></i> Video
+                    </span>
+                    <span class="meta-badge content-type-badge" th:if="${module.contentType == 'video_file'}">
+                        <i class="bi bi-file-play"></i> Video File
+                    </span>
+                    <span class="meta-badge content-type-badge" th:if="${module.contentType == 'pdf'}">
+                        <i class="bi bi-file-pdf"></i> PDF
+                    </span>
+                    <span class="meta-badge content-type-badge" th:if="${module.contentType == 'text'}">
+                        <i class="bi bi-file-text"></i> Text
+                    </span>
                 </div>
 
                 <!-- Module Progress -->
@@ -152,19 +226,23 @@
                     </div>
                 </div>
 
-                <a th:href="@{/self-care/module/{id}(id=${module.moduleId})}" class="module-btn">
-                    <!-- TODO:Dynamic button text depending on module state -->
-                    Start Module
+                <a th:if="${!module.isLocked}"
+                   th:href="@{/self-care/module/{id}(id=${module.moduleId})}" 
+                   class="module-btn"
+                   th:text="${module.completed} ? 'Review Module' : (${module.progress > 0} ? 'Continue' : 'Start Module')">
                 </a>
+
+                <button th:if="${module.isLocked}"
+                        type="button"
+                        class="module-btn locked-btn" 
+                        onclick="alert('🔒 This module is currently unavailable. Please wait admin for unlock.')">
+                    🔒 Locked
+                </button>
             </div>
         </div>
     </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
-
-<!--th:classappend="${module.isLocked} ? 'locked' : ''"-->
-<!--th:text="${module.isLocked} ? '🔒 Locked' : (${module.completed} ? 'Review Module' : (${module.progress > 0} ? 'Continue' : 'Start Module'))"-->
-<!--<div class="module-status" th:if="${module.isLocked}">-->
-<!--<span class="lock-icon">🔒</span>-->
-<!--</div>-->

@@ -13,6 +13,8 @@ public class Recommendation {
     private Integer moduleId;
     private Boolean isAI;
     private String aiBadge;
+    private Boolean isLocked;
+    private String contentType;
 
     // Getters and Setters
     public String getIcon() {
@@ -101,5 +103,21 @@ public class Recommendation {
 
     public void setAiBadge(String aiBadge) {
         this.aiBadge = aiBadge;
+    }
+
+    public Boolean getIsLocked() {
+        return isLocked;
+    }
+
+    public void setIsLocked(Boolean isLocked) {
+        this.isLocked = isLocked;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 }

@@ -8,6 +8,69 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        .counselor-comments-section {
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            margin-bottom: 32px;
+        }
+
+        .section-subtitle {
+            font-size: 14px;
+            color: #86868b;
+            margin-top: -8px;
+            margin-bottom: 24px;
+        }
+
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .comment-card {
+            background: linear-gradient(135deg, #f5f3ff 0%, #faf5ff 100%);
+            border-left: 4px solid #8b5cf6;
+            padding: 20px;
+            border-radius: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .comment-card:hover {
+            transform: translateX(4px);
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .comment-date {
+            font-size: 13px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .comment-badge {
+            background: #8b5cf6;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .comment-text {
+            color: #1d1d1f;
+            line-height: 1.6;
+            font-size: 15px;
+            margin: 0;
+        }
+    </style>
 </head>
 
 <body>
@@ -65,6 +128,32 @@
 
             <!-- Dashboard Mode -->
             <div th:if="${currentQuestion == null}">
+                <!-- Counselor Comments Section -->
+                <div th:if="${counselorComments != null and !counselorComments.isEmpty()}" 
+                    class="counselor-comments-section">
+                    <div class="section-header">
+                        <span class="icon">💬</span>
+                        <h2>Counselor's Feedback</h2>
+                    </div>
+                    <p class="section-subtitle">Professional observations and recommendations for you</p>
+        
+                    <div class="comments-list">
+                        <div class="comment-card" th:each="comment : ${counselorComments}">
+                            <div class="comment-header">
+                                <span class="comment-date" 
+                                    th:text="${#temporals.format(comment.createdAt, 'MMM dd, yyyy hh:mm a')}">
+                                    Dec 15, 2024 02:30 PM
+                                </span>
+                                <span class="comment-badge">From Counselor</span>
+                            </div>
+                            <p class="comment-text" th:text="${comment.commentText}">
+                                Your progress shows improvement. Keep up with the self-care activities.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Latest Assessment Result -->
                 <div class="latest-result-section" th:if="${totalScore != null}">
                     <div class="section-header">
                         <span class="icon">📊</span>
@@ -117,6 +206,31 @@
             <!-- History Section -->
             <div id="historySection"
                 th:style="${currentQuestion != null} ? 'display: none; margin-top: 40px;' : 'margin-top: 40px;'">
+
+                <!-- Counselor Comments in Question Mode -->
+                <div th:if="${currentQuestion != null and counselorComments != null and !counselorComments.isEmpty()}" 
+                    class="counselor-comments-section">
+                    <div class="section-header">
+                        <span class="icon">💬</span>
+                        <h2>Counselor's Feedback</h2>
+                    </div>
+                    <p class="section-subtitle">Professional observations and recommendations for you</p>
+        
+                    <div class="comments-list">
+                        <div class="comment-card" th:each="comment : ${counselorComments}">
+                            <div class="comment-header">
+                                <span class="comment-date" 
+                                    th:text="${#temporals.format(comment.createdAt, 'MMM dd, yyyy hh:mm a')}">
+                                    Dec 15, 2024 02:30 PM
+                                </span>
+                                <span class="comment-badge">From Counselor</span>
+                            </div>
+                            <p class="comment-text" th:text="${comment.commentText}">
+                                Your progress shows improvement. Keep up with the self-care activities.
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Latest Result During Question Mode -->
                 <div th:if="${currentQuestion != null and latestScore != null}" class="latest-result-section">

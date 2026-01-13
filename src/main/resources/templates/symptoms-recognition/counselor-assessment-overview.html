@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Assessment Overview - Innerly</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+    
+    <main id="page-content-wrapper" class="main-content" style="margin-left: 260px; padding: 2rem;">
+        
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>Student Assessment Overview</h1>
+            <p>View and analyse student mental health assessments</p>
+        </div>
+        
+        <!-- Assessment Overview Table -->
+        <div class="assessment-overview-section">
+            <table class="assessment-table">
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Email</th>
+                        <th>Latest Score</th>
+                        <th>Severity Level</th>
+                        <th>Assessment Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="summary : ${assessmentList}">
+                        <td th:text="${summary.userName}">John Smith</td>
+                        <td th:text="${summary.userEmail}">john@example.com</td>
+                        <td>
+                            <span class="score-badge" th:text="${summary.latestScore} + '/20'">8/20</span>
+                        </td>
+                        <td>
+                            <span class="severity-badge" 
+                                  th:classappend="${summary.severityLevel}"
+                                  th:text="${#strings.capitalize(summary.severityLevel)}">
+                                Mild
+                            </span>
+                        </td>
+                        <td th:text="${#temporals.format(summary.assessmentDate, 'MMM dd, yyyy hh:mm a')}">
+                            Dec 15, 2024 02:30 PM
+                        </td>
+                        <td>
+                            <a th:href="@{/counselor/assessment/student/{id}(id=${summary.userId})}" 
+                               class="btn btn-primary">
+                                View Details
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+    
+    <style>
+        .assessment-table {
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .assessment-table thead {
+            background: #f5f5f7;
+        }
+        
+        .assessment-table th,
+        .assessment-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #e5e5e7;
+        }
+        
+        .assessment-table th {
+            font-weight: 600;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .score-badge {
+            background: #e8eaed;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-weight: 600;
+        }
+        
+        .severity-badge {
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .severity-badge.minimal {
+            background: #d1f4dd;
+            color: #0f7333;
+        }
+        
+        .severity-badge.mild {
+            background: #fff4ce;
+            color: #b86e00;
+        }
+        
+        .severity-badge.moderate {
+            background: #ffd6cc;
+            color: #c7341e;
+        }
+        
+        .severity-badge.severe {
+            background: #fdd;
+            color: #a50e0e;
+        }
+        
+        .btn-primary {
+            background: #8b5cf6;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .btn-primary:hover {
+            background: #7c3aed;
+        }
+    </style>
+</body>
+</html>

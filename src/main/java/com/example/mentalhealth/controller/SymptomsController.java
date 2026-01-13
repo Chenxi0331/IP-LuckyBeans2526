@@ -14,47 +14,36 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.example.mentalhealth.model.AssessmentOption;
-import com.example.mentalhealth.model.AssessmentQuestion;
-import com.example.mentalhealth.model.Option;
-import com.example.mentalhealth.model.Question;
-import com.example.mentalhealth.model.QuestionForm;
-import com.example.mentalhealth.model.User;
-import com.example.mentalhealth.model.UserAssessment;
-import com.example.mentalhealth.model.UserAssessmentAnswer;
-import com.example.mentalhealth.model.UserProgress;
-import com.example.mentalhealth.repository.AssessmentOptionRepository;
-import com.example.mentalhealth.repository.AssessmentQuestionRepository;
-import com.example.mentalhealth.repository.UserAssessmentAnswerRepository;
-import com.example.mentalhealth.repository.UserAssessmentRepository;
-import com.example.mentalhealth.repository.UserRepository;
+import com.example.mentalhealth.model.*;
+import com.example.mentalhealth.service.AssessmentService;
+import com.example.mentalhealth.service.UserService;
+import java.util.Optional;
 
 import jakarta.servlet.http.HttpSession;
 
+/**
+ * Symptoms Recognition Controller
+ * UC007: Access Mental Health Assessment (Student)
+ * UC009: View Assessment History (Student)
+ */
 @Controller
 @RequestMapping("/symptoms")
 public class SymptomsController {
 
     @Autowired
-    private AssessmentQuestionRepository questionRepository;
+    private AssessmentService assessmentService;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
     
-    @Autowired
-    private AssessmentOptionRepository optionRepository;
-
-    @Autowired
-    private UserAssessmentRepository assessmentRepository;
-
-    @Autowired
-    private UserAssessmentAnswerRepository answerRepository;
-
+    /**
+     * UC007 + UC009: Display assessment page or history
+     */
     @GetMapping
     public String symptoms(@AuthenticationPrincipal UserDetails userDetails,
                           HttpSession session, 
                           Model model) {
-        User user = userRepository.findByEmail(userDetails.getUsername())
+        User user = userService.findByEmail(userDetails.getUsername())
             .orElseThrow(() -> new RuntimeException("User not found"));
     
         Integer userId = user.getUserId();
@@ -73,11 +62,14 @@ public class SymptomsController {
         return showQuestion(session, model, userId);
     }
 
+    /**
+     * UC009: Display assessment history dashboard
+     */
     @GetMapping("/dashboard")
     public String dashboard(@AuthenticationPrincipal UserDetails userDetails,
                            HttpSession session, 
                            Model model) {
-        User user = userRepository.findByEmail(userDetails.getUsername())
+        User user = userService.findByEmail(userDetails.getUsername())
             .orElseThrow(() -> new RuntimeException("User not found"));
         
         Integer userId = user.getUserId();
@@ -90,14 +82,15 @@ public class SymptomsController {
         return showDashboard(userId, model);
     }
 
+    /**
+     * Display current question
+     */
     private String showQuestion(HttpSession session, Model model, Integer userId) {
-        Integer currentQuestion = (Integer) session.getAttribute("currentQuestion");
-        if (currentQuestion == null) {
-            currentQuestion = 1;
-            session.setAttribute("currentQuestion", currentQuestion);
-        }
+        Integer currentQuestion = Optional.ofNullable(
+            (Integer) session.getAttribute("currentQuestion")
+            ).orElse(1);
 
-        List<AssessmentQuestion> allQuestions = questionRepository.findAllByOrderByQuestionOrderAsc();
+        List<AssessmentQuestion> allQuestions = assessmentService.getAllQuestions();
         int totalQuestions = allQuestions.size();
 
         if (currentQuestion > totalQuestions || currentQuestion < 1) {
@@ -128,24 +121,31 @@ public class SymptomsController {
         model.addAttribute("selectedAnswer", selectedAnswer);
         model.addAttribute("questionForm", new QuestionForm());
 
-        List<UserAssessment> assessments = assessmentRepository
-            .findByUserIdOrderByAssessmentDateDesc(userId);
-
-        if (!assessments.isEmpty()) {
-            UserAssessment latest = assessments.get(0);
-            model.addAttribute("latestScore", latest.getTotalScore());
-            model.addAttribute("latestAssessment", latest.getAssessmentResult());
-            model.addAttribute("latestSeverity", latest.getSeverityLevel());
+        // Get latest assessment result (if exists)
+        UserAssessment latestAssessment = assessmentService.getLatestAssessment(userId);
+        if (latestAssessment != null) {
+            model.addAttribute("latestScore", latestAssessment.getTotalScore());
+            model.addAttribute("latestAssessment", latestAssessment.getAssessmentResult());
+            model.addAttribute("latestSeverity", latestAssessment.getSeverityLevel());
         }
 
+        // Get assessment history
+        List<UserAssessment> assessments = assessmentService.getUserAssessmentHistory(userId);
         model.addAttribute("assessmentHistory", assessments);
+        
+        // Get counselor comments visible to student
+        List<CounselorComment> counselorComments = 
+            assessmentService.getVisibleStudentComments(userId.longValue());
+        model.addAttribute("counselorComments", counselorComments);
 
         return "symptoms-recognition/symptoms-recognition";
     }
 
+    /**
+     * Display dashboard (assessment history)
+     */
     private String showDashboard(Integer userId, Model model) {
-        List<UserAssessment> assessments = assessmentRepository
-            .findByUserIdOrderByAssessmentDateDesc(userId);
+        List<UserAssessment> assessments = assessmentService.getUserAssessmentHistory(userId);
 
         if (!assessments.isEmpty()) {
             UserAssessment latest = assessments.get(0);
@@ -155,15 +155,23 @@ public class SymptomsController {
         }
 
         model.addAttribute("assessmentHistory", assessments);
+        
+        // Get counselor comments visible to student
+        List<CounselorComment> counselorComments = 
+            assessmentService.getVisibleStudentComments(userId.longValue());
+        model.addAttribute("counselorComments", counselorComments);
 
         return "symptoms-recognition/symptoms-recognition";
     }
 
+    /**
+     * UC007: Submit answer
+     */
     @PostMapping("/submit")
     public String submitAnswer(@ModelAttribute QuestionForm questionForm,
                                @AuthenticationPrincipal UserDetails userDetails,
                                HttpSession session) {
-        User user = userRepository.findByEmail(userDetails.getUsername())
+        User user = userService.findByEmail(userDetails.getUsername())
             .orElseThrow(() -> new RuntimeException("User not found"));
         Integer userId = user.getUserId();
         
@@ -176,22 +184,28 @@ public class SymptomsController {
         session.setAttribute("answer_" + currentQuestion, questionForm.getAnswer());
         session.setAttribute("questionId_" + currentQuestion, questionForm.getQuestionId());
 
-        int totalQuestions = questionRepository.findAllByOrderByQuestionOrderAsc().size();
+        int totalQuestions = assessmentService.getTotalQuestions();
 
         if (currentQuestion < totalQuestions) {
             session.setAttribute("currentQuestion", currentQuestion + 1);
             return "redirect:/symptoms";
         } else {
             saveAssessmentToDatabase(userId, session, totalQuestions);
+            
+            // Clear session data
             for (int i = 1; i <= totalQuestions; i++) {
                 session.removeAttribute("answer_" + i);
                 session.removeAttribute("questionId_" + i);
             }
             session.removeAttribute("currentQuestion");
+            
             return "redirect:/symptoms/dashboard";
         }
     }
 
+    /**
+     * Go to previous question
+     */
     @GetMapping("/previous")
     public String previousQuestion(HttpSession session) {
         Integer currentQuestion = (Integer) session.getAttribute("currentQuestion");
@@ -201,15 +215,21 @@ public class SymptomsController {
         return "redirect:/symptoms";
     }
 
+    /**
+     * Start new assessment
+     */
     @GetMapping("/start")
     public String startAssessment(HttpSession session) {
         session.setAttribute("currentQuestion", 1);
         return "redirect:/symptoms";
     }
 
+    /**
+     * Restart assessment
+     */
     @GetMapping("/restart")
     public String restartAssessment(HttpSession session) {
-        int totalQuestions = questionRepository.findAllByOrderByQuestionOrderAsc().size();
+        int totalQuestions = assessmentService.getTotalQuestions();
         for (int i = 1; i <= totalQuestions; i++) {
             session.removeAttribute("answer_" + i);
             session.removeAttribute("questionId_" + i);
@@ -218,8 +238,10 @@ public class SymptomsController {
         return "redirect:/symptoms";
     }
 
+    /**
+     * Save assessment to database
+     */
     private void saveAssessmentToDatabase(Integer userId, HttpSession session, int totalQuestions) {
-        int totalScore = 0;
         List<Integer> answers = new ArrayList<>();
         List<Integer> questionIds = new ArrayList<>();
 
@@ -228,51 +250,12 @@ public class SymptomsController {
             Integer questionId = (Integer) session.getAttribute("questionId_" + i);
 
             if (answerIndex != null && questionId != null) {
-                AssessmentQuestion question = questionRepository.findById(questionId).orElse(null);
-                if (question != null) {
-                    List<AssessmentOption> optionList = question.getOptions();
-                    int value = answerIndex;
-
-                    answers.add(value);
-                    questionIds.add(questionId);
-                    totalScore += value;
-                }
+                answers.add(answerIndex);
+                questionIds.add(questionId);
             }
         }
 
-        String result = analyseAssessment(totalScore);
-        String severityLevel = getSeverityLevel(totalScore);
-
-        UserAssessment assessment = new UserAssessment();
-        assessment.setUserId(userId);
-        assessment.setTotalScore(totalScore);
-        assessment.setAssessmentResult(result);
-        assessment.setSeverityLevel(severityLevel);
-        assessment.setAssessmentDate(LocalDateTime.now());
-
-        UserAssessment savedAssessment = assessmentRepository.save(assessment);
-
-        for (int i = 0; i < answers.size(); i++) {
-            UserAssessmentAnswer answer = new UserAssessmentAnswer();
-            answer.setAssessmentId(savedAssessment.getAssessmentId());
-            answer.setQuestionId(questionIds.get(i));
-            answer.setSelectedOptionId(answers.get(i) + 1);
-            answer.setAnswerValue(answers.get(i));
-            answerRepository.save(answer);
-        }
-    }
-
-    private String analyseAssessment(int score) {
-        if (score <= 4) return "Minimal or no symptoms. You're doing well!";
-        else if (score <= 9) return "Mild symptoms. Consider some self-care activities.";
-        else if (score <= 14) return "Moderate symptoms. We recommend speaking with a counselor.";
-        else return "Severe symptoms. Please seek professional help immediately.";
-    }
-
-    private String getSeverityLevel(int score) {
-        if (score <= 4) return "minimal";
-        else if (score <= 9) return "mild";
-        else if (score <= 14) return "moderate";
-        else return "severe";
+        // Use Service to save assessment
+        assessmentService.saveAssessment(userId, answers, questionIds);
     }
 }

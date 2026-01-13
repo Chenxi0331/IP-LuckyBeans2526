@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module Form - Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+    
+    <main id="page-content-wrapper" class="main-content" style="margin-left: 260px; padding: 2rem;">
+        
+        <a th:href="@{/admin/modules}" class="back-btn">← Back to Modules</a>
+        
+        <h1 th:text="${module.moduleId != null} ? 'Edit Module' : 'Add New Module'">Add New Module</h1>
+        
+        <div class="form-container">
+            <form th:action="${module.moduleId != null} 
+                             ? @{/admin/modules/edit/{id}(id=${module.moduleId})} 
+                             : @{/admin/modules/add}" 
+                  method="post" 
+                  th:object="${module}"
+                  enctype="multipart/form-data">
+                
+                <div class="form-group">
+                    <label for="title">Title *</label>
+                    <input type="text" 
+                           id="title"
+                           th:field="*{title}" 
+                           placeholder="e.g., Mindful Breathing"
+                           required />
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description *</label>
+                    <textarea id="description"
+                              th:field="*{description}" 
+                              rows="4"
+                              placeholder="Describe what this module teaches..."
+                              required></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category">Category *</label>
+                        <select id="category" th:field="*{category}" required>
+                            <option value="">Select category</option>
+                            <option value="mindfulness">Mindfulness</option>
+                            <option value="sleep">Sleep</option>
+                            <option value="journaling">Journaling</option>
+                            <option value="relaxation">Relaxation</option>
+                            <option value="cognitive">Cognitive</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="level">Level *</label>
+                        <select id="level" th:field="*{level}" required>
+                            <option value="">Select level</option>
+                            <option value="Beginner">Beginner</option>
+                            <option value="Intermediate">Intermediate</option>
+                            <option value="Advanced">Advanced</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="duration">Duration (minutes) *</label>
+                        <input type="number" 
+                               id="duration"
+                               th:field="*{duration}" 
+                               min="5"
+                               max="120"
+                               placeholder="e.g., 10"
+                               required />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="icon">Icon (emoji)</label>
+                        <input type="text" 
+                               id="icon"
+                               th:field="*{icon}" 
+                               placeholder="e.g., 🧘"
+                               maxlength="10" />
+                    </div>
+                </div>
+                
+                <hr style="margin: 32px 0; border: 1px solid #e5e5e7;">
+                <h3 style="margin-bottom: 20px;">Content</h3>
+                
+                <div class="form-group">
+                    <label>Content Type</label>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <label class="radio-label">
+                            <input type="radio" name="contentTypeSelect" value="video_url" checked>
+                            Video URL (YouTube)
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="contentTypeSelect" value="video_file">
+                            Upload Video File
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="contentTypeSelect" value="pdf">
+                            Upload PDF
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="contentTypeSelect" value="text">
+                            Text Content
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="videoUrlSection">
+                    <label for="videoUrl">Video URL</label>
+                    <input type="url" 
+                           id="videoUrl" 
+                           th:field="*{videoUrl}" 
+                           placeholder="https://youtube.com/watch?v=..." />
+                    <small style="color: #666;">Paste YouTube link</small>
+                </div>
+                
+                <div class="form-group" id="videoFileSection" style="display:none;">
+                    <label for="videoFile">Upload Video</label>
+                    <input type="file" 
+                           id="videoFile" 
+                           name="videoFile" 
+                           accept="video/*" />
+                </div>
+                
+                <div class="form-group" id="pdfFileSection" style="display:none;">
+                    <label for="pdfFile">Upload PDF</label>
+                    <input type="file" 
+                           id="pdfFile" 
+                           name="pdfFile" 
+                           accept=".pdf" />
+                </div>
+                
+                <div class="form-group" id="textContentSection" style="display:none;">
+                    <label for="textContent">Text Content</label>
+                    <textarea id="textContent" 
+                              th:field="*{textContent}" 
+                              rows="8"
+                              placeholder="Enter module content here..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" th:field="*{isLocked}" />
+                        Lock this module (students won't be able to access it)
+                    </label>
+                </div>
+                
+                <div class="form-actions">
+                    <a th:href="@{/admin/modules}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <span th:text="${module.moduleId != null} ? 'Update Module' : 'Create Module'">
+                            Create Module
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+    
+    <style>
+        .back-btn {
+            color: #8b5cf6;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        
+        .form-container {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            max-width: 800px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        input[type="url"],
+        input[type="file"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e5e5e7;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #8b5cf6;
+        }
+        
+        .checkbox-label,
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: normal;
+        }
+        
+        .checkbox-label input[type="checkbox"],
+        .radio-label input[type="radio"] {
+            width: auto;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .btn-primary {
+            background: #8b5cf6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #7c3aed;
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+    </style>
+    
+    <script>
+        document.querySelectorAll('input[name="contentTypeSelect"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.getElementById('videoUrlSection').style.display = 'none';
+                document.getElementById('videoFileSection').style.display = 'none';
+                document.getElementById('pdfFileSection').style.display = 'none';
+                document.getElementById('textContentSection').style.display = 'none';
+
+                if (this.value === 'video_url') {
+                    document.getElementById('videoUrlSection').style.display = 'block';
+                } else if (this.value === 'video_file') {
+                    document.getElementById('videoFileSection').style.display = 'block';
+                } else if (this.value === 'pdf') {
+                    document.getElementById('pdfFileSection').style.display = 'block';
+                } else if (this.value === 'text') {
+                    document.getElementById('textContentSection').style.display = 'block';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
