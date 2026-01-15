@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz Approvals - Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2">
+                <!-- Sidebar -->
+            </div>
+            
+            <main class="col-md-10 ms-sm-auto px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bi bi-question-circle"></i> Quiz Question Approvals
+                    </h1>
+                    <div class="btn-toolbar">
+                        <a th:href="@{/admin/approvals/module-requests}" class="btn btn-outline-primary">
+                            <i class="bi bi-file-earmark-text"></i> Module Requests
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Success/Error Messages -->
+                <div th:if="${message}" class="alert" 
+                     th:classappend="${messageType == 'success'} ? 'alert-success' : 'alert-danger'">
+                    <span th:text="${message}"></span>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="text-warning" th:text="${pendingCount}">0</h3>
+                                <p class="mb-0">Pending Questions</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="text-success" th:text="${approvedCount}">0</h3>
+                                <p class="mb-0">Approved</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="text-danger" th:text="${rejectedCount}">0</h3>
+                                <p class="mb-0">Rejected</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filter Tabs -->
+                <ul class="nav nav-tabs mb-3" id="quizTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button">
+                            Pending <span class="badge bg-warning text-dark ms-1" th:text="${pendingCount}">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button">
+                            All Questions
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="quizTabsContent">
+                    <!-- Pending Questions Tab -->
+                    <div class="tab-pane fade show active" id="pending" role="tabpanel">
+                        <div th:if="${pendingQuizzes.isEmpty()}" class="card">
+                            <div class="card-body text-center text-muted py-5">
+                                <i class="bi bi-inbox" style="font-size: 64px;"></i>
+                                <p class="mt-3">No pending quiz questions at the moment</p>
+                            </div>
+                        </div>
+                        
+                        <div th:if="${!pendingQuizzes.isEmpty()}">
+                            <div class="quiz-approval-card" th:each="quiz, iterStat : ${pendingQuizzes}">
+                                <div class="card mb-3">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h5 class="mb-0">
+                                                Question #<span th:text="${iterStat.index + 1}"></span>
+                                            </h5>
+                                            <small class="text-muted">
+                                                Module ID: <strong th:text="${quiz.moduleId}"></strong>
+                                            </small>
+                                        </div>
+                                        <span class="badge bg-warning text-dark">PENDING</span>
+                                    </div>
+                                    
+                                    <div class="card-body">
+                                        <div class="question-section mb-4">
+                                            <label class="form-label"><strong>Question:</strong></label>
+                                            <p class="question-text" th:text="${quiz.questionText}"></p>
+                                        </div>
+                                        
+                                        <div class="options-section mb-4">
+                                            <label class="form-label"><strong>Options:</strong></label>
+                                            <div class="option-list">
+                                                <div class="option-item" 
+                                                     th:classappend="${quiz.correctAnswer == 'A'} ? 'correct-option' : ''">
+                                                    <div class="option-label">
+                                                        <strong>A.</strong> <span th:text="${quiz.optionA}"></span>
+                                                    </div>
+                                                    <i th:if="${quiz.correctAnswer == 'A'}" 
+                                                       class="bi bi-check-circle-fill text-success"></i>
+                                                </div>
+                                                
+                                                <div class="option-item" 
+                                                     th:classappend="${quiz.correctAnswer == 'B'} ? 'correct-option' : ''">
+                                                    <div class="option-label">
+                                                        <strong>B.</strong> <span th:text="${quiz.optionB}"></span>
+                                                    </div>
+                                                    <i th:if="${quiz.correctAnswer == 'B'}" 
+                                                       class="bi bi-check-circle-fill text-success"></i>
+                                                </div>
+                                                
+                                                <div class="option-item" 
+                                                     th:classappend="${quiz.correctAnswer == 'C'} ? 'correct-option' : ''">
+                                                    <div class="option-label">
+                                                        <strong>C.</strong> <span th:text="${quiz.optionC}"></span>
+                                                    </div>
+                                                    <i th:if="${quiz.correctAnswer == 'C'}" 
+                                                       class="bi bi-check-circle-fill text-success"></i>
+                                                </div>
+                                                
+                                                <div class="option-item" 
+                                                     th:classappend="${quiz.correctAnswer == 'D'} ? 'correct-option' : ''">
+                                                    <div class="option-label">
+                                                        <strong>D.</strong> <span th:text="${quiz.optionD}"></span>
+                                                    </div>
+                                                    <i th:if="${quiz.correctAnswer == 'D'}" 
+                                                       class="bi bi-check-circle-fill text-success"></i>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="alert alert-info mt-3">
+                                                <i class="bi bi-info-circle"></i>
+                                                <strong>Correct Answer: </strong>
+                                                <span class="badge bg-success" th:text="${quiz.correctAnswer}"></span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="meta-info mb-3">
+                                            <small class="text-muted">
+                                                Submitted by User ID: <strong th:text="${quiz.createdBy}"></strong>
+                                                on <span th:text="${#temporals.format(quiz.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+                                            </small>
+                                        </div>
+                                        
+                                        <div class="approval-actions">
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <form th:action="@{/admin/approvals/quiz-questions/{id}/reject(id=${quiz.quizId})}" 
+                                                          method="post" 
+                                                          class="d-flex gap-2"
+                                                          th:id="'rejectForm' + ${quiz.quizId}">
+                                                        <input type="text" 
+                                                               class="form-control" 
+                                                               name="reviewNotes" 
+                                                               placeholder="Rejection notes (optional)">
+                                                        <button type="submit" 
+                                                                class="btn btn-danger"
+                                                                onclick="return confirm('Reject this question?')">
+                                                            <i class="bi bi-x-circle"></i> Reject
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                                <div class="col-md-4 text-end">
+                                                    <form th:action="@{/admin/approvals/quiz-questions/{id}/approve(id=${quiz.quizId})}" 
+                                                          method="post"
+                                                          style="display: inline;">
+                                                        <button type="submit" 
+                                                                class="btn btn-success btn-lg"
+                                                                onclick="return confirm('Approve this question?')">
+                                                            <i class="bi bi-check-circle"></i> Approve
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- All Questions Tab -->
+                    <div class="tab-pane fade" id="all" role="tabpanel">
+                        <div th:if="${allQuizzes.isEmpty()}" class="card">
+                            <div class="card-body text-center text-muted py-5">
+                                <p>No quiz questions found</p>
+                            </div>
+                        </div>
+                        
+                        <div th:if="${!allQuizzes.isEmpty()}" class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Module</th>
+                                        <th>Question</th>
+                                        <th>Correct Answer</th>
+                                        <th>Status</th>
+                                        <th>Submitted By</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="quiz : ${allQuizzes}">
+                                        <td>Module ID: <span th:text="${quiz.moduleId}"></span></td>
+                                        <td>
+                                            <div class="text-truncate" style="max-width: 300px;" 
+                                                 th:text="${quiz.questionText}"
+                                                 th:title="${quiz.questionText}">
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success" th:text="${quiz.correctAnswer}"></span>
+                                        </td>
+                                        <td>
+                                            <span class="badge" 
+                                                  th:classappend="${quiz.status == 'PENDING'} ? 'bg-warning text-dark' : 
+                                                                 (${quiz.status == 'APPROVED'} ? 'bg-success' : 'bg-danger')"
+                                                  th:text="${quiz.status}">
+                                            </span>
+                                        </td>
+                                        <td>User ID: <span th:text="${quiz.createdBy}"></span></td>
+                                        <td th:text="${#temporals.format(quiz.createdAt, 'yyyy-MM-dd')}"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <style>
+        .quiz-approval-card {
+            margin-bottom: 20px;
+        }
+        
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #8b5cf6;
+        }
+        
+        .option-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .option-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .option-item.correct-option {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+        
+        .option-label {
+            flex: 1;
+        }
+        
+        .option-label strong {
+            color: #8b5cf6;
+            margin-right: 8px;
+        }
+        
+        .approval-actions {
+            border-top: 1px solid #e9ecef;
+            padding-top: 16px;
+            margin-top: 16px;
+        }
+        
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .nav-tabs .nav-link {
+            color: #6c757d;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: #8b5cf6;
+            border-bottom: 2px solid #8b5cf6;
+        }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

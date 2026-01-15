@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Questions - Innerly Counselor</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+    
+    <main id="page-content-wrapper" class="main-content" style="margin-left: 260px; padding: 2rem;">
+        
+        <a th:href="@{/counselor/assessment}" class="back-btn">
+            <i class="bi bi-arrow-left"></i> Back to Overview
+        </a>
+        
+        <div class="page-header">
+            <div class="header-content">
+                <div>
+                    <h1>Assessment Questions</h1>
+                    <p>View current assessment questions and suggest improvements</p>
+                </div>
+                <div class="header-actions">
+                    <a th:href="@{/counselor/assessment/questions/pending}" class="btn btn-secondary">
+                        <i class="bi bi-clock-history"></i> My Submissions
+                        <span th:if="${pendingCount > 0}" class="badge" th:text="${pendingCount}"></span>
+                    </a>
+                    <a th:href="@{/counselor/assessment/questions/add}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Add New Question
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div class="questions-container">
+            <div th:if="${questions.isEmpty()}" class="empty-state">
+                <i class="bi bi-inbox" style="font-size: 64px; opacity: 0.3;"></i>
+                <h3>No Approved Questions</h3>
+                <p>There are no approved assessment questions yet.</p>
+            </div>
+            
+            <div th:each="question, iterStat : ${questions}" class="question-card">
+                <div class="question-header">
+                    <div class="question-number">Q<span th:text="${iterStat.count}"></span></div>
+                    <div class="question-actions">
+                        <a th:href="@{/counselor/assessment/questions/edit/{id}(id=${question.questionId})}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil"></i> Suggest Edit
+                        </a>
+                        <form th:action="@{/counselor/assessment/questions/delete/{id}(id=${question.questionId})}" 
+                              method="post" 
+                              style="display: inline;"
+                              onsubmit="return confirm('Submit deletion request to admin?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i> Request Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="question-text" th:text="${question.questionText}"></div>
+                
+                <div class="options-list">
+                    <div th:each="option, optStat : ${question.options}" class="option-item">
+                        <span class="option-value" th:text="'Score ' + ${optStat.count - 1}"></span>
+                        <span th:text="${option.optionText}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <style>
+        .back-btn {
+            color: #8b5cf6;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        
+        .back-btn:hover {
+            color: #7c3aed;
+        }
+        
+        .page-header {
+            margin-bottom: 32px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .questions-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .question-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .question-number {
+            font-size: 20px;
+            font-weight: 700;
+            color: #8b5cf6;
+        }
+        
+        .question-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .question-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 16px;
+        }
+        
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-left: 16px;
+        }
+        
+        .option-item {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .option-value {
+            font-weight: 600;
+            color: #8b5cf6;
+            margin-right: 8px;
+            min-width: 60px;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: #8b5cf6;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary:hover {
+            background: #7c3aed;
+        }
+        
+        .badge {
+            background: #dc2626;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .btn-secondary {
+            background: #f5f5f7;
+            border: none;
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e5e7;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        
+        .empty-state h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin: 16px 0 12px;
+        }
+        
+        .empty-state p {
+            font-size: 16px;
+            color: #86868b;
+        }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -18,6 +18,25 @@
             <p>Overall mental health assessment summary</p>
         </div>
         
+        <!-- Pending Approvals Alert (only show if there are pending items) -->
+        <div th:if="${pendingCount != null && pendingCount > 0}" class="alert-banner">
+            <div class="alert-content">
+                <div class="alert-icon">
+                    <i class="bi bi-exclamation-circle"></i>
+                </div>
+                <div class="alert-text">
+                    <strong>Action Required:</strong>
+                    <span th:text="${pendingCount} + ' question suggestion' + (${pendingCount} > 1 ? 's' : '') + ' pending your review'">
+                        3 question suggestions pending your review
+                    </span>
+                </div>
+                <a th:href="@{/admin/assessment/questions/pending}" class="alert-action">
+                    Review Now
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+        
         <div class="stats-grid">
             <div class="stat-card total">
                 <div class="stat-icon">📊</div>
@@ -52,6 +71,21 @@
                 <div class="stat-value" th:text="${statistics.severeCount}">12</div>
                 <div class="stat-percentage" th:text="${statistics.severePercentage} + '%'">7%</div>
             </div>
+            
+            <!-- Pending Approvals Card -->
+            <a th:href="@{/admin/assessment/questions/pending}" class="stat-card pending-card" style="text-decoration: none;">
+                <div class="stat-icon">⏳</div>
+                <h3>Pending Approvals</h3>
+                <div class="stat-value pending-value" th:text="${pendingCount != null ? pendingCount : 0}">0</div>
+                <div class="pending-status" th:if="${pendingCount != null && pendingCount > 0}">
+                    <i class="bi bi-clock-history"></i>
+                    Requires Review
+                </div>
+                <div class="pending-status all-clear" th:if="${pendingCount == null || pendingCount == 0}">
+                    <i class="bi bi-check-circle"></i>
+                    All Clear
+                </div>
+            </a>
         </div>
         
         <div class="admin-actions">
@@ -65,6 +99,70 @@
     </main>
     
     <style>
+        .alert-banner {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .alert-content {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .alert-icon {
+            font-size: 32px;
+            color: #f59e0b;
+            flex-shrink: 0;
+        }
+        
+        .alert-text {
+            flex: 1;
+            color: #92400e;
+            font-size: 15px;
+        }
+        
+        .alert-text strong {
+            font-weight: 700;
+            margin-right: 8px;
+        }
+        
+        .alert-action {
+            background: #f59e0b;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        
+        .alert-action:hover {
+            background: #d97706;
+            transform: translateX(4px);
+        }
+        
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -78,6 +176,33 @@
             border-radius: 12px;
             text-align: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        
+        .pending-card {
+            border: 2px solid #f59e0b;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .pending-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+        }
+        
+        .pending-card:hover {
+            border-color: #d97706;
+            background: #fffbeb;
         }
         
         .stat-icon {
@@ -98,10 +223,28 @@
             margin-bottom: 8px;
         }
         
+        .pending-value {
+            color: #f59e0b;
+        }
+        
         .stat-percentage {
             font-size: 18px;
             font-weight: 600;
             opacity: 0.7;
+        }
+        
+        .pending-status {
+            font-size: 14px;
+            font-weight: 600;
+            color: #f59e0b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .pending-status.all-clear {
+            color: #10b981;
         }
         
         .stat-card.total { border-top: 4px solid #8b5cf6; }
@@ -115,6 +258,7 @@
             display: flex;
             justify-content: center;
             gap: 16px;
+            flex-wrap: wrap;
         }
         
         .btn-primary {

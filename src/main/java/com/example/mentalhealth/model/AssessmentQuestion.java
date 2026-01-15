@@ -1,11 +1,7 @@
 package com.example.mentalhealth.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.JoinColumn;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -14,13 +10,22 @@ public class AssessmentQuestion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer questionId;
+    
     private String questionText;
     private Integer questionOrder;
+    
+    // 新增字段
+    private String status; // PENDING, APPROVED, REJECTED
+    private Long createdBy;
+    private LocalDateTime createdAt;
+    private Long approvedBy;
+    private LocalDateTime approvedAt;
 
     @OneToMany
     @JoinColumn(name = "questionId")
     private List<AssessmentOption> options;
 
+    // Getters and Setters
     public Integer getQuestionId() {
         return questionId;
     }
@@ -43,6 +48,46 @@ public class AssessmentQuestion {
 
     public void setQuestionOrder(Integer questionOrder) {
         this.questionOrder = questionOrder;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Long getApprovedBy() {
+        return approvedBy;
+    }
+
+    public void setApprovedBy(Long approvedBy) {
+        this.approvedBy = approvedBy;
+    }
+
+    public LocalDateTime getApprovedAt() {
+        return approvedAt;
+    }
+
+    public void setApprovedAt(LocalDateTime approvedAt) {
+        this.approvedAt = approvedAt;
     }
 
     public List<AssessmentOption> getOptions() {

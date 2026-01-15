@@ -6,6 +6,7 @@
     <title>Student Assessment Detail - Innerly</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -13,7 +14,9 @@
     
     <main id="page-content-wrapper" class="main-content" style="margin-left: 260px; padding: 2rem;">
         
-        <a th:href="@{/counselor/assessment}" class="back-btn">← Back to Overview</a>
+        <a th:href="@{/counselor/assessment}" class="back-btn">
+            <i class="bi bi-arrow-left"></i> Back to Overview
+        </a>
         
         <div class="student-info-card">
             <h1 th:text="${student.fullName}">Student Name</h1>
@@ -30,7 +33,7 @@
         
         <div class="comment-section">
             <h2>Add Comment</h2>
-            <form th:action="@{/counselor/assessment/student/{id}/comment(id=${student.userId})}" 
+            <form th:action="@{/counselor/assessment/student/{id}/comment(id=${student.id})}" 
                   method="post" class="comment-form">
                 <div class="form-group">
                     <label for="commentText">Comment:</label>
@@ -100,18 +103,25 @@
                             </p>
                         </div>
                         
+                        <div class="timeline-actions">
+                            <a th:href="@{/counselor/assessment/assessment/{id}/details(id=${assessment.assessmentId})}" 
+                               class="btn btn-details">
+                                <i class="bi bi-file-text"></i> View Detailed Answers
+                            </a>
+                        </div>
+                        
                         <div class="timeline-trend" th:if="${!iterStat.last}">
                             <span th:if="${assessment.totalScore < assessments.get(iterStat.index + 1).totalScore}"
                                   class="trend-improving">
-                                ↓ Improving
+                                <i class="bi bi-arrow-down-circle"></i> Improving
                             </span>
                             <span th:if="${assessment.totalScore > assessments.get(iterStat.index + 1).totalScore}"
                                   class="trend-worsening">
-                                ↑ Needs attention
+                                <i class="bi bi-arrow-up-circle"></i> Needs attention
                             </span>
                             <span th:if="${assessment.totalScore == assessments.get(iterStat.index + 1).totalScore}"
                                   class="trend-stable">
-                                → Stable
+                                <i class="bi bi-dash-circle"></i> Stable
                             </span>
                         </div>
                     </div>
@@ -183,208 +193,269 @@
             text-decoration: none;
             font-weight: 600;
             margin-bottom: 20px;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
+        
+        .back-btn:hover {
+            color: #7c3aed;
+        }
+        
         .student-info-card {
-        background: white;
-        padding: 24px;
-        border-radius: 12px;
-        margin-bottom: 32px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    .student-info-card h1 {
-        font-size: 24px;
-        margin-bottom: 8px;
-    }
-    
-    .role-badge {
-        background: #f0f0f0;
-        padding: 4px 12px;
-        border-radius: 16px;
-        font-size: 12px;
-    }
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .student-info-card h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .role-badge {
+            background: #f0f0f0;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+        }
 
-    .trend-chart-section {
-        background: white;
-        padding: 24px;
-        border-radius: 12px;
-        margin-bottom: 32px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
+        .trend-chart-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
 
-    .trend-chart-section h2 {
-        font-size: 20px;
-        margin-bottom: 20px;
-    }
+        .trend-chart-section h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
 
-    .comment-section {
-        background: white;
-        padding: 24px;
-        border-radius: 12px;
-        margin-bottom: 32px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
+        .comment-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
 
-    .comment-section h2 {
-        font-size: 20px;
-        margin-bottom: 20px;
-    }
+        .comment-section h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
 
-    .comment-form .form-group {
-        margin-bottom: 16px;
-    }
+        .comment-form .form-group {
+            margin-bottom: 16px;
+        }
 
-    .comment-form label {
-        font-weight: 600;
-        margin-bottom: 8px;
-        display: block;
-    }
+        .comment-form label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
 
-    .comment-form textarea {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #e5e5e7;
-        border-radius: 8px;
-        font-family: inherit;
-    }
+        .comment-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e5e5e7;
+            border-radius: 8px;
+            font-family: inherit;
+        }
 
-    .comments-history {
-        background: white;
-        padding: 24px;
-        border-radius: 12px;
-        margin-bottom: 32px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
+        .comments-history {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
 
-    .comment-item {
-        border-left: 3px solid #8b5cf6;
-        padding: 16px;
-        margin-bottom: 16px;
-        background: #f9f9fb;
-        border-radius: 8px;
-    }
+        .comment-item {
+            border-left: 3px solid #8b5cf6;
+            padding: 16px;
+            margin-bottom: 16px;
+            background: #f9f9fb;
+            border-radius: 8px;
+        }
 
-    .comment-header {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 8px;
-        font-size: 14px;
-        color: #666;
-    }
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #666;
+        }
 
-    .comment-visibility {
-        font-weight: 600;
-        color: #8b5cf6;
-    }
+        .comment-visibility {
+            font-weight: 600;
+            color: #8b5cf6;
+        }
 
-    .comment-text {
-        color: #333;
-        line-height: 1.6;
-    }
-    
-    .history-timeline {
-        position: relative;
-        padding-left: 40px;
-    }
-    
-    .timeline-item {
-        position: relative;
-        margin-bottom: 32px;
-    }
-    
-    .timeline-item:before {
-        content: '';
-        position: absolute;
-        left: -28px;
-        top: 20px;
-        bottom: -32px;
-        width: 2px;
-        background: #e5e5e7;
-    }
-    
-    .timeline-item:last-child:before {
-        display: none;
-    }
-    
-    .timeline-dot {
-        position: absolute;
-        left: -34px;
-        top: 12px;
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        border: 3px solid white;
-        box-shadow: 0 0 0 1px #e5e5e7;
-    }
-    
-    .timeline-dot.minimal { background: #0f7333; }
-    .timeline-dot.mild { background: #b86e00; }
-    .timeline-dot.moderate { background: #c7341e; }
-    .timeline-dot.severe { background: #a50e0e; }
-    
-    .timeline-card {
-        background: white;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    .timeline-header {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 12px;
-    }
-    
-    .timeline-score {
-        font-size: 20px;
-        font-weight: 700;
-        padding: 4px 12px;
-        border-radius: 8px;
-    }
-    
-    .timeline-score.minimal { background: #d1f4dd; color: #0f7333; }
-    .timeline-score.mild { background: #fff4ce; color: #b86e00; }
-    .timeline-score.moderate { background: #ffd6cc; color: #c7341e; }
-    .timeline-score.severe { background: #fdd; color: #a50e0e; }
-    
-    .timeline-severity {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 16px;
-        font-size: 14px;
-        font-weight: 600;
-        margin-bottom: 8px;
-    }
-    
-    .timeline-severity.minimal { background: #d1f4dd; color: #0f7333; }
-    .timeline-severity.mild { background: #fff4ce; color: #b86e00; }
-    .timeline-severity.moderate { background: #ffd6cc; color: #c7341e; }
-    .timeline-severity.severe { background: #fdd; color: #a50e0e; }
-    
-    .timeline-trend {
-        margin-top: 12px;
-        font-size: 14px;
-        font-weight: 600;
-    }
-    
-    .trend-improving { color: #0f7333; }
-    .trend-worsening { color: #c7341e; }
-    .trend-stable { color: #666; }
+        .comment-text {
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .assessment-history-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .assessment-history-section h2 {
+            font-size: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .history-timeline {
+            position: relative;
+            padding-left: 40px;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 32px;
+        }
+        
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: -28px;
+            top: 20px;
+            bottom: -32px;
+            width: 2px;
+            background: #e5e5e7;
+        }
+        
+        .timeline-item:last-child:before {
+            display: none;
+        }
+        
+        .timeline-dot {
+            position: absolute;
+            left: -34px;
+            top: 12px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 1px #e5e5e7;
+        }
+        
+        .timeline-dot.minimal { background: #0f7333; }
+        .timeline-dot.mild { background: #b86e00; }
+        .timeline-dot.moderate { background: #c7341e; }
+        .timeline-dot.severe { background: #a50e0e; }
+        
+        .timeline-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        .timeline-score {
+            font-size: 20px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 8px;
+        }
+        
+        .timeline-score.minimal { background: #d1f4dd; color: #0f7333; }
+        .timeline-score.mild { background: #fff4ce; color: #b86e00; }
+        .timeline-score.moderate { background: #ffd6cc; color: #c7341e; }
+        .timeline-score.severe { background: #fdd; color: #a50e0e; }
+        
+        .timeline-severity {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .timeline-severity.minimal { background: #d1f4dd; color: #0f7333; }
+        .timeline-severity.mild { background: #fff4ce; color: #b86e00; }
+        .timeline-severity.moderate { background: #ffd6cc; color: #c7341e; }
+        .timeline-severity.severe { background: #fdd; color: #a50e0e; }
+        
+        .timeline-actions {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e5e7;
+        }
+        
+        .btn-details {
+            background: #f5f5f7;
+            color: #8b5cf6;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        
+        .btn-details:hover {
+            background: #8b5cf6;
+            color: white;
+        }
+        
+        .timeline-trend {
+            margin-top: 12px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .trend-improving { 
+            color: #0f7333;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .trend-worsening { 
+            color: #c7341e;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .trend-stable { 
+            color: #666;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
 
-    .btn-primary {
-        background: #8b5cf6;
-        color: white;
-        padding: 10px 24px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-    }
+        .btn-primary {
+            background: #8b5cf6;
+            color: white;
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
 
-    .btn-primary:hover {
-        background: #7c3aed;
-    }
-</style>
+        .btn-primary:hover {
+            background: #7c3aed;
+        }
+    </style>
 </body>
 </html>

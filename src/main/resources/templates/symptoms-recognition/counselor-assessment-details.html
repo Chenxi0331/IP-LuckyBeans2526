@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Details - Innerly Counselor</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+    
+    <main id="page-content-wrapper" class="main-content" style="margin-left: 260px; padding: 2rem;">
+        
+        <a th:href="@{/counselor/assessment/student/{id}(id=${student.id})}" class="back-btn">
+            <i class="bi bi-arrow-left"></i> Back to Student Profile
+        </a>
+        
+        <!-- Assessment Overview Card -->
+        <div class="assessment-overview-card">
+            <div class="overview-header">
+                <div>
+                    <h1>Assessment Details</h1>
+                    <div class="student-info">
+                        <i class="bi bi-person-circle"></i>
+                        <span th:text="${student.fullName}">Student Name</span>
+                        <span class="separator">•</span>
+                        <span th:text="${student.email}">student@email.com</span>
+                    </div>
+                </div>
+                <div class="overview-score">
+                    <div class="score-label">Total Score</div>
+                    <div class="score-value" th:classappend="${assessment.severityLevel}">
+                        <span th:text="${assessment.totalScore}">8</span>/20
+                    </div>
+                    <span class="severity-badge" 
+                          th:classappend="${assessment.severityLevel}"
+                          th:text="${#strings.capitalize(assessment.severityLevel)}">
+                        Mild
+                    </span>
+                </div>
+            </div>
+            
+            <div class="overview-meta">
+                <div class="meta-item">
+                    <i class="bi bi-calendar3"></i>
+                    <span th:text="${#temporals.format(assessment.assessmentDate, 'MMMM dd, yyyy')}">
+                        January 14, 2026
+                    </span>
+                </div>
+                <div class="meta-item">
+                    <i class="bi bi-clock"></i>
+                    <span th:text="${#temporals.format(assessment.assessmentDate, 'hh:mm a')}">
+                        02:30 PM
+                    </span>
+                </div>
+            </div>
+            
+            <div class="assessment-result">
+                <i class="bi bi-info-circle"></i>
+                <p th:text="${assessment.assessmentResult}">
+                    Mild symptoms. Consider some self-care activities.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Questions and Answers -->
+        <div class="questions-section">
+            <h2>
+                <i class="bi bi-clipboard-check"></i>
+                Questions & Responses
+            </h2>
+            
+            <div class="questions-list">
+                <div class="question-card" th:each="answer, iterStat : ${answers}">
+                    <div class="question-header">
+                        <span class="question-number">Question <span th:text="${iterStat.count}">1</span></span>
+                        <span class="answer-score" th:text="'+' + ${answer.answerValue} + ' points'">
+                            +2 points
+                        </span>
+                    </div>
+                    
+                    <div class="question-text">
+                        <p th:text="${questionTexts.get(answer.questionId)}">
+                            In the past two weeks, how often have you experienced feelings of sadness or hopelessness?
+                        </p>
+                    </div>
+                    
+                    <div class="answer-section">
+                        <div class="answer-label">Student's Response:</div>
+                        <div class="answer-text" th:classappend="'score-' + ${answer.answerValue}">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span th:text="${answerTexts.get(answer.questionId)}">
+                                Several days
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Assessment Comments -->
+        <!-- <div class="comments-section" th:if="${comments != null && !comments.isEmpty()}">
+            <h2>
+                <i class="bi bi-chat-left-text"></i>
+                Counselor Comments
+            </h2>
+            
+            <div class="comment-list">
+                <div class="comment-card" th:each="comment : ${comments}">
+                    <div class="comment-header">
+                        <span class="comment-date">
+                            <i class="bi bi-calendar3"></i>
+                            <span th:text="${#temporals.format(comment.createdAt, 'MMM dd, yyyy hh:mm a')}">
+                                Jan 14, 2026 03:30 PM
+                            </span>
+                        </span>
+                        <span class="comment-visibility" 
+                              th:classappend="${comment.isVisibleToStudent ? 'visible' : 'private'}">
+                            <i th:class="${comment.isVisibleToStudent ? 'bi bi-eye' : 'bi bi-eye-slash'}"></i>
+                            <span th:text="${comment.isVisibleToStudent ? 'Visible to Student' : 'Private'}">
+                                Visible to Student
+                            </span>
+                        </span>
+                    </div>
+                    <p class="comment-text" th:text="${comment.commentText}">
+                        The student shows improvement compared to the previous assessment.
+                    </p>
+                </div>
+            </div>
+        </div> -->
+        
+        <!-- Add New Comment -->
+        <div class="add-comment-section">
+            <h2>
+                <i class="bi bi-plus-circle"></i>
+                Add Comment
+            </h2>
+            
+            <form th:action="@{/counselor/assessment/student/{id}/comment(id=${student.id})}" 
+                  method="post" class="comment-form">
+                <input type="hidden" name="assessmentId" th:value="${assessment.assessmentId}">
+                
+                <div class="form-group">
+                    <label for="commentText">Your Comment:</label>
+                    <textarea id="commentText" 
+                              name="commentText" 
+                              class="form-control" 
+                              rows="4" 
+                              required
+                              placeholder="Enter your professional observation or recommendation about this specific assessment..."></textarea>
+                </div>
+                
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="visibleToStudent" value="true" checked>
+                        <span>Make this comment visible to the student</span>
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-send"></i>
+                    Add Comment
+                </button>
+            </form>
+        </div>
+    </main>
+    
+    <style>
+        .back-btn {
+            color: #8b5cf6;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .back-btn:hover {
+            color: #7c3aed;
+        }
+        
+        .assessment-overview-card {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .overview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        
+        .overview-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .student-info i {
+            font-size: 18px;
+            color: #8b5cf6;
+        }
+        
+        .separator {
+            color: #ddd;
+        }
+        
+        .overview-score {
+            text-align: right;
+        }
+        
+        .score-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .score-value {
+            font-size: 48px;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        
+        .score-value.minimal { color: #0f7333; }
+        .score-value.mild { color: #b86e00; }
+        .score-value.moderate { color: #c7341e; }
+        .score-value.severe { color: #a50e0e; }
+        
+        .severity-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .severity-badge.minimal { background: #d1f4dd; color: #0f7333; }
+        .severity-badge.mild { background: #fff4ce; color: #b86e00; }
+        .severity-badge.moderate { background: #ffd6cc; color: #c7341e; }
+        .severity-badge.severe { background: #fdd; color: #a50e0e; }
+        
+        .overview-meta {
+            display: flex;
+            gap: 24px;
+            padding: 16px 0;
+            border-top: 1px solid #e5e5e7;
+            border-bottom: 1px solid #e5e5e7;
+            margin-bottom: 16px;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .meta-item i {
+            font-size: 16px;
+            color: #8b5cf6;
+        }
+        
+        .assessment-result {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        
+        .assessment-result i {
+            font-size: 20px;
+            color: #8b5cf6;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .assessment-result p {
+            margin: 0;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .questions-section {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .questions-section h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .questions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .question-card {
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid #8b5cf6;
+        }
+        
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .question-number {
+            font-weight: 700;
+            color: #8b5cf6;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .answer-score {
+            background: #e8eaed;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .question-text {
+            margin-bottom: 16px;
+        }
+        
+        .question-text p {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin: 0;
+            line-height: 1.5;
+        }
+        
+        .answer-section {
+            padding-top: 16px;
+            border-top: 1px solid #e5e5e7;
+        }
+        
+        .answer-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .answer-text {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        
+        .answer-text i {
+            font-size: 18px;
+        }
+        
+        .answer-text.score-0 { color: #0f7333; border-left: 3px solid #0f7333; }
+        .answer-text.score-1 { color: #b86e00; border-left: 3px solid #b86e00; }
+        .answer-text.score-2 { color: #c7341e; border-left: 3px solid #c7341e; }
+        .answer-text.score-3 { color: #a50e0e; border-left: 3px solid #a50e0e; }
+        
+        .comments-section {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .comments-section h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .comment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .comment-card {
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 3px solid #8b5cf6;
+        }
+        
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        
+        .comment-date {
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .comment-visibility {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .comment-visibility.visible {
+            background: #d1f4dd;
+            color: #0f7333;
+        }
+        
+        .comment-visibility.private {
+            background: #e8eaed;
+            color: #666;
+        }
+        
+        .comment-text {
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .add-comment-section {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .add-comment-section h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .comment-form .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .comment-form label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+            font-size: 14px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e5e5e7;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        
+        .checkbox-group {
+            margin-bottom: 24px;
+        }
+        
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: normal;
+        }
+        
+        .checkbox-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: #8b5cf6;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .btn-primary:hover {
+            background: #7c3aed;
+        }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

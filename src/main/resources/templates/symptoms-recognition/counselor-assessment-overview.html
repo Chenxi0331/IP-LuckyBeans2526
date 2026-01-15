@@ -13,10 +13,19 @@
     
     <main id="page-content-wrapper" class="main-content" style="margin-left: 260px; padding: 2rem;">
         
-        <!-- Page Header -->
+        <!-- Page Header with Action Buttons -->
         <div class="page-header">
-            <h1>Student Assessment Overview</h1>
-            <p>View and analyse student mental health assessments</p>
+            <div class="header-content">
+                <div>
+                    <h1>Student Assessment Overview</h1>
+                    <p>View and analyse student mental health assessments</p>
+                </div>
+                <div class="header-actions">
+                    <a th:href="@{/counselor/assessment/questions}" class="btn btn-outline-primary">
+                        <i class="bi bi-list-check"></i> Manage Questions
+                    </a>
+                </div>
+            </div>
         </div>
         
         <!-- Assessment Overview Table -->
@@ -52,7 +61,7 @@
                         <td>
                             <a th:href="@{/counselor/assessment/student/{id}(id=${summary.userId})}" 
                                class="btn btn-primary">
-                                View Details
+                                <i class="bi bi-eye"></i> View Details
                             </a>
                         </td>
                     </tr>
@@ -62,6 +71,22 @@
     </main>
     
     <style>
+        .page-header {
+            margin-bottom: 32px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
         .assessment-table {
             width: 100%;
             background: white;
@@ -128,10 +153,34 @@
             border-radius: 8px;
             text-decoration: none;
             font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
         
         .btn-primary:hover {
             background: #7c3aed;
+        }
+        
+        .btn-outline-primary {
+            background: white;
+            color: #8b5cf6;
+            border: 2px solid #8b5cf6;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        .btn-outline-primary:hover {
+            background: #8b5cf6;
+            color: white;
         }
     </style>
 </body>

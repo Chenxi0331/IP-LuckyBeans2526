@@ -78,7 +78,7 @@
                     <div class="module-actions">
                         <button class="btn-view-details" 
                                 th:data-module-id="${module.moduleId}"
-                                onclick="toggleModuleDetails(this.dataset.moduleId)">
+                                onclick="toggleModuleDetails(this.dataset.moduleId, this)">
                             <i class="bi bi-eye"></i> View Details
                         </button>
                         
@@ -811,18 +811,18 @@
     </style>
     
     <script>
-        function toggleModuleDetails(moduleId) {
-            const detailsDiv = document.getElementById('details-' + moduleId);
-            const button = event.target.closest('button');
-            
-            if (detailsDiv.style.display === 'none' || !detailsDiv.style.display) {
-                detailsDiv.style.display = 'block';
-                button.innerHTML = '<i class="bi bi-eye-slash"></i> Hide Details';
-            } else {
-                detailsDiv.style.display = 'none';
-                button.innerHTML = '<i class="bi bi-eye"></i> View Details';
-            }
-        }
+        function toggleModuleDetails(moduleId, btn) {
+  const detailsDiv = document.getElementById('details-' + moduleId);
+
+  if (detailsDiv.style.display === 'none' || !detailsDiv.style.display) {
+    detailsDiv.style.display = 'block';
+    btn.innerHTML = '<i class="bi bi-eye-slash"></i> Hide Details';
+  } else {
+    detailsDiv.style.display = 'none';
+    btn.innerHTML = '<i class="bi bi-eye"></i> View Details';
+  }
+}
+
         
         function openRecommendModal(moduleId, moduleName) {
             document.getElementById('modalModuleId').value = moduleId;

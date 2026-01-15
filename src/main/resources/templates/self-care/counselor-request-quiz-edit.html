@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Quiz Question</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+    
+    <main id="page-content-wrapper" class="main-content" style="margin-left: 260px; padding: 2rem;">
+        
+        <div class="page-header-actions mb-4">
+            <div>
+                <h1><i class="bi bi-pencil"></i> Edit Quiz Question</h1>
+                <p>Module: <strong th:text="${request.title}"></strong></p>
+            </div>
+            <a th:href="@{/counselor/modules/request/{id}/quiz(id=${request.requestId})}" 
+               class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Quiz List
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <form th:action="@{/counselor/modules/request/quiz/update/{id}(id=${quiz.tempQuizId})}" 
+                      method="post" 
+                      th:object="${quiz}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Question Text *</label>
+                        <textarea class="form-control" 
+                                  th:field="*{questionText}" 
+                                  rows="3" 
+                                  required
+                                  placeholder="Enter your question here..."></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Option A *</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   th:field="*{optionA}" 
+                                   required
+                                   placeholder="First option">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Option B *</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   th:field="*{optionB}" 
+                                   required
+                                   placeholder="Second option">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Option C *</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   th:field="*{optionC}" 
+                                   required
+                                   placeholder="Third option">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Option D *</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   th:field="*{optionD}" 
+                                   required
+                                   placeholder="Fourth option">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Correct Answer *</label>
+                            <select class="form-select" th:field="*{correctAnswer}" required>
+                                <option value="">-- Select Correct Answer --</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Question Order</label>
+                            <input type="number" 
+                                   class="form-control" 
+                                   th:field="*{questionOrder}" 
+                                   min="1"
+                                   placeholder="1">
+                            <small class="text-muted">Lower numbers appear first</small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Update Question
+                        </button>
+                        <a th:href="@{/counselor/modules/request/{id}/quiz(id=${request.requestId})}" 
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+    
+    <style>
+        .page-header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .page-header-actions h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .page-header-actions p {
+            margin: 8px 0 0 0;
+            color: #666;
+        }
+        
+        .btn-primary {
+            background: #8b5cf6;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background: #7c3aed;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: none;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 10px 12px;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.25);
+        }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

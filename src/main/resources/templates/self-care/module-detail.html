@@ -2,7 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title th:text="${module.title}">Module Detail</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
@@ -18,17 +19,21 @@
                 <button class="close-button" onclick="window.location.href='/self-care'">✕</button>
             </div>
             
+            <!-- Success/Error Messages -->
+            <div th:if="${message}" class="alert" 
+                 th:classappend="${messageType == 'success'} ? 'alert-success' : 'alert-danger'">
+                <span th:text="${message}"></span>
+            </div>
+            
             <!-- Module Info -->
             <div class="module-info">
                 <div class="module-icon" th:text="${module.icon}">🌙</div>
-                <h1 th:text="${module.title}">Sleep Hygiene Basics</h1>
-                <p th:text="${module.description}">Develop healthy sleep habits</p>
+                <h1 th:text="${module.title}">Module Title</h1>
+                <p th:text="${module.description}">Description</p>
                 
                 <div class="module-meta">
                     <span class="badge" th:text="${module.level}">Beginner</span>
                     <span class="duration" th:text="${module.duration} + ' min'">20 min</span>
-                    
-                    <!-- Content Type Badge -->
                     <span class="badge content-type" th:if="${module.contentType == 'video_url'}">
                         <i class="bi bi-play-circle"></i> Video
                     </span>
@@ -48,7 +53,7 @@
             <div class="module-content">
                 <h2>Module Content</h2>
                 
-                <!-- Video URL (YouTube/Vimeo) -->
+                <!-- Video URL -->
                 <div th:if="${module.contentType == 'video_url' and module.videoUrl != null}" class="content-viewer">
                     <div class="video-container">
                         <iframe th:src="${module.videoUrl}" 
@@ -57,24 +62,14 @@
                                 allowfullscreen>
                         </iframe>
                     </div>
-                    <p class="content-source">
-                        <i class="bi bi-link-45deg"></i> 
-                        <a th:href="${module.videoUrl}" target="_blank">Open in new tab</a>
-                    </p>
                 </div>
                 
                 <!-- Video File -->
                 <div th:if="${module.contentType == 'video_file' and module.videoFilePath != null}" class="content-viewer">
                     <video controls class="video-player">
                         <source th:src="${module.videoFilePath}" type="video/mp4">
-                        <source th:src="${'/' + module.videoFilePath}" type="video/webm">
-                        <source th:src="${'/' + module.videoFilePath}" type="video/ogg">
                         Your browser does not support the video tag.
                     </video>
-                    <p class="content-source">
-                        <i class="bi bi-file-play"></i> 
-                        Uploaded video file
-                    </p>
                 </div>
                 
                 <!-- PDF File -->
@@ -82,45 +77,17 @@
                     <div class="pdf-preview">
                         <i class="bi bi-file-pdf" style="font-size: 48px; color: #dc3545;"></i>
                         <p>PDF Document</p>
-                        <a th:href="${'/' + module.pdfFilePath}" 
+                        <a th:href="${module.pdfFilePath}" 
                            target="_blank" 
                            class="btn btn-outline-primary">
                             <i class="bi bi-download"></i> Download PDF
                         </a>
                     </div>
-                    <p class="content-source">
-                        <i class="bi bi-file-pdf"></i> 
-                        PDF document available for download
-                    </p>
                 </div>
                 
                 <!-- Text Content -->
                 <div th:if="${module.contentType == 'text' and module.textContent != null}" class="content-viewer">
-                    <div class="text-content" th:utext="${module.textContent}">
-                        <!-- Text content will be displayed here -->
-                    </div>
-                    <p class="content-source">
-                        <i class="bi bi-file-text"></i> 
-                        Text-based module
-                    </p>
-                </div>
-                
-                <!-- Fallback if no content -->
-                <div th:if="${module.contentType == null}" class="content-list">
-                    <div class="content-item">
-                        <span class="play-icon">▶️</span>
-                        <span>Introduction & Overview</span>
-                    </div>
-                    
-                    <div class="content-item">
-                        <span class="play-icon">▶️</span>
-                        <span>Guided Practice Session</span>
-                    </div>
-                    
-                    <div class="content-item">
-                        <span class="play-icon">▶️</span>
-                        <span>Reflection & Tips</span>
-                    </div>
+                    <div class="text-content" th:utext="${module.textContent}"></div>
                 </div>
             </div>
             
@@ -136,53 +103,131 @@
                          th:style="'width: ' + ${progress.progressPercentage} + '%'">
                     </div>
                 </div>
+                
+                <div class="progress-info" style="margin-top: 12px; font-size: 14px; color: #666;">
+                    <div th:if="${progress.contentCompleted}">
+                        ✓ Content completed (50%)
+                    </div>
+                    <div th:if="${progress.quizCompleted}">
+                        ✓ Quiz completed (50%)
+                    </div>
+                    <div th:if="${!progress.contentCompleted}">
+                        ○ Content not yet completed
+                    </div>
+                    <div th:if="${progress.contentCompleted and !progress.quizCompleted}">
+                        ○ Quiz pending
+                    </div>
+                </div>
             </div>
             
             <!-- Action Buttons -->
             <div class="modal-actions">
                 <a th:href="@{/self-care}" class="btn btn-secondary">Close</a>
-                <button class="btn btn-primary" onclick="continueModule()">
-                    <span th:text="${progress.progressPercentage >= 100} ? 'Review' : 'Continue'">Continue</span>
+                
+                <!-- Complete Content Button (only if not completed) -->
+                <button th:if="${!progress.contentCompleted}" 
+                        class="btn btn-primary" 
+                        onclick="completeContent()">
+                    ✓ Mark Content Complete
                 </button>
+                
+                <!-- Take Quiz Button (only if content completed but quiz not done) -->
+                <a th:if="${progress.contentCompleted and !progress.quizCompleted}"
+                   th:href="@{/self-care/module/{id}/quiz(id=${module.moduleId})}" 
+                   class="btn btn-success">
+                    📝 Take Quiz
+                </a>
+                
+                <!-- View Results Button (if quiz completed) -->
+                <a th:if="${progress.quizCompleted}"
+                   th:href="@{/self-care/module/{id}/quiz/result(id=${module.moduleId})}" 
+                   class="btn btn-info">
+                    📊 View Quiz Results
+                </a>
             </div>
             
         </div>
     </div>
     
     <script th:inline="javascript">
-        /*<![CDATA[*/
         const moduleId = /*[[${module.moduleId}]]*/ 0;
-        const currentProgress = /*[[${progress.progressPercentage}]]*/ 0;
-        /*]]>*/
         
-        function continueModule() {
-            // Increase progress by 20% each time
-            const newProgress = Math.min(currentProgress + 20, 100);
-            
-            // Send AJAX request to update progress
-            fetch(`/self-care/module/${moduleId}/update-progress?progress=${newProgress}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                }
-            })
-            .then(response => response.text())
-            .then(data => {
-                const result = JSON.parse(data);
-                if (result.success) {
-                    location.reload();
-                } else {
-                    alert('Failed to update progress: ' + result.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while updating progress');
-            });
+        function completeContent() {
+    if (!confirm('Have you finished viewing all the content? This will mark the content as complete (50% progress).')) {
+        return;
+    }
+    
+    // Get CSRF token from meta tag or hidden input
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || 
+                      document.querySelector('input[name="_csrf"]')?.value;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+    
+    fetch(`/self-care/module/${moduleId}/complete-content`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/x-www-form-urlencoded',
+            [csrfHeader]: csrfToken  // ADD THIS!
         }
+    })
+    .then(res => res.json())
+    .then(result => {
+        if (result.success) {
+            alert('✓ Content completed! You can now take the quiz to complete this module.');
+            location.reload();
+        } else {
+            alert('Failed: ' + result.message);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('An error occurred');
+    });
+}
     </script>
     
     <style>
+        /* Previous styles remain the same, add these */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #d1f4dd;
+            color: #0f7333;
+            border: 1px solid #0f7333;
+        }
+        
+        .alert-danger {
+            background: #fdd;
+            color: #a50e0e;
+            border: 1px solid #a50e0e;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .btn-info {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: #2563eb;
+        }
+        
+        .progress-info div {
+            padding: 4px 0;
+        }
+        
+        /* All previous CSS from original module-detail.html remains */
         .module-detail-overlay {
             position: fixed;
             top: 0;
@@ -267,23 +312,16 @@
             margin-bottom: 24px;
         }
         
-        .module-content h2 {
-            font-size: 18px;
-            margin-bottom: 16px;
-        }
-        
-        /* Content Viewer Styles */
         .content-viewer {
             margin-top: 16px;
         }
         
         .video-container {
             position: relative;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            padding-bottom: 56.25%;
             height: 0;
             overflow: hidden;
             border-radius: 8px;
-            margin-bottom: 12px;
             background: #000;
         }
         
@@ -299,7 +337,6 @@
             width: 100%;
             max-height: 450px;
             border-radius: 8px;
-            margin-bottom: 12px;
             background: #000;
         }
         
@@ -311,11 +348,6 @@
             border: 2px dashed #dee2e6;
         }
         
-        .pdf-preview p {
-            margin: 12px 0 20px 0;
-            color: #666;
-        }
-        
         .text-content {
             background: white;
             padding: 20px;
@@ -323,61 +355,6 @@
             line-height: 1.8;
             color: #333;
             white-space: pre-wrap;
-        }
-        
-        .content-source {
-            font-size: 13px;
-            color: #666;
-            margin-top: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .content-source a {
-            color: #8b5cf6;
-            text-decoration: none;
-        }
-        
-        .content-source a:hover {
-            text-decoration: underline;
-        }
-        
-        .btn-outline-primary {
-            border: 2px solid #8b5cf6;
-            color: #8b5cf6;
-            background: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-        }
-        
-        .btn-outline-primary:hover {
-            background: #8b5cf6;
-            color: white;
-        }
-        
-        .content-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .content-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background: white;
-            border-radius: 8px;
-        }
-        
-        .play-icon {
-            font-size: 20px;
         }
         
         .progress-section {
@@ -435,6 +412,24 @@
         
         .btn-primary:hover {
             background: #7c3aed;
+        }
+        
+        .btn-outline-primary {
+            border: 2px solid #8b5cf6;
+            color: #8b5cf6;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        
+        .btn-outline-primary:hover {
+            background: #8b5cf6;
+            color: white;
         }
     </style>
 </body>

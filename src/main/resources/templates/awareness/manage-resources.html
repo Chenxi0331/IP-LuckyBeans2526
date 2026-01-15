@@ -177,12 +177,12 @@
                                                             class="btn btn-sm btn-warning rounded-circle"
                                                             title="Reject"><i class="fas fa-times"></i></button>
                                                     </form>
-                                                    <form th:action="@{/awareness/resource/delete/{id}(id=${res.id})}"
+                                                    <form th:action="@{/awareness/resource/archive/{id}(id=${res.id})}"
                                                         method="post" class="d-inline"
                                                         onsubmit="return confirm('Archive this resource?');">
                                                         <button type="submit"
-                                                            class="btn btn-sm btn-danger rounded-circle"
-                                                            title="Delete"><i class="fas fa-trash"></i></button>
+                                                            class="btn btn-sm btn-secondary rounded-circle"
+                                                            title="Archive"><i class="fas fa-box-archive"></i></button>
                                                     </form>
                                                 </div>
                                             </td>
@@ -261,12 +261,12 @@
                                                             class="btn btn-sm btn-warning rounded-circle"
                                                             title="Reject"><i class="fas fa-times"></i></button>
                                                     </form>
-                                                    <form th:action="@{/awareness/campaign/delete/{id}(id=${camp.id})}"
+                                                    <form th:action="@{/awareness/campaign/archive/{id}(id=${camp.id})}"
                                                         method="post" class="d-inline"
                                                         onsubmit="return confirm('Archive this campaign?');">
                                                         <button type="submit"
-                                                            class="btn btn-sm btn-danger rounded-circle"
-                                                            title="Delete"><i class="fas fa-trash"></i></button>
+                                                            class="btn btn-sm btn-secondary rounded-circle"
+                                                            title="Archive"><i class="fas fa-box-archive"></i></button>
                                                     </form>
                                                 </div>
                                             </td>

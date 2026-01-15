@@ -58,7 +58,11 @@ public class EducationalResourceService {
         }
     }
 
-    public void deleteResource(Long id) {
-        educationalResourceRepository.deleteById(id);
+    public void archiveResource(Long id) {
+        EducationalResource resource = getResourceById(id);
+        if (resource != null) {
+            resource.setStatus("ARCHIVED");
+            educationalResourceRepository.save(resource);
+        }
     }
 }

@@ -94,7 +94,11 @@ public class AwarenessCampaignService {
         return registered;
     }
 
-    public void deleteCampaign(Long id) {
-        awarenessCampaignRepository.deleteById(id);
+    public void archiveCampaign(Long id) {
+        AwarenessCampaign campaign = getCampaignById(id);
+        if (campaign != null) {
+            campaign.setStatus("ARCHIVED");
+            awarenessCampaignRepository.save(campaign);
+        }
     }
 }

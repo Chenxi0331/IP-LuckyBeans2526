@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approval History - Innerly Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+    
+    <main id="page-content-wrapper" class="main-content" style="margin-left: 260px; padding: 2rem;">
+        
+        <a th:href="@{/admin/assessment/questions}" class="back-btn">
+            <i class="bi bi-arrow-left"></i> Back to Questions
+        </a>
+        
+        <div class="page-header">
+            <h1><i class="bi bi-clock-history"></i> Approval History</h1>
+            <p>View all approved and rejected question submissions</p>
+        </div>
+        
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <button class="tab-btn active" onclick="filterHistory('all')">All</button>
+            <button class="tab-btn" onclick="filterHistory('APPROVED')">Approved</button>
+            <button class="tab-btn" onclick="filterHistory('REJECTED')">Rejected</button>
+        </div>
+        
+        <div class="history-container">
+            <div th:if="${historyQuestions.isEmpty()}" class="empty-state">
+                <i class="bi bi-inbox" style="font-size: 64px; opacity: 0.3;"></i>
+                <h3>No History Yet</h3>
+                <p>There are no approved or rejected submissions yet.</p>
+            </div>
+            
+            <div th:each="question : ${historyQuestions}" 
+                 class="history-card"
+                 th:classappend="${question.status.toLowerCase()}"
+                 th:attr="data-status=${question.status}">
+                
+                <div class="card-header">
+                    <div class="status-info">
+                        <span class="status-badge"
+                              th:classappend="${question.status.toLowerCase()}"
+                              th:text="${question.status}">
+                        </span>
+                        <div class="submission-info">
+                            <div class="submitter">
+                                <i class="bi bi-person-circle"></i>
+                                <span>Submitted by: 
+                                    <strong th:text="${counselorNames.get(question.createdBy)} ?: 'Unknown'"></strong>
+                                    <span class="text-muted" th:if="${counselorEmails.containsKey(question.createdBy)}">
+                                        (<span th:text="${counselorEmails.get(question.createdBy)}"></span>)
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="dates">
+                                <span class="date-item">
+                                    <i class="bi bi-calendar3"></i>
+                                    Submitted: <span th:text="${#temporals.format(question.createdAt, 'MMM dd, yyyy HH:mm')}"></span>
+                                </span>
+                                <span class="date-item" th:if="${question.approvedAt != null}">
+                                    <i class="bi bi-check2"></i>
+                                    Reviewed: <span th:text="${#temporals.format(question.approvedAt, 'MMM dd, yyyy HH:mm')}"></span>
+                                </span>
+                                <span class="reviewer" th:if="${approverNames.containsKey(question.approvedBy)}">
+                                    <i class="bi bi-person-badge"></i>
+                                    by <strong th:text="${approverNames.get(question.approvedBy)}"></strong>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="question-label">Question Text:</div>
+                    <div class="question-text" th:text="${question.questionText}"></div>
+                    
+                    <div class="options-section" th:if="${question.options != null && !question.options.isEmpty()}">
+                        <div class="question-label">Response Options:</div>
+                        <div class="options-list">
+                            <div th:each="option, optStat : ${question.options}" class="option-item">
+                                <span class="option-score">Score <span th:text="${optStat.count - 1}"></span></span>
+                                <span th:text="${option.optionText}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <style>
+        .back-btn {
+            color: #8b5cf6;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        
+        .back-btn:hover {
+            color: #7c3aed;
+        }
+        
+        .page-header {
+            margin-bottom: 24px;
+        }
+        
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+        }
+        
+        .page-header p {
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding: 4px;
+            background: #f9fafb;
+            border-radius: 12px;
+            width: fit-content;
+        }
+        
+        .tab-btn {
+            padding: 8px 20px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.2s;
+        }
+        
+        .tab-btn:hover {
+            background: white;
+            color: #8b5cf6;
+        }
+        
+        .tab-btn.active {
+            background: white;
+            color: #8b5cf6;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .history-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .history-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #e5e7eb;
+        }
+        
+        .history-card.approved {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        .history-card.rejected {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .history-card.hidden {
+            display: none;
+        }
+        
+        .card-header {
+            background: #f9fafb;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .status-info {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            width: fit-content;
+        }
+        
+        .status-badge.approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-badge.rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .submission-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .submitter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+        }
+        
+        .submitter i {
+            font-size: 18px;
+            color: #8b5cf6;
+        }
+        
+        .text-muted {
+            color: #9ca3af;
+        }
+        
+        .dates {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+            color: #666;
+        }
+        
+        .date-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .date-item i {
+            color: #8b5cf6;
+        }
+        
+        .reviewer {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #8b5cf6;
+        }
+        
+        .card-body {
+            padding: 24px;
+        }
+        
+        .question-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .question-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+        }
+        
+        .options-section {
+            margin-top: 16px;
+        }
+        
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-left: 16px;
+        }
+        
+        .option-item {
+            font-size: 14px;
+            color: #666;
+            padding: 8px 0;
+        }
+        
+        .option-score {
+            font-weight: 600;
+            color: #8b5cf6;
+            margin-right: 12px;
+            min-width: 60px;
+            display: inline-block;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        
+        .empty-state h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin: 16px 0 12px;
+        }
+        
+        .empty-state p {
+            font-size: 16px;
+            color: #86868b;
+        }
+    </style>
+    
+    <script>
+        function filterHistory(status) {
+            const cards = document.querySelectorAll('.history-card');
+            const buttons = document.querySelectorAll('.tab-btn');
+            
+            // Update active button
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Filter cards
+            cards.forEach(card => {
+                if (status === 'all' || card.dataset.status === status) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
