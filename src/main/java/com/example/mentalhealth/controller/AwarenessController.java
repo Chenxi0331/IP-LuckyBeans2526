@@ -121,11 +121,11 @@ public class AwarenessController {
         return "awareness/resource-form";
     }
 
-    @PostMapping("/resource/delete/{id}")
+    @PostMapping("/resource/archive/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public String deleteResource(@PathVariable Long id) {
-        educationalResourceService.deleteResource(id);
-        return "redirect:/awareness/manage?success=deleted";
+    public String archiveResource(@PathVariable Long id) {
+        educationalResourceService.archiveResource(id);
+        return "redirect:/awareness/manage?success=archived";
     }
 
     @PostMapping("/resource/approve/{id}")
@@ -177,11 +177,11 @@ public class AwarenessController {
         return "awareness/campaign-form";
     }
 
-    @PostMapping("/campaign/delete/{id}")
+    @PostMapping("/campaign/archive/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public String deleteCampaign(@PathVariable Long id) {
-        awarenessCampaignService.deleteCampaign(id);
-        return "redirect:/awareness/manage?success=deleted";
+    public String archiveCampaign(@PathVariable Long id) {
+        awarenessCampaignService.archiveCampaign(id);
+        return "redirect:/awareness/manage?success=archived";
     }
 
     @PostMapping("/campaign/approve/{id}")
