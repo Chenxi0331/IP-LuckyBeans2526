@@ -93,7 +93,6 @@ public class CounsellingController {
             service.deleteSession(id, user);
         } catch (Exception e) {
             System.err.println("Error cancelling session: " + e.getMessage());
-            // In a real app, add a flash message here
         }
         return "redirect:/counselling/my-sessions";
     }
@@ -117,8 +116,6 @@ public class CounsellingController {
                                 Authentication authentication) {
         if (bindingResult.hasErrors()) {
             System.out.println("Booking Validation Errors: " + bindingResult.getAllErrors());
-            // In a real app, return to form. For now, let's proceed but warn.
-            // actually, if date binding failed, sessionDate will be null.
         }
         
         System.out.println("Booking Session: Date=" + session.getSessionDate() + ", Type=" + session.getSessionType());
