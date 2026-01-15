@@ -22,7 +22,7 @@ public class SelfCareModuleProgressService {
     
     // ==================== UC011: Access Self-Care Modules ====================
     
-    public List<SelfCareModule> getModulesWithProgress(Integer userId, String category) {
+    public List<SelfCareModule> getModulesWithProgress(Long userId, String category) {
     
         List<SelfCareModule> modules;
         if (category != null && !category.equals("all")) {
@@ -42,6 +42,12 @@ public class SelfCareModuleProgressService {
             moduleWithProgress.setDuration(module.getDuration());
             moduleWithProgress.setIcon(module.getIcon());
             moduleWithProgress.setIsLocked(module.getIsLocked());
+            moduleWithProgress.setContentType(module.getContentType());
+            moduleWithProgress.setVideoUrl(module.getVideoUrl());
+            moduleWithProgress.setVideoFilePath(module.getVideoFilePath());
+            moduleWithProgress.setPdfFilePath(module.getPdfFilePath());
+            moduleWithProgress.setTextContent(module.getTextContent());
+
             
             Optional<UserModuleProgress> progressOpt = progressRepository
                 .findByUserIdAndModuleId(userId, module.getModuleId());
@@ -59,31 +65,25 @@ public class SelfCareModuleProgressService {
         }).collect(Collectors.toList());
     }
     
-    /**
-     * 获取单个模块详情
-     */
+   
     public SelfCareModule getModuleById(Integer moduleId) {
         return moduleRepository.findById(moduleId)
             .orElseThrow(() -> new RuntimeException("Module not found: " + moduleId));
     }
     
-    /**
-     * 开始一个模块（创建或更新进度记录）
-     */
     @Transactional
-    public UserModuleProgress startModule(Integer userId, Integer moduleId) {
-        // 检查是否已存在进度记录
+    public UserModuleProgress startModule(Long userId, Integer moduleId) {
+    
         Optional<UserModuleProgress> existingProgress = progressRepository
             .findByUserIdAndModuleId(userId, moduleId);
         
         if (existingProgress.isPresent()) {
-            // 如果已存在，只更新最后访问时间
+    
             UserModuleProgress progress = existingProgress.get();
             progress.setLastAccessed(LocalDateTime.now());
             return progressRepository.save(progress);
         }
         
-        // 创建新的进度记录
         UserModuleProgress newProgress = new UserModuleProgress();
         newProgress.setUserId(userId);
         newProgress.setModuleId(moduleId);
@@ -95,44 +95,129 @@ public class SelfCareModuleProgressService {
         return progressRepository.save(newProgress);
     }
     
-    /**
-     * 更新模块进度
-     */
-    @Transactional
-    public UserModuleProgress updateProgress(Integer userId, Integer moduleId, Integer percentage) {
-        // 验证进度百分比
-        if (percentage < 0 || percentage > 100) {
-            throw new IllegalArgumentException("Progress percentage must be between 0 and 100");
-        }
-        
-        // 查找进度记录
-        UserModuleProgress progress = progressRepository
-            .findByUserIdAndModuleId(userId, moduleId)
-            .orElseThrow(() -> new RuntimeException("Progress not found"));
-        
-        // 更新进度百分比
-        progress.setProgressPercentage(percentage);
-        
-        // 如果达到 100%，标记为完成
-        if (percentage >= 100) {
-            progress.setStatus("completed");
-            if (progress.getCompletionDate() == null) {
-                progress.setCompletionDate(LocalDateTime.now());
-            }
-        } else {
-            progress.setStatus("in_progress");
-        }
-        
-        progress.setLastAccessed(LocalDateTime.now());
-        
-        return progressRepository.save(progress);
+    public List<UserModuleProgress> getUserProgressList(Long userId) {
+    return progressRepository.findByUserId(userId);
+}
+
+public UserModuleProgress getOrCreateProgress(Long userId, Integer moduleId) {
+    return progressRepository.findByUserIdAndModuleId(userId, moduleId)
+            .orElseGet(() -> {
+                UserModuleProgress newProgress = new UserModuleProgress();
+                newProgress.setUserId(userId);
+                newProgress.setModuleId(moduleId);
+                newProgress.setProgressPercentage(0);
+                newProgress.setStatus("not-started");
+                newProgress.setStartDate(LocalDateTime.now());
+                newProgress.setLastAccessed(LocalDateTime.now());
+                return progressRepository.save(newProgress);
+            });
+}
+
+@Transactional
+public void updateProgress(Long userId, Integer moduleId, Integer progress) {
+    UserModuleProgress userProgress = getOrCreateProgress(userId, moduleId);
+    userProgress.setProgressPercentage(progress);
+    userProgress.setLastAccessed(LocalDateTime.now());
+    
+    if (progress >= 100) {
+        userProgress.setStatus("completed");
+        userProgress.setCompletionDate(LocalDateTime.now());
+    } else if (progress > 0) {
+        userProgress.setStatus("in-progress");
     }
     
-    /**
-     * 重置模块进度
-     */
+    progressRepository.save(userProgress);
+}
+
+public ProgressStatistics getUserProgressStatistics(Long userId) {
+    List<UserModuleProgress> progresses = progressRepository.findByUserId(userId);
+    List<SelfCareModule> allModules = moduleRepository.findAll();
+    
+    ProgressStatistics stats = new ProgressStatistics();
+    stats.setTotalModules(allModules.size());
+    
+    int completed = (int) progresses.stream()
+            .filter(p -> "completed".equalsIgnoreCase(p.getStatus()))
+            .count();
+    int inProgress = (int) progresses.stream()
+            .filter(p -> "in-progress".equalsIgnoreCase(p.getStatus()) || 
+                         "in_progress".equalsIgnoreCase(p.getStatus()))
+            .count();
+            
+    stats.setCompletedCount(completed);
+    stats.setInProgressCount(inProgress);
+    
+    if (progresses.isEmpty()) {
+        stats.setAverageProgress(0);
+        stats.setPercentage(0);
+    } else {
+        double avg = progresses.stream()
+                .mapToInt(UserModuleProgress::getProgressPercentage)
+                .average()
+                .orElse(0.0);
+        stats.setAverageProgress((int) avg);
+
+        // IMPORTANT: Calculate percentage correctly
+        int percentage = allModules.isEmpty() ? 0 : (completed * 100 / allModules.size());
+        stats.setPercentage(percentage);
+    }
+    
+    return stats;
+}
+    // Modify updateProgress to work with content + quiz completion
+//     public UserModuleProgress updateProgress(Long userId, Integer moduleId, Integer percentage) {
+//     UserModuleProgress progress = progressRepository
+//         .findByUserIdAndModuleId(userId, moduleId)
+//         .orElseThrow();
+    
+//     progress.setProgressPercentage(percentage);
+    
+//     if (percentage >= 100) {
+//         progress.setStatus("completed");
+//         progress.setCompletionDate(LocalDateTime.now());
+//     }
+    
+//     return progressRepository.save(progress);
+// }
+    
+@Transactional
+public void markContentCompleted(Long userId, Integer moduleId) {
+    UserModuleProgress progress = getOrCreateProgress(userId, moduleId);
+    progress.setContentCompleted(true);
+    int percentage = progress.getQuizCompleted() ? 100 : 50;
+    progress.setProgressPercentage(percentage);
+    
+    if (percentage == 100) {
+        progress.setStatus("completed");
+        progress.setCompletionDate(LocalDateTime.now());
+    } else {
+        progress.setStatus("in-progress");
+    }
+    progress.setLastAccessed(LocalDateTime.now());
+    progressRepository.save(progress);
+}
+
+
+@Transactional
+public void markQuizCompleted(Long userId, Integer moduleId) {
+    UserModuleProgress progress = getOrCreateProgress(userId, moduleId);
+    progress.setQuizCompleted(true);
+
+    int percentage = progress.getContentCompleted() ? 100 : 50;
+    progress.setProgressPercentage(percentage);
+    
+    if (percentage == 100) {
+        progress.setStatus("completed");
+        progress.setCompletionDate(LocalDateTime.now());
+    } else {
+        progress.setStatus("in-progress");
+    }
+    progress.setLastAccessed(LocalDateTime.now());
+    progressRepository.save(progress);
+}
+
     @Transactional
-    public void resetProgress(Integer userId, Integer moduleId) {
+    public void resetProgress(Long userId, Integer moduleId) {
         Optional<UserModuleProgress> progressOpt = progressRepository
             .findByUserIdAndModuleId(userId, moduleId);
         
@@ -147,12 +232,11 @@ public class SelfCareModuleProgressService {
     }
     
     // ==================== UC012: Track Self-Care Progress ====================
-    public List<UserModuleProgress> getUserProgress(Integer userId) {
+    public List<UserModuleProgress> getUserProgress(Long userId) {
         return progressRepository.findByUserId(userId);
     }
-    
-    public ProgressStatistics getProgressStatistics(Integer userId) {
-    
+
+    public ProgressStatistics getProgressStatistics(Long userId) {
         Long completed = progressRepository.countCompletedModules(userId);
        
         Double avgProgress = progressRepository.getAverageProgress(userId);

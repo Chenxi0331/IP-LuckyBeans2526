@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Module Requests - Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2">
+                <!-- Sidebar -->
+            </div>
+            
+            <main class="col-md-10 ms-sm-auto px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bi bi-clipboard-check"></i> Module Edit Requests
+                    </h1>
+                    <div class="btn-toolbar">
+                        <a th:href="@{/admin/approvals/quiz-questions}" class="btn btn-outline-primary">
+                            <i class="bi bi-question-circle"></i> Quiz Approvals
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Success/Error Messages -->
+                <div th:if="${message}" class="alert" 
+                     th:classappend="${messageType == 'success'} ? 'alert-success' : 'alert-danger'">
+                    <span th:text="${message}"></span>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="text-warning" th:text="${pendingCount}">0</h3>
+                                <p class="mb-0">Pending Requests</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="text-success" th:text="${approvedCount}">0</h3>
+                                <p class="mb-0">Approved</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="text-danger" th:text="${rejectedCount}">0</h3>
+                                <p class="mb-0">Rejected</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filter Tabs -->
+                <ul class="nav nav-tabs mb-3" id="requestTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button">
+                            Pending <span class="badge bg-warning text-dark ms-1" th:text="${pendingCount}">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button">
+                            All Requests
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="requestTabsContent">
+                    <!-- Pending Requests Tab -->
+                    <div class="tab-pane fade show active" id="pending" role="tabpanel">
+                        <div class="card">
+                            <div class="card-body">
+                                <div th:if="${pendingRequests.isEmpty()}" class="text-center text-muted py-5">
+                                    <i class="bi bi-inbox" style="font-size: 64px;"></i>
+                                    <p class="mt-3">No pending requests at the moment</p>
+                                </div>
+                                
+                                <div th:if="${!pendingRequests.isEmpty()}" class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Type</th>
+                                                <th>Category</th>
+                                                <th>Requested By</th>
+                                                <th>Date</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="request : ${pendingRequests}">
+                                                <td>
+                                                    <strong th:text="${request.title}"></strong>
+                                                    <br>
+                                                    <small class="text-muted" th:text="${request.description}"></small>
+                                                </td>
+                                                <td>
+                                                    <span class="badge" 
+                                                          th:classappend="${request.requestType == 'CREATE'} ? 'bg-primary' : 'bg-info'"
+                                                          th:text="${request.requestType}">
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-secondary" th:text="${request.category}"></span>
+                                                </td>
+                                                <td>Counselor ID: <span th:text="${request.requestedBy}"></span></td>
+                                                <td th:text="${#temporals.format(request.requestedAt, 'yyyy-MM-dd HH:mm')}"></td>
+                                                <td>
+                                                    <a th:href="@{/admin/approvals/module-requests/{id}(id=${request.requestId})}" 
+                                                       class="btn btn-sm btn-primary">
+                                                        <i class="bi bi-eye"></i> Review
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- All Requests Tab -->
+                    <div class="tab-pane fade" id="all" role="tabpanel">
+                        <div class="card">
+                            <div class="card-body">
+                                <div th:if="${allRequests.isEmpty()}" class="text-center text-muted py-5">
+                                    <p>No requests found</p>
+                                </div>
+                                
+                                <div th:if="${!allRequests.isEmpty()}" class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Type</th>
+                                                <th>Category</th>
+                                                <th>Status</th>
+                                                <th>Requested By</th>
+                                                <th>Date</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="request : ${allRequests}">
+                                                <td>
+                                                    <strong th:text="${request.title}"></strong>
+                                                </td>
+                                                <td>
+                                                    <span class="badge" 
+                                                          th:classappend="${request.requestType == 'CREATE'} ? 'bg-primary' : 'bg-info'"
+                                                          th:text="${request.requestType}">
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-secondary" th:text="${request.category}"></span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge" 
+                                                          th:classappend="${request.status == 'PENDING'} ? 'bg-warning text-dark' : 
+                                                                         (${request.status == 'APPROVED'} ? 'bg-success' : 'bg-danger')"
+                                                          th:text="${request.status}">
+                                                    </span>
+                                                </td>
+                                                <td>ID: <span th:text="${request.requestedBy}"></span></td>
+                                                <td th:text="${#temporals.format(request.requestedAt, 'yyyy-MM-dd HH:mm')}"></td>
+                                                <td>
+                                                    <a th:href="@{/admin/approvals/module-requests/{id}(id=${request.requestId})}" 
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-eye"></i> View
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <style>
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .nav-tabs .nav-link {
+            color: #6c757d;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: #8b5cf6;
+            border-bottom: 2px solid #8b5cf6;
+        }
+        
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Quiz Question - Counselor</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2">
+                <!-- Sidebar -->
+            </div>
+            
+            <main class="col-md-10 ms-sm-auto px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bi bi-pencil"></i> Edit Quiz Question
+                    </h1>
+                    <a th:href="@{/counselor/modules/{moduleId}/quiz(moduleId=${quiz.module.moduleId})}" 
+                       class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Quiz Management
+                    </a>
+                </div>
+                
+                <!-- Module Info -->
+                <div class="alert alert-info">
+                    <strong>Module:</strong> 
+                    <span th:text="${quiz.module.icon}"></span>
+                    <span th:text="${quiz.module.title}"></span>
+                </div>
+                
+                <!-- Edit Form -->
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Edit Question Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/counselor/modules/quiz/update/{quizId}(quizId=${quiz.quizId})}" 
+                              method="post">
+                            
+                            <div class="mb-3">
+                                <label for="questionText" class="form-label">Question Text *</label>
+                                <textarea class="form-control" 
+                                          id="questionText" 
+                                          name="questionText" 
+                                          rows="3" 
+                                          required
+                                          th:text="${quiz.questionText}"></textarea>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="optionA" class="form-label">Option A *</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="optionA" 
+                                           name="optionA" 
+                                           th:value="${quiz.optionA}"
+                                           required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="optionB" class="form-label">Option B *</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="optionB" 
+                                           name="optionB" 
+                                           th:value="${quiz.optionB}"
+                                           required>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="optionC" class="form-label">Option C *</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="optionC" 
+                                           name="optionC" 
+                                           th:value="${quiz.optionC}"
+                                           required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="optionD" class="form-label">Option D *</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="optionD" 
+                                           name="optionD" 
+                                           th:value="${quiz.optionD}"
+                                           required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="correctAnswer" class="form-label">Correct Answer *</label>
+                                <select class="form-select" id="correctAnswer" name="correctAnswer" required>
+                                    <option value="">Select the correct answer</option>
+                                    <option value="A" th:selected="${quiz.correctAnswer == 'A'}">A</option>
+                                    <option value="B" th:selected="${quiz.correctAnswer == 'B'}">B</option>
+                                    <option value="C" th:selected="${quiz.correctAnswer == 'C'}">C</option>
+                                    <option value="D" th:selected="${quiz.correctAnswer == 'D'}">D</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Show Admin Notes if any -->
+                            <div th:if="${quiz.adminNotes != null and !quiz.adminNotes.isEmpty()}" 
+                                 class="alert alert-warning">
+                                <strong><i class="bi bi-exclamation-triangle"></i> Admin Notes:</strong>
+                                <p class="mb-0 mt-2" th:text="${quiz.adminNotes}"></p>
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Save Changes
+                                </button>
+                                <a th:href="@{/counselor/modules/{moduleId}/quiz(moduleId=${quiz.module.moduleId})}" 
+                                   class="btn btn-secondary">
+                                    Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Current Status Info -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Question Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>
+                            <strong>Status:</strong> 
+                            <span class="badge" 
+                                  th:classappend="${quiz.status == 'PENDING'} ? 'bg-warning text-dark' : 
+                                                 (${quiz.status == 'APPROVED'} ? 'bg-success' : 'bg-danger')"
+                                  th:text="${quiz.status}">
+                            </span>
+                        </p>
+                        <p>
+                            <strong>Created:</strong> 
+                            <span th:text="${#temporals.format(quiz.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+                        </p>
+                        <p th:if="${quiz.reviewedAt != null}">
+                            <strong>Reviewed:</strong> 
+                            <span th:text="${#temporals.format(quiz.reviewedAt, 'yyyy-MM-dd HH:mm')}"></span>
+                            by <span th:text="${quiz.reviewedBy.name}"></span>
+                        </p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <style>
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

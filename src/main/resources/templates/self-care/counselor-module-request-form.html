@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Module Request Form - Counselor</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2">
+                <!-- Sidebar -->
+            </div>
+            
+            <main class="col-md-10 ms-sm-auto px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bi bi-file-earmark-plus"></i> 
+                        <span th:text="${requestType == 'CREATE'} ? 'Create New Module' : 'Edit Module Request'">Module Request</span>
+                    </h1>
+                    <a th:href="@{/counselor/modules}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Modules
+                    </a>
+                </div>
+                
+                <!-- Request Form -->
+                <div class="card">
+                    <div class="card-body">
+                        <form th:action="@{/counselor/modules/submit-request}" 
+                              method="post" 
+                              enctype="multipart/form-data"
+                              id="moduleRequestForm">
+                            
+                            <input type="hidden" name="requestType" th:value="${requestType}" />
+                            <input type="hidden" name="moduleId" th:value="${module != null} ? ${module.moduleId} : ''" />
+                            
+                            <!-- Basic Information -->
+                            <h5 class="mb-3"><i class="bi bi-info-circle"></i> Basic Information</h5>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-8">
+                                    <label for="title" class="form-label">Module Title *</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="title" 
+                                           name="title" 
+                                           th:value="${module != null} ? ${module.title} : ''"
+                                           required>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <label for="icon" class="form-label">Icon Emoji *</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="icon" 
+                                           name="icon" 
+                                           placeholder="🌙"
+                                           th:value="${module != null} ? ${module.icon} : ''"
+                                           required>
+                                    <small class="text-muted">Use an emoji (e.g., 🌙 🧘 💪)</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description *</label>
+                                <textarea class="form-control" 
+                                          id="description" 
+                                          name="description" 
+                                          rows="3" 
+                                          required 
+                                          th:text="${module != null} ? ${module.description} : ''"></textarea>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="category" class="form-label">Category *</label>
+                                    <select class="form-select" id="category" name="category" required>
+                                        <option value="">Select Category</option>
+                                        <option value="Mindfulness" th:selected="${module != null and module.category == 'Mindfulness'}">Mindfulness</option>
+                                        <option value="Stress Management" th:selected="${module != null and module.category == 'Stress Management'}">Stress Management</option>
+                                        <option value="Sleep" th:selected="${module != null and module.category == 'Sleep'}">Sleep</option>
+                                        <option value="Exercise" th:selected="${module != null and module.category == 'Exercise'}">Exercise</option>
+                                        <option value="Nutrition" th:selected="${module != null and module.category == 'Nutrition'}">Nutrition</option>
+                                        <option value="Social Connection" th:selected="${module != null and module.category == 'Social Connection'}">Social Connection</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <label for="level" class="form-label">Difficulty Level *</label>
+                                    <select class="form-select" id="level" name="level" required>
+                                        <option value="">Select Level</option>
+                                        <option value="Beginner" th:selected="${module != null and module.level == 'Beginner'}">Beginner</option>
+                                        <option value="Intermediate" th:selected="${module != null and module.level == 'Intermediate'}">Intermediate</option>
+                                        <option value="Advanced" th:selected="${module != null and module.level == 'Advanced'}">Advanced</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <label for="duration" class="form-label">Duration (minutes) *</label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="duration" 
+                                           name="duration" 
+                                           min="1" 
+                                           th:value="${module != null} ? ${module.duration} : ''"
+                                           required>
+                                </div>
+                            </div>
+                            
+                            <hr class="my-4">
+                            
+                            <!-- Content Type Selection -->
+                            <h5 class="mb-3"><i class="bi bi-file-earmark-text"></i> Content Type & Upload</h5>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Select Content Type *</label>
+                                <div class="btn-group d-flex" role="group">
+                                    <input type="radio" class="btn-check" name="contentType" id="contentTypeVideo" value="video_url" 
+                                           th:checked="${module != null and module.contentType == 'video_url'}" onchange="toggleContentFields()">
+                                    <label class="btn btn-outline-primary" for="contentTypeVideo">
+                                        <i class="bi bi-play-circle"></i> Video URL
+                                    </label>
+                                    
+                                    <input type="radio" class="btn-check" name="contentType" id="contentTypeVideoFile" value="video_file"
+                                           th:checked="${module != null and module.contentType == 'video_file'}" onchange="toggleContentFields()">
+                                    <label class="btn btn-outline-primary" for="contentTypeVideoFile">
+                                        <i class="bi bi-file-play"></i> Video File
+                                    </label>
+                                    
+                                    <input type="radio" class="btn-check" name="contentType" id="contentTypePdf" value="pdf"
+                                           th:checked="${module != null and module.contentType == 'pdf'}" onchange="toggleContentFields()">
+                                    <label class="btn btn-outline-primary" for="contentTypePdf">
+                                        <i class="bi bi-file-pdf"></i> PDF
+                                    </label>
+                                    
+                                    <input type="radio" class="btn-check" name="contentType" id="contentTypeText" value="text"
+                                           th:checked="${module != null and module.contentType == 'text'}" onchange="toggleContentFields()">
+                                    <label class="btn btn-outline-primary" for="contentTypeText">
+                                        <i class="bi bi-file-text"></i> Text
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Video URL Field -->
+                            <div id="videoUrlField" class="content-field" style="display: none;">
+                                <label for="videoUrl" class="form-label">YouTube/Video URL</label>
+                                <input type="url" 
+                                       class="form-control" 
+                                       id="videoUrl" 
+                                       name="videoUrl" 
+                                       placeholder="https://www.youtube.com/embed/..."
+                                       th:value="${module != null} ? ${module.videoUrl} : ''">
+                                <small class="text-muted">Use YouTube embed URL format</small>
+                            </div>
+                            
+                            <!-- Video File Upload -->
+                            <div id="videoFileField" class="content-field" style="display: none;">
+                                <label for="videoFile" class="form-label">Upload Video File</label>
+                                <input type="file" 
+                                       class="form-control" 
+                                       id="videoFile" 
+                                       name="videoFile" 
+                                       accept="video/*">
+                                <small class="text-muted">Max size: 50MB | Formats: MP4, AVI, MOV</small>
+                                <div th:if="${module != null and module.videoFilePath != null}" class="mt-2">
+                                    <i class="bi bi-file-play text-success"></i>
+                                    <span class="text-muted">Current: </span>
+                                    <span th:text="${module.videoFilePath}"></span>
+                                </div>
+                            </div>
+                            
+                            <!-- PDF File Upload -->
+                            <div id="pdfFileField" class="content-field" style="display: none;">
+                                <label for="pdfFile" class="form-label">Upload PDF File</label>
+                                <input type="file" 
+                                       class="form-control" 
+                                       id="pdfFile" 
+                                       name="pdfFile" 
+                                       accept=".pdf">
+                                <small class="text-muted">Max size: 50MB</small>
+                                <div th:if="${module != null and module.pdfFilePath != null}" class="mt-2">
+                                    <i class="bi bi-file-pdf text-danger"></i>
+                                    <span class="text-muted">Current: </span>
+                                    <span th:text="${module.pdfFilePath}"></span>
+                                </div>
+                            </div>
+                            
+                            <!-- Text Content -->
+                            <div id="textContentField" class="content-field" style="display: none;">
+                                <label for="textContent" class="form-label">Text Content</label>
+                                <textarea class="form-control" 
+                                          id="textContent" 
+                                          name="textContent" 
+                                          rows="10" 
+                                          placeholder="Enter the module content here..."
+                                          th:text="${module != null} ? ${module.textContent} : ''"></textarea>
+                                <small class="text-muted">You can format this text with line breaks</small>
+                            </div>
+                            
+                            <hr class="my-4">
+                            
+                            <!-- Submit Buttons -->
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-send"></i> Submit for Admin Approval
+                                </button>
+                                <a th:href="@{/counselor/modules}" class="btn btn-secondary btn-lg">
+                                    Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script>
+        // Toggle content fields based on selected content type
+        function toggleContentFields() {
+            const contentType = document.querySelector('input[name="contentType"]:checked')?.value;
+            
+            document.querySelectorAll('.content-field').forEach(field => {
+                field.style.display = 'none';
+            });
+            
+            if (contentType === 'video_url') {
+                document.getElementById('videoUrlField').style.display = 'block';
+            } else if (contentType === 'video_file') {
+                document.getElementById('videoFileField').style.display = 'block';
+            } else if (contentType === 'pdf') {
+                document.getElementById('pdfFileField').style.display = 'block';
+            } else if (contentType === 'text') {
+                document.getElementById('textContentField').style.display = 'block';
+            }
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleContentFields();
+        });
+    </script>
+    
+    <style>
+        .content-field {
+            margin-top: 16px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .btn-group .btn {
+            flex: 1;
+        }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,25 +1,21 @@
 package com.example.mentalhealth.controller;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
+import jakarta.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.mentalhealth.model.*;
 import com.example.mentalhealth.service.AssessmentService;
 import com.example.mentalhealth.service.UserService;
-import java.util.Optional;
-
-import jakarta.servlet.http.HttpSession;
 
 /**
  * Symptoms Recognition Controller
@@ -35,21 +31,22 @@ public class SymptomsController {
 
     @Autowired
     private UserService userService;
-    
+
     /**
      * UC007 + UC009: Display assessment page or history
      */
     @GetMapping
     public String symptoms(@AuthenticationPrincipal UserDetails userDetails,
-                          HttpSession session, 
-                          Model model) {
+                           HttpSession session,
+                           Model model) {
+
         User user = userService.findByEmail(userDetails.getUsername())
-            .orElseThrow(() -> new RuntimeException("User not found"));
-    
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Integer userId = user.getUserId();
-        
+
         model.addAttribute("user", user);
-        
+
         UserProgress userProgress = new UserProgress("7-day self-care streak!");
         model.addAttribute("userProgress", userProgress);
 
@@ -67,11 +64,12 @@ public class SymptomsController {
      */
     @GetMapping("/dashboard")
     public String dashboard(@AuthenticationPrincipal UserDetails userDetails,
-                           HttpSession session, 
-                           Model model) {
+                            HttpSession session,
+                            Model model) {
+
         User user = userService.findByEmail(userDetails.getUsername())
-            .orElseThrow(() -> new RuntimeException("User not found"));
-        
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Integer userId = user.getUserId();
 
         model.addAttribute("user", user);
@@ -86,12 +84,24 @@ public class SymptomsController {
      * Display current question
      */
     private String showQuestion(HttpSession session, Model model, Integer userId) {
-        Integer currentQuestion = Optional.ofNullable(
-            (Integer) session.getAttribute("currentQuestion")
-            ).orElse(1);
+        Integer currentQuestion = Optional.ofNullable((Integer) session.getAttribute("currentQuestion"))
+                .orElse(1);
 
-        List<AssessmentQuestion> allQuestions = assessmentService.getAllQuestions();
+        // ✅ IMPORTANT: only show APPROVED questions to students
+        List<AssessmentQuestion> allQuestions = assessmentService.getApprovedQuestions();
         int totalQuestions = allQuestions.size();
+
+        // Edge: no approved questions
+        if (totalQuestions == 0) {
+            // show dashboard-like page but without questions
+            model.addAttribute("currentQuestion", null);
+            model.addAttribute("totalQuestions", 0);
+            model.addAttribute("maxScore", 0);
+            model.addAttribute("assessmentHistory", assessmentService.getUserAssessmentHistory(userId));
+            model.addAttribute("counselorComments",
+                    assessmentService.getVisibleStudentComments(userId.longValue()));
+            return "symptoms-recognition/symptoms-recognition";
+        }
 
         if (currentQuestion > totalQuestions || currentQuestion < 1) {
             return "redirect:/symptoms/dashboard";
@@ -99,9 +109,12 @@ public class SymptomsController {
 
         AssessmentQuestion assessmentQuestion = allQuestions.get(currentQuestion - 1);
 
+        // Build options (radio values are 0..n-1)
         List<Option> options = new ArrayList<>();
         int index = 0;
-        for (AssessmentOption ao : assessmentQuestion.getOptions()) {
+        // Ensure options is loaded (safe even if mapping is lazy)
+        List<AssessmentOption> dbOptions = assessmentService.getQuestionOptions(assessmentQuestion.getQuestionId());
+        for (AssessmentOption ao : dbOptions) {
             options.add(new Option(index, ao.getOptionText()));
             index++;
         }
@@ -114,14 +127,22 @@ public class SymptomsController {
         questionDto.setText(assessmentQuestion.getQuestionText());
         questionDto.setOptions(options);
 
+        // ✅ Fix: bind questionId into form so it gets submitted
+        QuestionForm form = new QuestionForm();
+        form.setQuestionId(assessmentQuestion.getQuestionId());
+
         model.addAttribute("currentQuestion", currentQuestion);
         model.addAttribute("totalQuestions", totalQuestions);
         model.addAttribute("progressPercentage", progressPercentage);
         model.addAttribute("question", questionDto);
         model.addAttribute("selectedAnswer", selectedAnswer);
-        model.addAttribute("questionForm", new QuestionForm());
+        model.addAttribute("questionForm", form);
 
-        // Get latest assessment result (if exists)
+        // ✅ Dynamic maxScore (supports different option counts per question)
+        int maxScore = assessmentService.calculateMaxScoreForApprovedQuestions();
+        model.addAttribute("maxScore", maxScore);
+
+        // Latest assessment
         UserAssessment latestAssessment = assessmentService.getLatestAssessment(userId);
         if (latestAssessment != null) {
             model.addAttribute("latestScore", latestAssessment.getTotalScore());
@@ -129,13 +150,13 @@ public class SymptomsController {
             model.addAttribute("latestSeverity", latestAssessment.getSeverityLevel());
         }
 
-        // Get assessment history
+        // Assessment history
         List<UserAssessment> assessments = assessmentService.getUserAssessmentHistory(userId);
         model.addAttribute("assessmentHistory", assessments);
-        
-        // Get counselor comments visible to student
-        List<CounselorComment> counselorComments = 
-            assessmentService.getVisibleStudentComments(userId.longValue());
+
+        // Counselor comments visible to student
+        List<CounselorComment> counselorComments =
+                assessmentService.getVisibleStudentComments(userId.longValue());
         model.addAttribute("counselorComments", counselorComments);
 
         return "symptoms-recognition/symptoms-recognition";
@@ -155,11 +176,15 @@ public class SymptomsController {
         }
 
         model.addAttribute("assessmentHistory", assessments);
-        
-        // Get counselor comments visible to student
-        List<CounselorComment> counselorComments = 
-            assessmentService.getVisibleStudentComments(userId.longValue());
+
+        // Counselor comments visible to student
+        List<CounselorComment> counselorComments =
+                assessmentService.getVisibleStudentComments(userId.longValue());
         model.addAttribute("counselorComments", counselorComments);
+
+        // ✅ Dynamic maxScore for display "/max"
+        int maxScore = assessmentService.calculateMaxScoreForApprovedQuestions();
+        model.addAttribute("maxScore", maxScore);
 
         return "symptoms-recognition/symptoms-recognition";
     }
@@ -171,34 +196,40 @@ public class SymptomsController {
     public String submitAnswer(@ModelAttribute QuestionForm questionForm,
                                @AuthenticationPrincipal UserDetails userDetails,
                                HttpSession session) {
+
         User user = userService.findByEmail(userDetails.getUsername())
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
         Integer userId = user.getUserId();
-        
+
         Integer currentQuestion = (Integer) session.getAttribute("currentQuestion");
+        if (currentQuestion == null) currentQuestion = 1;
 
-        if (currentQuestion == null) {
-            currentQuestion = 1;
-        }
-
+        // Save current answer + questionId into session
         session.setAttribute("answer_" + currentQuestion, questionForm.getAnswer());
         session.setAttribute("questionId_" + currentQuestion, questionForm.getQuestionId());
 
-        int totalQuestions = assessmentService.getTotalQuestions();
+        // ✅ totalQuestions must match what we actually show (approved only)
+        int totalQuestions = assessmentService.getApprovedQuestions().size();
+
+        if (totalQuestions == 0) {
+            // no questions -> go dashboard
+            session.removeAttribute("currentQuestion");
+            return "redirect:/symptoms/dashboard";
+        }
 
         if (currentQuestion < totalQuestions) {
             session.setAttribute("currentQuestion", currentQuestion + 1);
             return "redirect:/symptoms";
         } else {
             saveAssessmentToDatabase(userId, session, totalQuestions);
-            
+
             // Clear session data
             for (int i = 1; i <= totalQuestions; i++) {
                 session.removeAttribute("answer_" + i);
                 session.removeAttribute("questionId_" + i);
             }
             session.removeAttribute("currentQuestion");
-            
+
             return "redirect:/symptoms/dashboard";
         }
     }
@@ -229,7 +260,7 @@ public class SymptomsController {
      */
     @GetMapping("/restart")
     public String restartAssessment(HttpSession session) {
-        int totalQuestions = assessmentService.getTotalQuestions();
+        int totalQuestions = assessmentService.getApprovedQuestions().size();
         for (int i = 1; i <= totalQuestions; i++) {
             session.removeAttribute("answer_" + i);
             session.removeAttribute("questionId_" + i);
@@ -249,13 +280,13 @@ public class SymptomsController {
             Integer answerIndex = (Integer) session.getAttribute("answer_" + i);
             Integer questionId = (Integer) session.getAttribute("questionId_" + i);
 
+            // ✅ now questionId will not be null because we bind it into form
             if (answerIndex != null && questionId != null) {
                 answers.add(answerIndex);
                 questionIds.add(questionId);
             }
         }
 
-        // Use Service to save assessment
         assessmentService.saveAssessment(userId, answers, questionIds);
     }
 }

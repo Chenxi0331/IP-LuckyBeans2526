@@ -9,4 +9,15 @@ import java.util.List;
 @Repository
 public interface AssessmentQuestionRepository extends JpaRepository<AssessmentQuestion, Integer> {
     List<AssessmentQuestion> findAllByOrderByQuestionOrderAsc();
+    
+    List<AssessmentQuestion> findByStatusOrderByQuestionOrderAsc(String status);
+    
+    List<AssessmentQuestion> findByStatusInOrderByCreatedAtDesc(List<String> statuses);
+    
+    List<AssessmentQuestion> findByStatusInAndCreatedByOrderByCreatedAtDesc(
+        List<String> statuses, 
+        Long createdBy
+    );
+    
+    long countByStatus(String status);
 }

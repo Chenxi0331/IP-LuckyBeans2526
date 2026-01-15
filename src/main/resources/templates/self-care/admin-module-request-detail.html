@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Review Module Request - Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2">
+                <!-- Sidebar -->
+            </div>
+            
+            <main class="col-md-10 ms-sm-auto px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bi bi-file-earmark-text"></i> Review Module Request
+                    </h1>
+                    <a th:href="@{/admin/approvals/module-requests}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Requests
+                    </a>
+                </div>
+                
+                <!-- Request Status Badge -->
+                <div class="alert" 
+                     th:classappend="${request.status == 'PENDING'} ? 'alert-warning' : 
+                                    (${request.status == 'APPROVED'} ? 'alert-success' : 'alert-danger')">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <strong>Status:</strong> 
+                            <span class="badge" 
+                                  th:classappend="${request.status == 'PENDING'} ? 'bg-warning text-dark' : 
+                                                 (${request.status == 'APPROVED'} ? 'bg-success' : 'bg-danger')"
+                                  th:text="${request.status}">
+                            </span>
+                        </div>
+                        <div th:if="${request.reviewedAt != null}">
+                            <small>
+                                Reviewed by User ID: <strong th:text="${request.reviewedBy}"></strong>
+                                on <span th:text="${#temporals.format(request.reviewedAt, 'yyyy-MM-dd HH:mm')}"></span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Request Information -->
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-info-circle"></i> Request Details
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-3"><strong>Request Type:</strong></div>
+                                    <div class="col-md-9">
+                                        <span class="badge" 
+                                              th:classappend="${request.requestType == 'CREATE'} ? 'bg-primary' : 'bg-info'"
+                                              th:text="${request.requestType}">
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-3"><strong>Module Icon:</strong></div>
+                                    <div class="col-md-9">
+                                        <span style="font-size: 32px;" th:text="${request.icon}"></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-3"><strong>Title:</strong></div>
+                                    <div class="col-md-9" th:text="${request.title}"></div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-3"><strong>Description:</strong></div>
+                                    <div class="col-md-9" th:text="${request.description}"></div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-3"><strong>Category:</strong></div>
+                                    <div class="col-md-9">
+                                        <span class="badge bg-secondary" th:text="${request.category}"></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-3"><strong>Level:</strong></div>
+                                    <div class="col-md-9">
+                                        <span class="badge bg-info" th:text="${request.level}"></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-3"><strong>Duration:</strong></div>
+                                    <div class="col-md-9" th:text="${request.duration} + ' minutes'"></div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-3"><strong>Content Type:</strong></div>
+                                    <div class="col-md-9">
+                                        <span class="badge bg-dark" th:text="${request.contentType}"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Content Preview -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-file-earmark"></i> Content Preview
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Video URL -->
+                                <div th:if="${request.contentType == 'video_url' and request.videoUrl != null}">
+                                    <label class="form-label"><strong>Video URL:</strong></label>
+                                    <p><a th:href="${request.videoUrl}" target="_blank" th:text="${request.videoUrl}"></a></p>
+                                    <div class="video-preview">
+                                        <iframe th:src="${request.videoUrl}" 
+                                                frameborder="0" 
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                allowfullscreen>
+                                        </iframe>
+                                    </div>
+                                </div>
+                                
+                                <!-- Video File -->
+                                <div th:if="${request.contentType == 'video_file' and request.videoFilePath != null}">
+                                    <label class="form-label"><strong>Video File:</strong></label>
+                                    <p class="text-muted" th:text="${request.videoFilePath}"></p>
+                                    <video controls class="w-100" style="max-height: 400px; border-radius: 8px;">
+                                        <source th:src="${'/' + request.videoFilePath}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                                
+                                <!-- PDF File -->
+                                <div th:if="${request.contentType == 'pdf' and request.pdfFilePath != null}">
+                                    <label class="form-label"><strong>PDF File:</strong></label>
+                                    <p class="text-muted" th:text="${request.pdfFilePath}"></p>
+                                    <div class="text-center py-4">
+                                        <i class="bi bi-file-pdf text-danger" style="font-size: 64px;"></i>
+                                        <p class="mt-2">PDF Document</p>
+                                        <a th:href="${'/' + request.pdfFilePath}" 
+                                           target="_blank" 
+                                           class="btn btn-outline-danger">
+                                            <i class="bi bi-download"></i> Download & Preview PDF
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Text Content -->
+                                <div th:if="${request.contentType == 'text' and request.textContent != null}">
+                                    <label class="form-label"><strong>Text Content:</strong></label>
+                                    <div class="text-content-preview" th:text="${request.textContent}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Quiz Questions Section -->
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-question-circle"></i> Quiz Questions 
+            <span class="badge bg-light text-dark" th:text="${quizzes != null ? quizzes.size() : 0}"></span>
+        </h5>
+    </div>
+    <div class="card-body">
+        <div th:if="${quizzes == null or quizzes.isEmpty()}" class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            No quiz questions submitted with this request.
+        </div>
+
+        <div th:each="quiz, iterStat : ${quizzes}" class="card mb-3" style="border-left: 4px solid #667eea;">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-3 text-muted">
+                    <span class="badge bg-secondary me-2" th:text="'Question ' + ${iterStat.count}"></span>
+                    Order: <span th:text="${quiz.questionOrder}"></span>
+                </h6>
+                <h5 class="card-title mb-3" th:text="${quiz.questionText}"></h5>
+                
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2 p-2 rounded" 
+                        th:classappend="${quiz.correctAnswer == 'A'} ? 'bg-success bg-opacity-10 border border-success' : 'bg-light'">
+                        <strong>A.</strong> <span th:text="${quiz.optionA}"></span>
+                        <span th:if="${quiz.correctAnswer == 'A'}" class="badge bg-success ms-2">
+                            <i class="bi bi-check-circle"></i> Correct Answer
+                        </span>
+                    </li>
+                    <li class="mb-2 p-2 rounded" 
+                        th:classappend="${quiz.correctAnswer == 'B'} ? 'bg-success bg-opacity-10 border border-success' : 'bg-light'">
+                        <strong>B.</strong> <span th:text="${quiz.optionB}"></span>
+                        <span th:if="${quiz.correctAnswer == 'B'}" class="badge bg-success ms-2">
+                            <i class="bi bi-check-circle"></i> Correct Answer
+                        </span>
+                    </li>
+                    <li class="mb-2 p-2 rounded" 
+                        th:classappend="${quiz.correctAnswer == 'C'} ? 'bg-success bg-opacity-10 border border-success' : 'bg-light'">
+                        <strong>C.</strong> <span th:text="${quiz.optionC}"></span>
+                        <span th:if="${quiz.correctAnswer == 'C'}" class="badge bg-success ms-2">
+                            <i class="bi bi-check-circle"></i> Correct Answer
+                        </span>
+                    </li>
+                    <li class="mb-2 p-2 rounded" 
+                        th:classappend="${quiz.correctAnswer == 'D'} ? 'bg-success bg-opacity-10 border border-success' : 'bg-light'">
+                        <strong>D.</strong> <span th:text="${quiz.optionD}"></span>
+                        <span th:if="${quiz.correctAnswer == 'D'}" class="badge bg-success ms-2">
+                            <i class="bi bi-check-circle"></i> Correct Answer
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+                    <!-- Sidebar with Actions -->
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Request Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Requested By:</strong><br>
+                                      Counselor ID: <span th:text="${request.requestedBy}"></span></p>
+                                
+                                <p><strong>Submitted On:</strong><br>
+                                   <span th:text="${#temporals.format(request.requestedAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+                                
+                                <p th:if="${request.moduleId != null}">
+                                    <strong>Original Module ID:</strong><br>
+                                    <span th:text="${request.moduleId}"></span>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Approval Actions (Only if Pending) -->
+                        <div th:if="${request.status == 'PENDING'}" class="card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">Review Actions</h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Approve Form -->
+                                <form th:action="@{/admin/approvals/module-requests/{id}/approve(id=${request.requestId})}" 
+                                      method="post" 
+                                      class="mb-3">
+                                    <button type="submit" 
+                                            class="btn btn-success w-100"
+                                            onclick="return confirm('Are you sure you want to approve this request? This will create/update the module.')">
+                                        <i class="bi bi-check-circle"></i> Approve Request
+                                    </button>
+                                </form>
+                                
+                                <!-- Reject Form -->
+                                <form th:action="@{/admin/approvals/module-requests/{id}/reject(id=${request.requestId})}" 
+                                      method="post">
+                                    <label for="reviewNotes" class="form-label"><strong>Rejection Notes:</strong></label>
+                                    <textarea class="form-control mb-2" 
+                                              id="reviewNotes" 
+                                                name="reviewNotes"
+                                              rows="3" 
+                                              placeholder="Provide reason for rejection..."
+                                              required></textarea>
+                                    <button type="submit" 
+                                            class="btn btn-danger w-100"
+                                            onclick="return confirm('Are you sure you want to reject this request?')">
+                                        <i class="bi bi-x-circle"></i> Reject Request
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Show Admin Notes if Reviewed -->
+                        <div th:if="${request.status != 'PENDING' and request.reviewNotes != null}" class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Admin Notes</h5>
+                            </div>
+                            <div class="card-body">
+                                <p th:text="${request.reviewNotes}"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <style>
+        .video-preview {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            background: #000;
+        }
+        
+        .video-preview iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .text-content-preview {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

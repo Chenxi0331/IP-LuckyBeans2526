@@ -25,7 +25,7 @@ public class SelfCareRecommendationService {
      * Generate personalized recommendations (max 3)
      * Priority: 1. Counselor recommendations, 2. In-progress, 3. New modules
      */
-    public List<Recommendation> getPersonalizedRecommendations(Integer userId) {
+    public List<Recommendation> getPersonalizedRecommendations(Long userId) {
         List<Recommendation> recommendations = new ArrayList<>();
         
         // Strategy 1: Add counselor recommendations first
@@ -57,7 +57,7 @@ public class SelfCareRecommendationService {
             moduleRepository.findById(rec.getModuleId()).ifPresent(module -> {
                 // Check progress
                 Integer progress = 0;
-                progressRepository.findByUserIdAndModuleId(userId.intValue(), module.getModuleId())
+                progressRepository.findByUserIdAndModuleId(userId.longValue(), module.getModuleId())
                     .ifPresent(p -> {
                         // This is handled inside ifPresent, no need to assign
                     });
@@ -84,7 +84,7 @@ public class SelfCareRecommendationService {
     /**
      * Add in-progress module recommendations
      */
-    private void addInProgressRecommendations(Integer userId, List<Recommendation> recommendations) {
+    private void addInProgressRecommendations(Long userId, List<Recommendation> recommendations) {
         List<UserModuleProgress> inProgressList = progressRepository
             .findByUserIdAndStatus(userId, "in_progress");
         
@@ -115,7 +115,7 @@ public class SelfCareRecommendationService {
     /**
      * Add new module recommendations
      */
-    private void addNewModuleRecommendations(Integer userId, List<Recommendation> recommendations) {
+    private void addNewModuleRecommendations(Long userId, List<Recommendation> recommendations) {
         List<SelfCareModule> unlockedModules = moduleRepository
             .findByIsLockedOrderByModuleIdAsc(false);
         

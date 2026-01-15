@@ -164,7 +164,7 @@
                         <div class="result-left">
                             <div class="score-display" th:classappend="${severityLevel}">
                                 <div class="score-big" th:text="${totalScore}"></div>
-                                <div class="score-max">/20</div>
+                                <div class="score-max" th:text="'/' + ${maxScore}">/20</div>
                             </div>
                             <div class="severity-info">
                                 <div class="severity-label" th:classappend="${severityLevel}">
@@ -242,7 +242,7 @@
                         <div class="result-left">
                             <div class="score-display" th:classappend="${latestSeverity}">
                                 <div class="score-big" th:text="${latestScore}"></div>
-                                <div class="score-max">/20</div>
+                                <div class="score-max" th:text="'/' + ${maxScore}">/20</div>
                             </div>
                             <div class="severity-info">
                                 <div class="severity-label" th:classappend="${latestSeverity}">

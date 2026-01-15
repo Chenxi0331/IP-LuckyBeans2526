@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Self-Care Module - Innerly</title>
 
-    <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/style.css">
     
     <style>
         /* Only essential missing styles */
@@ -37,13 +37,29 @@
         .content-type-badge i {
             font-size: 14px;
         }
+
+    /* Make sure main content doesn't overflow */
+    #page-content-wrapper {
+        margin-left: 260px;
+        padding: 2rem;
+        max-width: calc(100vw - 260px);
+        overflow-x: hidden;
+    }
+    
+    /* Ensure sections are visible */
+    .progress-section,
+    .category-tabs,
+    .modules-grid {
+        margin-bottom: 2rem;
+    }
+
     </style>
 </head>
 
 <body>
     <div th:replace="fragments/navbar :: navbar"></div>
 
-    <main id="page-content-wrapper" class="main-content" style="margin-left: 260px; padding: 2rem;">
+    <main id="page-content-wrapper" style="margin-left: 260px; padding: 2rem;">
 
         <!-- Page Header -->
         <div class="page-header">

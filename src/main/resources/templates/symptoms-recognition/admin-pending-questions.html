@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Question Approvals - Innerly Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+    
+    <main id="page-content-wrapper" class="main-content" style="margin-left: 260px; padding: 2rem;">
+        
+        <a th:href="@{/admin/assessment/questions}" class="back-btn">
+            <i class="bi bi-arrow-left"></i> Back to Questions
+        </a>
+        
+        <div class="page-header">
+            <h1><i class="bi bi-clock-history"></i> Pending Question Approvals</h1>
+            <p>Review and approve question suggestions from counselors</p>
+        </div>
+        
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div class="questions-container">
+            <div th:if="${pendingQuestions.isEmpty()}" class="empty-state">
+                <i class="bi bi-check-circle" style="font-size: 64px; opacity: 0.3; color: #10b981;"></i>
+                <h3>All Caught Up!</h3>
+                <p>There are no pending question submissions to review.</p>
+            </div>
+            
+            <div th:each="question : ${pendingQuestions}" class="question-card">
+                <div class="card-header">
+                    <div class="request-info">
+                        <span class="request-type" 
+                              th:classappend="${question.status == 'PENDING_DELETE' ? 'deletion-request' : 'modification-request'}"
+                              th:text="${question.status == 'PENDING_DELETE' ? 'DELETION REQUEST' : 'NEW/MODIFIED QUESTION'}">
+                        </span>
+                        <div class="counselor-info">
+                            <i class="bi bi-person-circle"></i>
+                            <span>Submitted by: 
+                                <strong th:text="${counselorNames.get(question.createdBy)} ?: 'Unknown'"></strong>
+                                <span class="text-muted" th:if="${counselorEmails.containsKey(question.createdBy)}">
+                                    (<span th:text="${counselorEmails.get(question.createdBy)}"></span>)
+                                </span>
+                            </span>
+                            <span class="submission-date">
+                                <i class="bi bi-calendar3"></i>
+                                <span th:text="${#temporals.format(question.createdAt, 'MMM dd, yyyy HH:mm')}"></span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="question-content">
+                        <div class="question-label">Question Text:</div>
+                        <div class="question-text" th:text="${question.questionText}"></div>
+                        
+                        <div class="options-section" th:if="${question.status != 'PENDING_DELETE'}">
+                            <div class="question-label">Response Options:</div>
+                            <div class="options-list">
+                                <div th:each="option, optStat : ${question.options}" class="option-item">
+                                    <span class="option-score">Score <span th:text="${optStat.count - 1}"></span></span>
+                                    <span th:text="${option.optionText}"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <form th:if="${question.status == 'PENDING_DELETE'}" 
+                              th:action="@{/admin/assessment/questions/{id}/approve-deletion(id=${question.questionId})}" 
+                              method="post" 
+                              style="display: inline;"
+                              onsubmit="return confirm('Confirm deletion of this question? This will affect all existing assessments.');">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Approve Deletion
+                            </button>
+                        </form>
+                        
+                        <form th:if="${question.status == 'PENDING'}" 
+                              th:action="@{/admin/assessment/questions/{id}/approve(id=${question.questionId})}" 
+                              method="post" 
+                              style="display: inline;">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Approve
+                            </button>
+                        </form>
+                        
+                        <form th:action="@{/admin/assessment/questions/{id}/reject(id=${question.questionId})}" 
+                              method="post" 
+                              style="display: inline;">
+                            <button type="submit" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Reject
+                            </button>
+                        </form>
+                        
+                        <form th:if="${question.status == 'PENDING' || question.status == 'PENDING_DELETE'}" 
+                              th:action="@{/admin/assessment/questions/{id}/delete(id=${question.questionId})}" 
+                              method="post" 
+                              style="display: inline;"
+                              onsubmit="return confirm('Permanently delete this submission?');">
+                            <button type="submit" class="btn btn-outline-danger">
+                                <i class="bi bi-trash"></i> Delete Request
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <style>
+        .back-btn {
+            color: #8b5cf6;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        
+        .back-btn:hover {
+            color: #7c3aed;
+        }
+        
+        .page-header {
+            margin-bottom: 32px;
+        }
+        
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+        }
+        
+        .page-header p {
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .questions-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .question-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .card-header {
+            background: #f9fafb;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .request-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .request-type {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            width: fit-content;
+        }
+        
+        .modification-request {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .deletion-request {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .counselor-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .counselor-info i {
+            font-size: 18px;
+            color: #8b5cf6;
+        }
+        
+        .text-muted {
+            color: #9ca3af;
+        }
+        
+        .submission-date {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto;
+        }
+        
+        .card-body {
+            padding: 24px;
+        }
+        
+        .question-content {
+            margin-bottom: 24px;
+        }
+        
+        .question-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .question-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        
+        .options-section {
+            margin-top: 16px;
+        }
+        
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-left: 16px;
+        }
+        
+        .option-item {
+            font-size: 14px;
+            color: #666;
+            padding: 8px 0;
+        }
+        
+        .option-score {
+            font-weight: 600;
+            color: #8b5cf6;
+            margin-right: 12px;
+            min-width: 60px;
+            display: inline-block;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .btn-outline-danger {
+            background: white;
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+        
+        .btn-outline-danger:hover {
+            background: #fef2f2;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        
+        .empty-state h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin: 16px 0 12px;
+        }
+        
+        .empty-state p {
+            font-size: 16px;
+            color: #86868b;
+        }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

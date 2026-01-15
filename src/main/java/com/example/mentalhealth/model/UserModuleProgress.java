@@ -12,13 +12,16 @@ public class UserModuleProgress {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer progressId;
-    private Integer userId;
+    private Long userId;
     private Integer moduleId;
     private Integer progressPercentage;
     private String status;
     private LocalDateTime startDate;
     private LocalDateTime lastAccessed;
     private LocalDateTime completionDate;
+    private Boolean contentCompleted = false;
+    private Boolean quizCompleted = false;
+
 
     public Integer getProgressId() {
         return progressId;
@@ -28,11 +31,11 @@ public class UserModuleProgress {
         this.progressId = progressId;
     }
 
-    public Integer getUserId() {
+    public Long getUserId() {
         return userId;
     }
-
-    public void setUserId(Integer userId) {
+    
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 
@@ -83,4 +86,21 @@ public class UserModuleProgress {
     public void setCompletionDate(LocalDateTime completionDate) {
         this.completionDate = completionDate;
     }
+
+    public Boolean getContentCompleted() {
+    return contentCompleted;
+}
+
+    public void setContentCompleted(Boolean contentCompleted) { 
+    this.contentCompleted = contentCompleted;
+}
+
+    public Boolean getQuizCompleted() { 
+    return quizCompleted;
+}
+
+    public void setQuizCompleted(Boolean quizCompleted) {
+        this.quizCompleted = quizCompleted;
+    }
+
 }

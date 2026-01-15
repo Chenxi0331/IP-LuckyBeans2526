@@ -1,18 +1,27 @@
 package com.example.mentalhealth.controller;
 
+import com.example.mentalhealth.model.ModuleQuiz;
 import com.example.mentalhealth.model.SelfCareModule;
+import com.example.mentalhealth.model.User;
+import com.example.mentalhealth.repository.ModuleQuizRepository;
+import com.example.mentalhealth.repository.SelfCareModuleRepository;
 import com.example.mentalhealth.service.SelfCareModuleProgressService;
+import com.example.mentalhealth.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -26,6 +35,15 @@ public class AdminModuleController {
     
     @Autowired
     private SelfCareModuleProgressService moduleProgressService;
+    
+    @Autowired
+    private SelfCareModuleRepository moduleRepository;
+    
+    @Autowired
+    private ModuleQuizRepository quizRepository;
+    
+    @Autowired
+    private UserService userService;
     
     private static final String UPLOAD_DIR = "uploads/";
     
@@ -58,7 +76,6 @@ public class AdminModuleController {
                            @RequestParam(required = false) MultipartFile videoFile,
                            @RequestParam(required = false) MultipartFile pdfFile) throws IOException {
         
-        // Handle file uploads based on content type
         if (videoFile != null && !videoFile.isEmpty()) {
             String videoPath = saveFile(videoFile, "videos");
             module.setVideoFilePath(videoPath);
@@ -100,7 +117,6 @@ public class AdminModuleController {
         
         SelfCareModule existingModule = moduleProgressService.getModuleById(id);
         
-        // Handle file uploads
         if (videoFile != null && !videoFile.isEmpty()) {
             String videoPath = saveFile(videoFile, "videos");
             module.setVideoFilePath(videoPath);
@@ -114,7 +130,6 @@ public class AdminModuleController {
         } else if (module.getTextContent() != null && !module.getTextContent().isEmpty()) {
             module.setContentType("text");
         } else {
-            // Keep existing content if no new content provided
             module.setVideoFilePath(existingModule.getVideoFilePath());
             module.setPdfFilePath(existingModule.getPdfFilePath());
             module.setVideoUrl(existingModule.getVideoUrl());
@@ -126,7 +141,7 @@ public class AdminModuleController {
         
         return "redirect:/admin/modules";
     }
-    
+        
     /**
      * UC014: Delete module
      */
@@ -148,8 +163,95 @@ public class AdminModuleController {
     }
     
     /**
+     * Manage quiz questions for a module
+     */
+    @GetMapping("/{moduleId}/quiz")
+    public String manageModuleQuiz(@PathVariable Integer moduleId, Model model) {
+        SelfCareModule module = moduleRepository.findById(moduleId)
+            .orElseThrow(() -> new RuntimeException("Module not found"));
+
+        List<ModuleQuiz> quizzes = quizRepository.findByModuleIdOrderByQuestionOrderAsc(moduleId);
+
+        model.addAttribute("module", module);
+        model.addAttribute("quizzes", quizzes);
+        model.addAttribute("newQuiz", new ModuleQuiz());
+
+        return "self-care/admin-module-quiz";
+    }
+
+    /**
+     * Add quiz question (admin creates, auto-approved)
+     */
+    @PostMapping("/{moduleId}/quiz/add")
+    public String addQuizQuestion(@PathVariable Integer moduleId,
+                                 @ModelAttribute ModuleQuiz quiz,
+                                 @AuthenticationPrincipal UserDetails userDetails,
+                                 RedirectAttributes redirectAttributes) {
+
+        User admin = userService.findByEmail(userDetails.getUsername())
+            .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+        quiz.setModuleId(moduleId);
+        quiz.setCreatedBy(admin.getUserId().longValue());
+        quiz.setCreatedAt(LocalDateTime.now());
+        quiz.setStatus("APPROVED");
+        quiz.setApprovedBy(admin.getUserId().longValue());
+        quiz.setApprovedAt(LocalDateTime.now());
+
+        quizRepository.save(quiz);
+
+        redirectAttributes.addFlashAttribute("message", "Quiz question added and auto-approved!");
+        redirectAttributes.addFlashAttribute("messageType", "success");
+
+        return "redirect:/admin/modules/" + moduleId + "/quiz";
+    }
+
+    /**
+     * Approve pending quiz question
+     */
+    @GetMapping("/quiz/approve/{quizId}")
+    public String approveQuizQuestion(@PathVariable Integer quizId,
+                                     @AuthenticationPrincipal UserDetails userDetails,
+                                     RedirectAttributes redirectAttributes) {
+
+        User admin = userService.findByEmail(userDetails.getUsername())
+            .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+        ModuleQuiz quiz = quizRepository.findById(quizId)
+            .orElseThrow(() -> new RuntimeException("Quiz not found"));
+
+        quiz.setStatus("APPROVED");
+        quiz.setApprovedBy(admin.getUserId().longValue());
+        quiz.setApprovedAt(LocalDateTime.now());
+        quizRepository.save(quiz);
+
+        redirectAttributes.addFlashAttribute("message", "Quiz question approved!");
+        redirectAttributes.addFlashAttribute("messageType", "success");
+
+        return "redirect:/admin/modules/" + quiz.getModuleId() + "/quiz";
+    }
+
+    /**
+     * Delete quiz question
+     */
+    @GetMapping("/quiz/delete/{quizId}")
+    public String deleteQuizQuestion(@PathVariable Integer quizId,
+                                    RedirectAttributes redirectAttributes) {
+
+        ModuleQuiz quiz = quizRepository.findById(quizId)
+            .orElseThrow(() -> new RuntimeException("Quiz not found"));
+
+        Integer moduleId = quiz.getModuleId();
+        quizRepository.deleteById(quizId);
+
+        redirectAttributes.addFlashAttribute("message", "Quiz question deleted!");
+        redirectAttributes.addFlashAttribute("messageType", "success");
+
+        return "redirect:/admin/modules/" + moduleId + "/quiz";
+    }
+    
+    /**
      * Helper method to save uploaded files
-     * Returns path without leading slash (e.g., "uploads/videos/filename.mp4")
      */
     private String saveFile(MultipartFile file, String subDir) throws IOException {
         String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
@@ -163,7 +265,6 @@ public class AdminModuleController {
         Path filePath = path.resolve(fileName);
         Files.copy(file.getInputStream(), filePath);
         
-        // Return path WITHOUT leading slash for proper URL mapping
         return uploadPath + fileName;
     }
 }

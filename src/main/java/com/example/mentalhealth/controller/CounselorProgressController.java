@@ -2,16 +2,12 @@ package com.example.mentalhealth.controller;
 
 import com.example.mentalhealth.model.*;
 import com.example.mentalhealth.service.*;
+import com.example.mentalhealth.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import com.example.mentalhealth.repository.SelfCareModuleRepository;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,160 +20,122 @@ public class CounselorProgressController {
     private SelfCareModuleProgressService moduleProgressService;
     
     @Autowired
-    private SelfCareModuleRepository moduleRepository;
-    
-    @Autowired
     private UserService userService;
     
     @Autowired
-    private SelfCareRecommendationService recommendationService;
+    private SelfCareModuleRepository moduleRepository;
     
-    /**
-     * View all students' self-care progress overview
-     */
+    @Autowired
+    private UserModuleProgressRepository progressRepository;
+    
     @GetMapping
     public String viewAllProgress(Model model) {
         List<User> students = userService.getAllStudents();
-        
         List<StudentProgressSummary> progressList = new ArrayList<>();
         
+        System.out.println("=== DEBUG: Counselor Progress Controller ===");
+        System.out.println("Total students found: " + students.size());
+        
         for (User student : students) {
+            Long studentId = student.getId();
+            
+            System.out.println("Processing student: " + student.getFullName() + " (ID: " + studentId + ")");
+            
             SelfCareModuleProgressService.ProgressStatistics stats = 
-                moduleProgressService.getProgressStatistics(student.getUserId());
+                moduleProgressService.getUserProgressStatistics(studentId);
             
+            System.out.println("  - Completed: " + stats.getCompletedCount());
+            System.out.println("  - Average Progress: " + stats.getAverageProgress() + "%");
+            System.out.println("  - In Progress: " + stats.getInProgressCount());
+                
             StudentProgressSummary summary = new StudentProgressSummary();
-            summary.setStudentId(student.getUserId());
-            summary.setStudentName(student.getFullName());
-            summary.setStudentEmail(student.getEmail());
-            summary.setCompletedModules(stats.getCompletedCount());
-            summary.setAverageProgress(stats.getAverageProgress());
-            summary.setTotalModules(stats.getTotalModules());
-            summary.setInProgressCount(stats.getInProgressCount());
-            
+            summary.studentId = studentId;
+            summary.studentName = student.getFullName();
+            summary.studentEmail = student.getEmail();
+            summary.completedModules = stats.getCompletedCount();
+            summary.averageProgress = stats.getAverageProgress();
+            summary.totalModules = stats.getTotalModules();
+            summary.inProgressCount = stats.getInProgressCount();
             progressList.add(summary);
         }
         
-        model.addAttribute("studentProgressList", progressList);
+        System.out.println("Total progress summaries created: " + progressList.size());
+        System.out.println("=== END DEBUG ===");
         
+        model.addAttribute("studentProgressList", progressList);
         return "self-care/counselor-progress-overview";
     }
-    
-    /**
-     * View specific student's detailed progress
-     */
-    @GetMapping("/student/{userId}")
-    public String viewStudentProgress(@PathVariable Integer userId, Model model) {
-        User student = userService.findById(userId.longValue())
+
+    @GetMapping("/student/{studentId}")
+    public String viewStudentDetail(@PathVariable Long studentId, Model model) {
+        User student = userService.findById(studentId)
             .orElseThrow(() -> new RuntimeException("Student not found"));
         
-        // Get all progress records for the student
-        List<UserModuleProgress> progressList = moduleProgressService.getUserProgress(userId);
+        // Student info
+        model.addAttribute("student", student);
         
-        // Attach module info to each progress record
-        List<ModuleProgressDetail> detailList = new ArrayList<>();
-        for (UserModuleProgress progress : progressList) {
-            SelfCareModule module = moduleProgressService.getModuleById(progress.getModuleId());
-            
-            ModuleProgressDetail detail = new ModuleProgressDetail();
-            detail.setProgress(progress);
-            detail.setModule(module);
-            
-            detailList.add(detail);
+        // Progress statistics
+        SelfCareModuleProgressService.ProgressStatistics stats = 
+            moduleProgressService.getUserProgressStatistics(studentId);
+        model.addAttribute("statistics", stats);
+        
+        // Get all modules for recommendation section
+        List<SelfCareModule> allModules = moduleRepository.findAll();
+        model.addAttribute("allModules", allModules);
+        
+        // Get student's progress details with module info
+        List<UserModuleProgress> progresses = progressRepository.findByUserId(studentId);
+        List<ModuleProgressDetail> progressDetails = new ArrayList<>();
+        
+        for (UserModuleProgress progress : progresses) {
+            moduleRepository.findById(progress.getModuleId()).ifPresent(module -> {
+                ModuleProgressDetail detail = new ModuleProgressDetail();
+                detail.module = module;
+                detail.progress = progress;
+                progressDetails.add(detail);
+            });
         }
         
-        // Get statistics
-        SelfCareModuleProgressService.ProgressStatistics stats = 
-            moduleProgressService.getProgressStatistics(userId);
-        
-        // Get all available modules for recommendation (only unlocked ones)
-        List<SelfCareModule> allModules = moduleProgressService.getAllModules();
-        List<SelfCareModule> unlockedModules = allModules.stream()
-            .filter(m -> !m.getIsLocked())
-            .collect(java.util.stream.Collectors.toList());
-        
-        model.addAttribute("student", student);
-        model.addAttribute("progressDetails", detailList);
-        model.addAttribute("statistics", stats);
-        model.addAttribute("allModules", unlockedModules);
+        model.addAttribute("progressDetails", progressDetails);
         
         return "self-care/counselor-student-progress-detail";
     }
 
     
-    
-    /**
-     * Recommend a module to student
-     */
-    @PostMapping("/student/{userId}/recommend")
-    public String recommendModule(@PathVariable Integer userId,
-                                   @RequestParam Integer moduleId,
-                                   @RequestParam String reason,
-                                   @AuthenticationPrincipal UserDetails userDetails,
-                                   RedirectAttributes redirectAttributes) {
-        try {
-            User counselor = userService.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("Counselor not found"));
-            
-            recommendationService.recommendModule(
-                counselor.getId(),
-                userId.longValue(),
-                moduleId,
-                reason
-            );
-            
-            redirectAttributes.addFlashAttribute("message", "Module recommended successfully!");
-            redirectAttributes.addFlashAttribute("messageType", "success");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("message", "Error: " + e.getMessage());
-            redirectAttributes.addFlashAttribute("messageType", "error");
-        }
-        
-        return "redirect:/counselor/progress/student/" + userId;
-    }
-    
-    // ==================== Inner DTO Classes ====================
-    
     public static class StudentProgressSummary {
-        private Integer studentId;
-        private String studentName;
-        private String studentEmail;
-        private Integer completedModules;
-        private Integer averageProgress;
-        private Integer totalModules;
-        private Integer inProgressCount;
-        
-        // Getters and Setters
-        public Integer getStudentId() { return studentId; }
-        public void setStudentId(Integer studentId) { this.studentId = studentId; }
-        
+        public Long studentId;
+        public String studentName;
+        public String studentEmail;
+        public Integer completedModules;
+        public Integer averageProgress;
+        public Integer totalModules;
+        public Integer inProgressCount;
+
+        // Getters
+        public Long getStudentId() { return studentId; }
         public String getStudentName() { return studentName; }
-        public void setStudentName(String studentName) { this.studentName = studentName; }
-        
         public String getStudentEmail() { return studentEmail; }
-        public void setStudentEmail(String studentEmail) { this.studentEmail = studentEmail; }
-        
         public Integer getCompletedModules() { return completedModules; }
-        public void setCompletedModules(Integer completedModules) { this.completedModules = completedModules; }
-        
         public Integer getAverageProgress() { return averageProgress; }
-        public void setAverageProgress(Integer averageProgress) { this.averageProgress = averageProgress; }
-        
         public Integer getTotalModules() { return totalModules; }
-        public void setTotalModules(Integer totalModules) { this.totalModules = totalModules; }
-        
         public Integer getInProgressCount() { return inProgressCount; }
+        
+        // Setters
+        public void setStudentId(Long studentId) { this.studentId = studentId; }
+        public void setStudentName(String studentName) { this.studentName = studentName; }
+        public void setStudentEmail(String studentEmail) { this.studentEmail = studentEmail; }
+        public void setCompletedModules(Integer completedModules) { this.completedModules = completedModules; }
+        public void setAverageProgress(Integer averageProgress) { this.averageProgress = averageProgress; }
+        public void setTotalModules(Integer totalModules) { this.totalModules = totalModules; }
         public void setInProgressCount(Integer inProgressCount) { this.inProgressCount = inProgressCount; }
     }
     
+    // Helper class for displaying module + progress together
     public static class ModuleProgressDetail {
-        private UserModuleProgress progress;
-        private SelfCareModule module;
-        
-        // Getters and Setters
-        public UserModuleProgress getProgress() { return progress; }
-        public void setProgress(UserModuleProgress progress) { this.progress = progress; }
+        public SelfCareModule module;
+        public UserModuleProgress progress;
         
         public SelfCareModule getModule() { return module; }
-        public void setModule(SelfCareModule module) { this.module = module; }
+        public UserModuleProgress getProgress() { return progress; }
     }
 }
