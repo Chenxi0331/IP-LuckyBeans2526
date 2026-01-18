@@ -53,11 +53,9 @@
                     
                     <div class="answer-options">
                         <div class="answer-option" 
-                             th:each="option : ${T(java.util.Arrays).asList('A','B','C','D')}"
-                             th:classappend="${option == quiz.correctAnswer} ? 'correct-answer' : ''
-                                            + (userAnswers.get(quiz.quizId) != null 
-                                               and option == userAnswers.get(quiz.quizId).selectedAnswer 
-                                               and option != quiz.correctAnswer) ? ' your-wrong-answer' : ''">
+                             th:each="option : ${options}"
+                             th:class="'answer-option' + (${option == quiz.correctAnswer} ? ' correct-answer' : '') + 
+                                        (${userAnswers.get(quiz.quizId) != null and option == userAnswers.get(quiz.quizId).selectedAnswer and option != quiz.correctAnswer} ? ' your-wrong-answer' : '')">
                             
                             <div class="option-indicator">
                                 <i th:if="${option == quiz.correctAnswer}" class="bi bi-check-circle-fill"></i>

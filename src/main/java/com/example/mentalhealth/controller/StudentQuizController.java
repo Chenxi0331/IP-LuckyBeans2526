@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 
 @Controller
 @RequestMapping("/self-care")
@@ -52,7 +53,8 @@ public class StudentQuizController {
     @GetMapping("/module/{id}/quiz")
     public String viewQuiz(@PathVariable Integer id,
                           @AuthenticationPrincipal UserDetails userDetails,
-                          Model model) {
+                          Model model,
+                          RedirectAttributes redirectAttributes) {
         
         User user = userService.findByEmail(userDetails.getUsername())
             .orElseThrow(() -> new RuntimeException("User not found"));
@@ -60,6 +62,13 @@ public class StudentQuizController {
         Long userId = Long.valueOf(user.getId());
         
         List<ModuleQuiz> quizzes = quizRepository.findByModuleIdAndStatusOrderByQuestionOrderAsc(id, "APPROVED");
+
+        if (quizzes.isEmpty()) {
+        redirectAttributes.addFlashAttribute("message", "This module has no quiz questions.");
+        redirectAttributes.addFlashAttribute("messageType", "info");
+        return "redirect:/self-care/module/" + id;
+        }
+
         Long answeredCount = answerRepository.countByUserIdAndModuleId(userId, id);
         
         int quizSize = quizzes.size();
@@ -133,7 +142,7 @@ public class StudentQuizController {
         long correctAnswerCount = userAnswers.stream()
             .filter(StudentQuizAnswer::getIsCorrect)
             .count();
-        
+        model.addAttribute("options", Arrays.asList("A", "B", "C", "D"));
         model.addAttribute("quizzes", quizzes);
         model.addAttribute("userAnswers", answerMap);
         model.addAttribute("correctCount", correctAnswerCount);

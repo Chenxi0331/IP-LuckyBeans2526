@@ -33,17 +33,51 @@ public class SymptomsController {
     private UserService userService;
 
     /**
-     * UC007 + UC009: Display assessment page or history
+     * Assessment type selection page
+     */
+    @GetMapping("/select-type")
+    public String selectAssessmentType(@AuthenticationPrincipal UserDetails userDetails,
+                                       HttpSession session,
+                                       Model model) {
+        clearAssessmentSession(session);
+        
+        User user = userService.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<AssessmentType> assessmentTypes = assessmentService.getActiveAssessmentTypes();
+        
+        model.addAttribute("user", user);
+        model.addAttribute("assessmentTypes", assessmentTypes);
+        
+        UserProgress userProgress = new UserProgress("7-day self-care streak!");
+        model.addAttribute("userProgress", userProgress);
+        
+        return "symptoms-recognition/select-assessment-type";
+    }
+
+    /**
+     * UC007 + UC009: Display assessment page or assessment history
      */
     @GetMapping
     public String symptoms(@AuthenticationPrincipal UserDetails userDetails,
+                           @RequestParam(required = false) Integer assessmentTypeId,
                            HttpSession session,
                            Model model) {
+
+        if (assessmentTypeId == null) {
+            Integer sessionTypeId = (Integer) session.getAttribute("currentAssessmentTypeId");
+            if (sessionTypeId == null) {
+                return "redirect:/symptoms/select-type";
+            }
+            assessmentTypeId = sessionTypeId;
+        }
 
         User user = userService.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Integer userId = user.getUserId();
+        
+        session.setAttribute("currentAssessmentTypeId", assessmentTypeId);
 
         model.addAttribute("user", user);
 
@@ -56,7 +90,7 @@ public class SymptomsController {
             session.setAttribute("currentQuestion", currentQuestion);
         }
 
-        return showQuestion(session, model, userId);
+        return showQuestion(session, model, userId, assessmentTypeId);
     }
 
     /**
@@ -81,23 +115,24 @@ public class SymptomsController {
     }
 
     /**
-     * Display current question
+     * Display the current assessment question
      */
-    private String showQuestion(HttpSession session, Model model, Integer userId) {
+    private String showQuestion(HttpSession session, Model model, Integer userId, Integer assessmentTypeId) {
         Integer currentQuestion = Optional.ofNullable((Integer) session.getAttribute("currentQuestion"))
                 .orElse(1);
 
-        // ✅ IMPORTANT: only show APPROVED questions to students
-        List<AssessmentQuestion> allQuestions = assessmentService.getApprovedQuestions();
+        List<AssessmentQuestion> allQuestions =
+                assessmentService.getApprovedQuestionsByType(assessmentTypeId);
         int totalQuestions = allQuestions.size();
 
-        // Edge: no approved questions
+        AssessmentType assessmentType = assessmentService.getAssessmentTypeById(assessmentTypeId);
+
         if (totalQuestions == 0) {
-            // show dashboard-like page but without questions
             model.addAttribute("currentQuestion", null);
             model.addAttribute("totalQuestions", 0);
             model.addAttribute("maxScore", 0);
-            model.addAttribute("assessmentHistory", assessmentService.getUserAssessmentHistory(userId));
+            model.addAttribute("assessmentHistory", 
+                    assessmentService.getUserAssessmentHistoryWithTypeNames(userId));
             model.addAttribute("counselorComments",
                     assessmentService.getVisibleStudentComments(userId.longValue()));
             return "symptoms-recognition/symptoms-recognition";
@@ -109,11 +144,10 @@ public class SymptomsController {
 
         AssessmentQuestion assessmentQuestion = allQuestions.get(currentQuestion - 1);
 
-        // Build options (radio values are 0..n-1)
         List<Option> options = new ArrayList<>();
         int index = 0;
-        // Ensure options is loaded (safe even if mapping is lazy)
-        List<AssessmentOption> dbOptions = assessmentService.getQuestionOptions(assessmentQuestion.getQuestionId());
+        List<AssessmentOption> dbOptions =
+                assessmentService.getQuestionOptions(assessmentQuestion.getQuestionId());
         for (AssessmentOption ao : dbOptions) {
             options.add(new Option(index, ao.getOptionText()));
             index++;
@@ -127,7 +161,6 @@ public class SymptomsController {
         questionDto.setText(assessmentQuestion.getQuestionText());
         questionDto.setOptions(options);
 
-        // ✅ Fix: bind questionId into form so it gets submitted
         QuestionForm form = new QuestionForm();
         form.setQuestionId(assessmentQuestion.getQuestionId());
 
@@ -138,59 +171,58 @@ public class SymptomsController {
         model.addAttribute("selectedAnswer", selectedAnswer);
         model.addAttribute("questionForm", form);
 
-        // ✅ Dynamic maxScore (supports different option counts per question)
-        int maxScore = assessmentService.calculateMaxScoreForApprovedQuestions();
-        model.addAttribute("maxScore", maxScore);
+        model.addAttribute("assessmentTypeName", assessmentType.getTypeName());
+        model.addAttribute("assessmentTypeInstructions", assessmentType.getInstructions());
+        model.addAttribute("maxScore", assessmentType.getMaxScore());
 
-        // Latest assessment
-        UserAssessment latestAssessment = assessmentService.getLatestAssessment(userId);
+        UserAssessment latestAssessment = 
+                assessmentService.getLatestAssessmentWithTypeName(userId);
         if (latestAssessment != null) {
             model.addAttribute("latestScore", latestAssessment.getTotalScore());
             model.addAttribute("latestAssessment", latestAssessment.getAssessmentResult());
             model.addAttribute("latestSeverity", latestAssessment.getSeverityLevel());
+            model.addAttribute("latestAssessmentType", latestAssessment.getAssessmentTypeName());
         }
 
-        // Assessment history
-        List<UserAssessment> assessments = assessmentService.getUserAssessmentHistory(userId);
-        model.addAttribute("assessmentHistory", assessments);
-
-        // Counselor comments visible to student
-        List<CounselorComment> counselorComments =
-                assessmentService.getVisibleStudentComments(userId.longValue());
-        model.addAttribute("counselorComments", counselorComments);
+        model.addAttribute("assessmentHistory", 
+                assessmentService.getUserAssessmentHistoryWithTypeNames(userId));
+        model.addAttribute("counselorComments",
+                assessmentService.getVisibleStudentComments(userId.longValue()));
 
         return "symptoms-recognition/symptoms-recognition";
     }
 
     /**
-     * Display dashboard (assessment history)
+     * Display dashboard containing assessment history
      */
     private String showDashboard(Integer userId, Model model) {
-        List<UserAssessment> assessments = assessmentService.getUserAssessmentHistory(userId);
+        List<UserAssessment> assessments =
+                assessmentService.getUserAssessmentHistoryWithTypeNames(userId);
 
         if (!assessments.isEmpty()) {
             UserAssessment latest = assessments.get(0);
             model.addAttribute("totalScore", latest.getTotalScore());
             model.addAttribute("assessment", latest.getAssessmentResult());
             model.addAttribute("severityLevel", latest.getSeverityLevel());
+            model.addAttribute("latestAssessmentType", latest.getAssessmentTypeName());
+        
+           if (latest.getAssessmentTypeId() != null) {
+            AssessmentType type = assessmentService.getAssessmentTypeById(latest.getAssessmentTypeId());
+            model.addAttribute("maxScore", type.getMaxScore());
+            } else {
+            model.addAttribute("maxScore", 27); // Default for legacy data
+            } 
         }
-
+        
         model.addAttribute("assessmentHistory", assessments);
-
-        // Counselor comments visible to student
-        List<CounselorComment> counselorComments =
-                assessmentService.getVisibleStudentComments(userId.longValue());
-        model.addAttribute("counselorComments", counselorComments);
-
-        // ✅ Dynamic maxScore for display "/max"
-        int maxScore = assessmentService.calculateMaxScoreForApprovedQuestions();
-        model.addAttribute("maxScore", maxScore);
+        model.addAttribute("counselorComments",
+                assessmentService.getVisibleStudentComments(userId.longValue()));
 
         return "symptoms-recognition/symptoms-recognition";
     }
 
     /**
-     * UC007: Submit answer
+     * UC007: Submit answer for the current question
      */
     @PostMapping("/submit")
     public String submitAnswer(@ModelAttribute QuestionForm questionForm,
@@ -204,75 +236,94 @@ public class SymptomsController {
         Integer currentQuestion = (Integer) session.getAttribute("currentQuestion");
         if (currentQuestion == null) currentQuestion = 1;
 
-        // Save current answer + questionId into session
         session.setAttribute("answer_" + currentQuestion, questionForm.getAnswer());
         session.setAttribute("questionId_" + currentQuestion, questionForm.getQuestionId());
 
-        // ✅ totalQuestions must match what we actually show (approved only)
-        int totalQuestions = assessmentService.getApprovedQuestions().size();
+        Integer assessmentTypeId = (Integer) session.getAttribute("currentAssessmentTypeId");
+        if (assessmentTypeId == null) {
+            return "redirect:/symptoms/select-type";
+        }
+
+        List<AssessmentQuestion> questions =
+                assessmentService.getApprovedQuestionsByType(assessmentTypeId);
+        int totalQuestions = questions.size();
 
         if (totalQuestions == 0) {
-            // no questions -> go dashboard
             session.removeAttribute("currentQuestion");
             return "redirect:/symptoms/dashboard";
         }
 
         if (currentQuestion < totalQuestions) {
             session.setAttribute("currentQuestion", currentQuestion + 1);
-            return "redirect:/symptoms";
+            return "redirect:/symptoms?assessmentTypeId=" + assessmentTypeId;
         } else {
-            saveAssessmentToDatabase(userId, session, totalQuestions);
-
-            // Clear session data
-            for (int i = 1; i <= totalQuestions; i++) {
-                session.removeAttribute("answer_" + i);
-                session.removeAttribute("questionId_" + i);
-            }
-            session.removeAttribute("currentQuestion");
-
+            saveAssessmentToDatabase(userId, session, totalQuestions, assessmentTypeId);
+            clearAssessmentSession(session, totalQuestions);
             return "redirect:/symptoms/dashboard";
         }
     }
 
     /**
-     * Go to previous question
+     * Navigate to the previous question
      */
     @GetMapping("/previous")
-    public String previousQuestion(HttpSession session) {
+    public String previousQuestion(@RequestParam(required = false) Integer assessmentTypeId,
+                                   HttpSession session) {
         Integer currentQuestion = (Integer) session.getAttribute("currentQuestion");
         if (currentQuestion != null && currentQuestion > 1) {
             session.setAttribute("currentQuestion", currentQuestion - 1);
         }
-        return "redirect:/symptoms";
+        
+        if (assessmentTypeId == null) {
+            assessmentTypeId = (Integer) session.getAttribute("currentAssessmentTypeId");
+        }
+        
+        return "redirect:/symptoms?assessmentTypeId=" + assessmentTypeId;
     }
 
     /**
-     * Start new assessment
+     * Start a new assessment
      */
     @GetMapping("/start")
-    public String startAssessment(HttpSession session) {
+    public String startAssessment(@RequestParam Integer assessmentTypeId,
+                                  HttpSession session) {
         session.setAttribute("currentQuestion", 1);
-        return "redirect:/symptoms";
+        session.setAttribute("currentAssessmentTypeId", assessmentTypeId);
+        return "redirect:/symptoms?assessmentTypeId=" + assessmentTypeId;
     }
 
     /**
-     * Restart assessment
+     * Restart the current assessment
      */
     @GetMapping("/restart")
     public String restartAssessment(HttpSession session) {
-        int totalQuestions = assessmentService.getApprovedQuestions().size();
-        for (int i = 1; i <= totalQuestions; i++) {
-            session.removeAttribute("answer_" + i);
-            session.removeAttribute("questionId_" + i);
+        Integer assessmentTypeId = (Integer) session.getAttribute("currentAssessmentTypeId");
+        
+        if (assessmentTypeId != null) {
+            List<AssessmentQuestion> questions =
+                    assessmentService.getApprovedQuestionsByType(assessmentTypeId);
+            int totalQuestions = questions.size();
+            
+            for (int i = 1; i <= totalQuestions; i++) {
+                session.removeAttribute("answer_" + i);
+                session.removeAttribute("questionId_" + i);
+            }
         }
+        
         session.setAttribute("currentQuestion", 1);
-        return "redirect:/symptoms";
+        
+        if (assessmentTypeId == null) {
+            return "redirect:/symptoms/select-type";
+        }
+        
+        return "redirect:/symptoms?assessmentTypeId=" + assessmentTypeId;
     }
 
     /**
-     * Save assessment to database
+     * Save completed assessment results to the database
      */
-    private void saveAssessmentToDatabase(Integer userId, HttpSession session, int totalQuestions) {
+    private void saveAssessmentToDatabase(Integer userId, HttpSession session,
+                                          int totalQuestions, Integer assessmentTypeId) {
         List<Integer> answers = new ArrayList<>();
         List<Integer> questionIds = new ArrayList<>();
 
@@ -280,13 +331,31 @@ public class SymptomsController {
             Integer answerIndex = (Integer) session.getAttribute("answer_" + i);
             Integer questionId = (Integer) session.getAttribute("questionId_" + i);
 
-            // ✅ now questionId will not be null because we bind it into form
             if (answerIndex != null && questionId != null) {
                 answers.add(answerIndex);
                 questionIds.add(questionId);
             }
         }
 
-        assessmentService.saveAssessment(userId, answers, questionIds);
+        assessmentService.saveAssessment(userId, answers, questionIds, assessmentTypeId);
+    }
+    
+    /**
+     * Clear assessment-related session data
+     */
+    private void clearAssessmentSession(HttpSession session) {
+        clearAssessmentSession(session, 50);
+    }
+    
+    /**
+     * Clear assessment-related session data with specific question count
+     */
+    private void clearAssessmentSession(HttpSession session, int totalQuestions) {
+        for (int i = 1; i <= totalQuestions; i++) {
+            session.removeAttribute("answer_" + i);
+            session.removeAttribute("questionId_" + i);
+        }
+        session.removeAttribute("currentQuestion");
+        session.removeAttribute("currentAssessmentTypeId");
     }
 }

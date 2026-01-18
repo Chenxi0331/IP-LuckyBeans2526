@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Answers - Innerly Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+    
+    <main id="page-content-wrapper" class="main-content" style="margin-left: 260px; padding: 2rem;">
+        
+        <a th:href="@{/admin/assessment/all}" class="back-btn">
+            <i class="bi bi-arrow-left"></i> Back to All Assessments
+        </a>
+        
+        <!-- Student & Assessment Info -->
+        <div class="info-card">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="bi bi-person"></i> Student Information</h5>
+                    <p><strong>Name:</strong> <span th:text="${studentName}">John Smith</span></p>
+                    <p><strong>Email:</strong> <span th:text="${studentEmail}">john@example.com</span></p>
+                </div>
+                <div class="col-md-6">
+                    <h5><i class="bi bi-clipboard-data"></i> Assessment Information</h5>
+                    <p><strong>Type:</strong> <span th:text="${assessment.assessmentTypeName}">PHQ-9</span></p>
+                    <p><strong>Date:</strong> <span th:text="${#temporals.format(assessment.assessmentDate, 'MMM dd, yyyy hh:mm a')}">Jan 17, 2026 08:30 PM</span></p>
+                    <p><strong>Score:</strong> 
+                        <span class="score-badge" th:text="${assessment.totalScore} + '/' + ${assessment.maxScore}">12/27</span>
+                    </p>
+                    <p><strong>Severity:</strong> 
+                        <span class="severity-badge" 
+                              th:classappend="${assessment.severityLevel}"
+                              th:text="${#strings.capitalize(assessment.severityLevel)}">
+                            Moderate
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Answers List -->
+        <div class="answers-container">
+            <h4><i class="bi bi-list-check"></i> Student's Answers</h4>
+            
+            <div th:each="answer, iterStat : ${answers}" class="answer-card">
+                <div class="question-number">Question <span th:text="${iterStat.count}">1</span></div>
+                
+                <div class="question-text" th:text="${questionTexts[answer.questionId]}">
+                    Little interest or pleasure in doing things
+                </div>
+                
+                <div class="answer-section">
+                    <strong>Student's Answer:</strong>
+                    <div class="answer-value">
+                        <span th:text="${answerTexts[answer.questionId]}">Several days</span>
+                        <span class="points" th:text="'(+' + ${answer.answerValue} + ' points)'"> (+1 points)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Result Summary -->
+        <div class="result-card">
+            <h5><i class="bi bi-clipboard-check"></i> Assessment Result</h5>
+            <p class="result-text" th:text="${assessment.assessmentResult}">
+                Moderate symptoms. We recommend speaking with a counselor.
+            </p>
+        </div>
+        
+    </main>
+    
+    <style>
+        .back-btn {
+            color: #8b5cf6;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .back-btn:hover {
+            color: #7c3aed;
+        }
+        
+        .info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .info-card h5 {
+            color: #8b5cf6;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-card p {
+            margin-bottom: 8px;
+            color: #666;
+        }
+        
+        .score-badge {
+            background: #f3f4f6;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .severity-badge {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        
+        .severity-badge.minimal {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .severity-badge.mild {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .severity-badge.moderate {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+        
+        .severity-badge.severe {
+            background: #fecaca;
+            color: #7f1d1d;
+        }
+        
+        .answers-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .answers-container h4 {
+            color: #1d1d1f;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .answer-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            background: #fafafa;
+        }
+        
+        .question-number {
+            color: #8b5cf6;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .question-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 12px;
+        }
+        
+        .answer-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .answer-section strong {
+            color: #666;
+            font-size: 13px;
+        }
+        
+        .answer-value {
+            margin-top: 8px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid #8b5cf6;
+            font-size: 15px;
+            color: #1d1d1f;
+        }
+        
+        .points {
+            color: #8b5cf6;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .result-card {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+        
+        .result-card h5 {
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .result-text {
+            font-size: 16px;
+            margin: 0;
+            line-height: 1.6;
+        }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

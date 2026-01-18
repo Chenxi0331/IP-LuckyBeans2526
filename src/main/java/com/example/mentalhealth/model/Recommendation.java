@@ -15,6 +15,9 @@ public class Recommendation {
     private String aiBadge;
     private Boolean isLocked;
     private String contentType;
+    private String recommendedBy;    
+    private String recommenderType;    
+    private Long recommenderId; 
 
     // Getters and Setters
     public String getIcon() {
@@ -119,5 +122,29 @@ public class Recommendation {
 
     public void setContentType(String contentType) {
         this.contentType = contentType;
+    }
+
+    public String getRecommendedBy() {
+        return recommendedBy;
+    }
+
+    public void setRecommendedBy(String recommendedBy) {
+        this.recommendedBy = recommendedBy;
+    }
+
+    public String getRecommenderType() {
+        return recommenderType;
+    }
+
+    public void setRecommenderType(String recommenderType) {
+        this.recommenderType = recommenderType;
+    }
+
+    public Long getRecommenderId() {
+        return recommenderId;
+    }
+
+    public void setRecommenderId(Long recommenderId) {
+        this.recommenderId = recommenderId;
     }
 }

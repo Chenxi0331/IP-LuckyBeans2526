@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Assessment Type - Innerly Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+    
+    <main id="page-content-wrapper" class="main-content" style="margin-left: 260px; padding: 2rem;">
+        
+        <a th:href="@{/admin/assessment/types}" class="back-btn">
+            <i class="bi bi-arrow-left"></i> Back to Assessment Types
+        </a>
+        
+        <div class="page-header">
+            <h1><i class="bi bi-pencil-square"></i> Edit Assessment Type</h1>
+            <p>Directly modify this assessment type</p>
+        </div>
+        
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div class="form-container">
+            <form id="assessmentTypeForm" 
+                  th:action="@{/admin/assessment/types/{id}/edit(id=${assessmentType.typeId})}" 
+                  method="post">
+                
+                <!-- Basic Information Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="bi bi-info-circle"></i>
+                        Basic Information
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            Type Code
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               th:value="${assessmentType.typeCode}"
+                               disabled>
+                        <small class="form-text">Type code cannot be changed</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="typeName" class="form-label">
+                            Full Name <span class="required">*</span>
+                        </label>
+                        <input type="text" 
+                               id="typeName" 
+                               name="typeName" 
+                               class="form-control" 
+                               required
+                               th:value="${assessmentType.typeName}"
+                               maxlength="100">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description" class="form-label">
+                            Description <span class="required">*</span>
+                        </label>
+                        <textarea id="description" 
+                                  name="description" 
+                                  class="form-control" 
+                                  rows="3" 
+                                  required
+                                  th:text="${assessmentType.description}"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="instructions" class="form-label">
+                            Student Instructions <span class="required">*</span>
+                        </label>
+                        <textarea id="instructions" 
+                                  name="instructions" 
+                                  class="form-control" 
+                                  rows="2" 
+                                  required
+                                  th:text="${assessmentType.instructions}"></textarea>
+                        <small class="form-text">Instructions displayed to students before starting the assessment</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="totalQuestions" class="form-label">
+                                    Total Questions <span class="required">*</span>
+                                </label>
+                                <input type="number" 
+                                       id="totalQuestions" 
+                                       name="totalQuestions" 
+                                       class="form-control" 
+                                       required
+                                       min="1"
+                                       max="50"
+                                       th:value="${assessmentType.totalQuestions}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="maxScore" class="form-label">
+                                    Maximum Score <span class="required">*</span>
+                                </label>
+                                <input type="number" 
+                                       id="maxScore" 
+                                       name="maxScore" 
+                                       class="form-control" 
+                                       required
+                                       min="1"
+                                       th:value="${assessmentType.maxScore}">
+                                <small class="form-text">Total possible score (usually questions × 3)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Questions Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="bi bi-list-ol"></i>
+                            Assessment Questions
+                        </h3>
+                        <button type="button" onclick="addQuestion()" class="btn btn-sm btn-primary">
+                            <i class="bi bi-plus-circle"></i> Add Question
+                        </button>
+                    </div>
+                    <p class="section-description">Each question must have exactly 4 response options (scored 0-3).</p>
+                    
+                    <div id="questionsContainer">
+                        <!-- Pre-populated questions from Thymeleaf -->
+                        <div th:each="question, iterStat : ${questions}" 
+                             class="question-block" 
+                             th:id="'question-' + ${iterStat.count}">
+                            <div class="question-block-header">
+                                <span class="question-number-badge" th:text="'Question ' + ${iterStat.count}">Question 1</span>
+                                <button type="button" class="remove-question-btn" 
+                                        th:onclick="'removeQuestion(' + ${iterStat.count} + ')'">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Question Text <span class="required">*</span></label>
+                                <textarea class="form-control question-text" rows="2" required 
+                                          th:text="${question.questionText}"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Response Options <span class="required">*</span></label>
+                                <small class="form-text" style="margin-bottom: 12px; display: block;">
+                                    Provide exactly 4 options in order (scored 0-3)
+                                </small>
+                                <div th:each="option, optStat : ${question.options}" class="options-input-group">
+                                    <span class="option-score-label" th:text="'Score ' + ${optStat.index}">Score 0</span>
+                                    <input type="text" class="form-control option-text" required 
+                                           th:value="${option.optionText}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Scoring Criteria Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <i class="bi bi-calculator"></i>
+                            Scoring Criteria
+                        </h3>
+                        <button type="button" onclick="addScoringLevel()" class="btn btn-sm btn-success">
+                            <i class="bi bi-plus-circle"></i> Add Level
+                        </button>
+                    </div>
+                    <p class="section-description">Define how total scores are interpreted into severity levels</p>
+                    
+                    <div id="scoringContainer">
+                        <!-- Pre-populated scoring levels from Thymeleaf -->
+                        <div th:each="scoring, iterStat : ${scorings}" 
+                             class="scoring-block" 
+                             th:id="'scoring-' + ${iterStat.count}">
+                            <div class="scoring-block-header">
+                                <span class="scoring-level-badge" th:text="'Severity Level ' + ${iterStat.count}">Level 1</span>
+                                <button type="button" class="remove-scoring-btn" 
+                                        th:onclick="'removeScoring(' + ${iterStat.count} + ')'">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label">Severity Level <span class="required">*</span></label>
+                                        <input type="text" class="form-control severity-level" required
+                                               placeholder="e.g., minimal, mild, moderate, severe"
+                                               th:value="${scoring.severityLevel}">
+                                        <small class="form-text">Use lowercase</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label">Min Score <span class="required">*</span></label>
+                                        <input type="number" class="form-control min-score" required min="0"
+                                               th:value="${scoring.minScore}">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label">Max Score <span class="required">*</span></label>
+                                        <input type="number" class="form-control max-score" required min="0"
+                                               th:value="${scoring.maxScore}">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Interpretation <span class="required">*</span></label>
+                                <textarea class="form-control interpretation" rows="2" required
+                                          th:text="${scoring.interpretation}"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Recommendations</label>
+                                <textarea class="form-control recommendations" rows="2"
+                                          th:text="${scoring.recommendations}"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Hidden JSON Fields -->
+                <input type="hidden" id="questionsJson" name="questionsJson">
+                <input type="hidden" id="scoringJson" name="scoringJson">
+                
+                <!-- Warning Box -->
+                <div class="warning-box">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <div>
+                        <strong>Warning:</strong> Changes will be applied immediately. Make sure all information is accurate before saving.
+                    </div>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <a th:href="@{/admin/assessment/types}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i>
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+    
+    <style>
+        .back-btn { color: #8b5cf6; text-decoration: none; font-weight: 600; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 6px; }
+        .back-btn:hover { color: #7c3aed; }
+        .page-header { margin-bottom: 32px; }
+        .page-header h1 { font-size: 28px; font-weight: 700; color: #1d1d1f; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+        .page-header p { color: #666; font-size: 16px; }
+        .form-container { background: white; border-radius: 12px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 1000px; }
+        .form-section { margin-bottom: 40px; padding-bottom: 32px; border-bottom: 2px solid #f0f0f0; }
+        .form-section:last-of-type { border-bottom: none; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .section-title { font-size: 18px; font-weight: 700; color: #1d1d1f; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+        .section-description { color: #666; font-size: 14px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 24px; }
+        .form-label { font-weight: 600; margin-bottom: 8px; display: block; font-size: 14px; color: #333; }
+        .required { color: #dc3545; }
+        .form-control { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .form-control:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1); }
+        .form-control:disabled { background: #f5f5f7; color: #666; }
+        .form-text { font-size: 13px; color: #666; margin-top: 4px; display: block; }
+        .question-block { background: linear-gradient(135deg, #f5f3ff 0%, #faf5ff 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #e9d5ff; }
+        .question-block-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .question-number-badge { background: #8b5cf6; color: white; padding: 8px 20px; border-radius: 20px; font-weight: 700; font-size: 15px; }
+        .remove-question-btn { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; }
+        .remove-question-btn:hover { background: #dc2626; }
+        .options-input-group { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .option-score-label { background: #8b5cf6; color: white; padding: 10px 16px; border-radius: 8px; font-weight: 700; font-size: 14px; min-width: 90px; text-align: center; flex-shrink: 0; }
+        .scoring-block { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #bbf7d0; }
+        .scoring-block-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .scoring-level-badge { background: #10b981; color: white; padding: 8px 20px; border-radius: 20px; font-weight: 700; font-size: 15px; }
+        .remove-scoring-btn { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; }
+        .remove-scoring-btn:hover { background: #dc2626; }
+        .warning-box { background: #fef3c7; border: 2px solid #fbbf24; border-radius: 12px; padding: 20px; display: flex; gap: 16px; margin-bottom: 24px; color: #92400e; }
+        .warning-box i { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+        .form-actions { display: flex; justify-content: flex-end; gap: 12px; padding-top: 24px; border-top: 2px solid #f0f0f0; }
+        .btn { padding: 12px 24px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; transition: all 0.2s; }
+        .btn-sm { padding: 8px 16px; font-size: 13px; }
+        .btn-primary { background: #8b5cf6; color: white; }
+        .btn-primary:hover { background: #7c3aed; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-secondary { background: #f5f5f7; color: #666; }
+        .btn-secondary:hover { background: #e5e5e7; }
+    </style>
+    
+    <script>
+        let questionCount = document.querySelectorAll('.question-block').length;
+        let scoringCount = document.querySelectorAll('.scoring-block').length;
+        
+        function addQuestion() {
+            questionCount++;
+            const container = document.getElementById('questionsContainer');
+            const questionBlock = document.createElement('div');
+            questionBlock.className = 'question-block';
+            questionBlock.id = 'question-' + questionCount;
+            
+            questionBlock.innerHTML = `
+                <div class="question-block-header">
+                    <span class="question-number-badge">Question ${questionCount}</span>
+                    <button type="button" class="remove-question-btn" onclick="removeQuestion(${questionCount})">
+                        <i class="bi bi-trash"></i> Remove
+                    </button>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Question Text <span class="required">*</span></label>
+                    <textarea class="form-control question-text" rows="2" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Response Options <span class="required">*</span></label>
+                    <small class="form-text" style="margin-bottom: 12px; display: block;">
+                        Provide exactly 4 options in order (scored 0-3)
+                    </small>
+                    <div class="options-input-group">
+                        <span class="option-score-label">Score 0</span>
+                        <input type="text" class="form-control option-text" required placeholder="e.g., Not at all">
+                    </div>
+                    <div class="options-input-group">
+                        <span class="option-score-label">Score 1</span>
+                        <input type="text" class="form-control option-text" required placeholder="e.g., Several days">
+                    </div>
+                    <div class="options-input-group">
+                        <span class="option-score-label">Score 2</span>
+                        <input type="text" class="form-control option-text" required placeholder="e.g., More than half the days">
+                    </div>
+                    <div class="options-input-group">
+                        <span class="option-score-label">Score 3</span>
+                        <input type="text" class="form-control option-text" required placeholder="e.g., Nearly every day">
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(questionBlock);
+        }
+        
+        function removeQuestion(id) {
+            const element = document.getElementById('question-' + id);
+            if (element) element.remove();
+        }
+        
+        function addScoringLevel() {
+            scoringCount++;
+            const container = document.getElementById('scoringContainer');
+            const scoringBlock = document.createElement('div');
+            scoringBlock.className = 'scoring-block';
+            scoringBlock.id = 'scoring-' + scoringCount;
+            
+            scoringBlock.innerHTML = `
+                <div class="scoring-block-header">
+                    <span class="scoring-level-badge">Severity Level ${scoringCount}</span>
+                    <button type="button" class="remove-scoring-btn" onclick="removeScoring(${scoringCount})">
+                        <i class="bi bi-trash"></i> Remove
+                    </button>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">Severity Level <span class="required">*</span></label>
+                            <input type="text" class="form-control severity-level" required
+                                   placeholder="e.g., minimal, mild, moderate, severe">
+                            <small class="form-text">Use lowercase</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">Min Score <span class="required">*</span></label>
+                            <input type="number" class="form-control min-score" required min="0">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">Max Score <span class="required">*</span></label>
+                            <input type="number" class="form-control max-score" required min="0">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Interpretation <span class="required">*</span></label>
+                    <textarea class="form-control interpretation" rows="2" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Recommendations</label>
+                    <textarea class="form-control recommendations" rows="2"></textarea>
+                </div>
+            `;
+            
+            container.appendChild(scoringBlock);
+        }
+        
+        function removeScoring(id) {
+            const element = document.getElementById('scoring-' + id);
+            if (element) element.remove();
+        }
+        
+        document.getElementById('assessmentTypeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const questionBlocks = document.querySelectorAll('.question-block');
+            if (questionBlocks.length === 0) {
+                alert('Please add at least one question');
+                return;
+            }
+            
+            const scoringBlocks = document.querySelectorAll('.scoring-block');
+            if (scoringBlocks.length === 0) {
+                alert('Please add at least one scoring level');
+                return;
+            }
+            
+            const questions = [];
+            questionBlocks.forEach((block, index) => {
+                const questionText = block.querySelector('.question-text').value;
+                const optionTexts = Array.from(block.querySelectorAll('.option-text')).map(input => input.value);
+                
+                questions.push({
+                    questionText: questionText,
+                    questionOrder: index + 1,
+                    options: JSON.stringify(optionTexts)
+                });
+            });
+            
+            const scoring = [];
+            scoringBlocks.forEach(block => {
+                scoring.push({
+                    level: block.querySelector('.severity-level').value.toLowerCase(),
+                    min: parseInt(block.querySelector('.min-score').value),
+                    max: parseInt(block.querySelector('.max-score').value),
+                    interpretation: block.querySelector('.interpretation').value,
+                    recommendations: block.querySelector('.recommendations').value || ''
+                });
+            });
+            
+            document.getElementById('questionsJson').value = JSON.stringify(questions);
+            document.getElementById('scoringJson').value = JSON.stringify(scoring);
+            
+            this.submit();
+        });
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

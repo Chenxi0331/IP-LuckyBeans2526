@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Assessment Type Requests - Innerly Counselor</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+    
+    <main id="page-content-wrapper" class="main-content" style="margin-left: 260px; padding: 2rem;">
+        
+        <a th:href="@{/counselor/assessment}" class="back-btn">
+            <i class="bi bi-arrow-left"></i> Back to Assessment Overview
+        </a>
+        
+        <div class="page-header">
+            <div>
+                <h1><i class="bi bi-clock-history"></i> My Assessment Type Requests</h1>
+                <p>Track the status of your submitted assessment type requests</p>
+            </div>
+            <div class="header-actions">
+                <a th:href="@{/counselor/assessment/types/submit}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Submit New Request
+                </a>
+            </div>
+        </div>
+        
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <button class="tab-btn active" onclick="filterRequests('all')">All Requests</button>
+            <button class="tab-btn" onclick="filterRequests('PENDING')">Pending</button>
+            <button class="tab-btn" onclick="filterRequests('APPROVED')">Approved</button>
+            <button class="tab-btn" onclick="filterRequests('REJECTED')">Rejected</button>
+        </div>
+        
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div class="requests-container">
+            <div th:if="${requests.isEmpty()}" class="empty-state">
+                <i class="bi bi-inbox" style="font-size: 64px; opacity: 0.3;"></i>
+                <h3>No Requests Yet</h3>
+                <p>You haven't submitted any assessment type requests.</p>
+                <a th:href="@{/counselor/assessment/types/submit}" class="btn btn-primary" style="margin-top: 16px;">
+                    <i class="bi bi-plus-circle"></i> Submit Your First Request
+                </a>
+            </div>
+            
+            <div th:each="request : ${requests}" 
+                 class="request-card" 
+                 th:classappend="${request.status.toLowerCase()}"
+                 th:attr="data-status=${request.status}">
+                
+                <div class="card-header">
+                    <div class="request-info">
+                        <div class="request-title">
+                            <h3 th:text="${request.typeName}">Beck Depression Inventory</h3>
+                            <span class="type-code" th:text="'(' + ${request.typeCode} + ')'"></span>
+                             <span class="request-type-badge" 
+                                    th:classappend="${request.requestType == 'UPDATE' ? 'update' : 'create'}"
+                                    th:text="${request.requestType == 'UPDATE' ? 'Edit Request' : 'New Request'}">
+                                    New Request
+                                </span>
+                        </div>
+                        <span class="status-badge" 
+                              th:classappend="${request.status.toLowerCase()}"
+                              th:text="${request.status}">
+                            PENDING
+                        </span>
+                    </div>
+                    <div class="request-meta">
+                        <span class="meta-item">
+                            <i class="bi bi-calendar3"></i>
+                            Submitted: <span th:text="${#temporals.format(request.requestedAt, 'MMM dd, yyyy HH:mm')}"></span>
+                        </span>
+                        <span class="meta-item" th:if="${request.reviewedAt != null}">
+                            <i class="bi bi-clock-history"></i>
+                            Reviewed: <span th:text="${#temporals.format(request.reviewedAt, 'MMM dd, yyyy HH:mm')}"></span>
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="description">
+                        <div class="section-label">Description:</div>
+                        <p th:text="${request.description}"></p>
+                    </div>
+                    
+                    <div class="request-details">
+                        <div class="detail-item">
+                            <i class="bi bi-list-ol"></i>
+                            <span th:text="${request.totalQuestions} + ' questions'"></span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="bi bi-calculator"></i>
+                            <span th:text="'Max score: ' + ${request.maxScore}"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Rejection Notes -->
+                    <div th:if="${request.status == 'REJECTED' && request.reviewNotes != null}" 
+                         class="rejection-notes">
+                        <div class="notes-header">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Admin Feedback:</strong>
+                        </div>
+                        <p th:text="${request.reviewNotes}"></p>
+                    </div>
+                    
+                    <!-- Approval Success -->
+                    <div th:if="${request.status == 'APPROVED'}" class="approval-success">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>This assessment type has been approved and is now available to students!</span>
+                    </div>
+                </div>
+                
+                <div class="card-footer">
+                    <a th:href="@{/counselor/assessment/type-requests/{id}(id=${request.requestId})}" 
+                       class="btn btn-outline-secondary">
+                        <i class="bi bi-eye"></i> View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <style>
+        .back-btn {
+            color: #8b5cf6;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .back-btn:hover {
+            color: #7c3aed;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+        
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .page-header p {
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding: 4px;
+            background: #f9fafb;
+            border-radius: 12px;
+            width: fit-content;
+        }
+        
+        .tab-btn {
+            padding: 8px 20px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.2s;
+        }
+        
+        .tab-btn:hover {
+            background: white;
+            color: #8b5cf6;
+        }
+        
+        .tab-btn.active {
+            background: white;
+            color: #8b5cf6;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .requests-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .request-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #e5e7eb;
+            transition: all 0.3s;
+        }
+        
+        .request-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .request-card.pending {
+            border-left-color: #f59e0b;
+        }
+        
+        .request-card.approved {
+            border-left-color: #10b981;
+        }
+        
+        .request-card.rejected {
+            border-left-color: #ef4444;
+        }
+        
+        .request-card.hidden {
+            display: none;
+        }
+        
+        .card-header {
+            background: #f9fafb;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .request-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .request-title {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+        }
+        
+        .request-title h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1d1d1f;
+            margin: 0;
+        }
+        
+        .type-code {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-badge.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-badge.approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-badge.rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .request-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .meta-item i {
+            color: #8b5cf6;
+        }
+        
+        .card-body {
+            padding: 24px;
+        }
+        
+        .description {
+            margin-bottom: 20px;
+        }
+        
+        .section-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .description p {
+            color: #1d1d1f;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .request-details {
+            display: flex;
+            gap: 24px;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .detail-item i {
+            font-size: 18px;
+            color: #8b5cf6;
+        }
+        
+        .rejection-notes {
+            background: #fef2f2;
+            border: 1px solid #fee2e2;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        
+        .notes-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #991b1b;
+            margin-bottom: 8px;
+        }
+        
+        .notes-header i {
+            font-size: 18px;
+        }
+        
+        .rejection-notes p {
+            color: #991b1b;
+            margin: 0;
+            line-height: 1.6;
+        }
+        
+        .approval-success {
+            background: #f0fdf4;
+            border: 1px solid #d1fae5;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #065f46;
+            font-weight: 600;
+            margin-top: 16px;
+        }
+        
+        .approval-success i {
+            font-size: 24px;
+        }
+        
+        .card-footer {
+            padding: 16px 24px;
+            background: #fafafa;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #8b5cf6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #7c3aed;
+        }
+        
+        .btn-outline-secondary {
+            background: white;
+            color: #666;
+            border: 1px solid #d1d5db;
+        }
+        
+        .btn-outline-secondary:hover {
+            background: #f9fafb;
+            border-color: #8b5cf6;
+            color: #8b5cf6;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        
+        .empty-state h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin: 16px 0 12px;
+        }
+        
+        .empty-state p {
+            font-size: 16px;
+            color: #86868b;
+        }
+    </style>
+    
+    <script>
+        function filterRequests(status) {
+            const cards = document.querySelectorAll('.request-card');
+            const buttons = document.querySelectorAll('.tab-btn');
+            
+            // Update active button
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Filter cards
+            cards.forEach(card => {
+                if (status === 'all' || card.dataset.status === status) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

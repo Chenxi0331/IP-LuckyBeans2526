@@ -53,6 +53,44 @@
         margin-bottom: 2rem;
     }
 
+    /* Recommendation meta with color coding */
+.recommendation-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 8px 12px;
+    background: #f8fafc;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+/* Counselor recommendation - green theme */
+.recommendation-card:has([data-recommender-type="COUNSELOR"]) .recommendation-meta {
+    background: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%);
+    border-left: 3px solid #22c55e;
+    color: #166534;
+}
+
+.recommendation-card:has([data-recommender-type="COUNSELOR"]) .recommendation-meta .icon {
+    color: #22c55e;
+}
+
+/* System recommendation - blue theme */
+.recommendation-card:has([data-recommender-type="SYSTEM"]) .recommendation-meta {
+    background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+    border-left: 3px solid #3b82f6;
+    color: #1e40af;
+}
+
+.recommendation-card:has([data-recommender-type="SYSTEM"]) .recommendation-meta .icon {
+    color: #3b82f6;
+}
+
+.recommendation-meta span {
+    font-weight: 500;
+}
+
     </style>
 </head>
 
@@ -75,10 +113,11 @@
                 <h2>Personalized Recommendations</h2>
             </div>
 
-            <p class="section-subtitle">Based on your activity and mood</p>
+            <p class="section-subtitle">Based on your assessment result and activity</p>
 
             <div th:each="rec : ${recommendations}">
-                <div class="recommendation-card" th:classappend="${rec.isLocked} ? 'locked' : ''">
+                <div class="recommendation-card" th:classappend="${rec.isLocked} ? 'locked' : ''"
+                th:attr="data-recommender-type=${rec.recommenderType}">
 
                     <div class="module-status locked" th:if="${rec.isLocked}">
                         <span class="icon">🔒</span>
@@ -96,7 +135,8 @@
 
                     <div class="recommendation-meta">
                         <span class="icon">⊙</span>
-                        <span th:text="${rec.basedOn}"></span>
+                        <!-- <span th:text="${rec.basedOn}"></span> -->
+                         <span th:text="'Recommended by ' + ${rec.recommendedBy}"></span>
                     </div>
 
                     <div class="recommendation-tags">

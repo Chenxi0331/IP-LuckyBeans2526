@@ -5,9 +5,13 @@ import com.example.mentalhealth.service.*;
 import com.example.mentalhealth.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.security.core.annotation.AuthenticationPrincipal; 
+import org.springframework.security.core.userdetails.UserDetails; 
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +29,9 @@ public class CounselorProgressController {
     @Autowired
     private SelfCareModuleRepository moduleRepository;
     
+    @Autowired
+    private SelfCareRecommendationService recommendationService;
+
     @Autowired
     private UserModuleProgressRepository progressRepository;
     
@@ -99,6 +106,38 @@ public class CounselorProgressController {
         model.addAttribute("progressDetails", progressDetails);
         
         return "self-care/counselor-student-progress-detail";
+    }
+
+     @PostMapping("/student/{studentId}/recommend")
+    public String recommendModule(@PathVariable Long studentId,
+                                  @RequestParam Integer moduleId,
+                                  @RequestParam String reason,
+                                  @AuthenticationPrincipal UserDetails userDetails,
+                                  RedirectAttributes redirectAttributes) {
+        
+        try {
+            User counselor = userService.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Counselor not found"));
+            
+            // Use the recommendation service to create the recommendation
+            recommendationService.recommendModule(
+                counselor.getId(), 
+                studentId, 
+                moduleId, 
+                reason
+            );
+            
+            redirectAttributes.addFlashAttribute("message", 
+                "Module recommended successfully!");
+            redirectAttributes.addFlashAttribute("messageType", "success");
+            
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("message", 
+                "Error: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("messageType", "error");
+        }
+        
+        return "redirect:/counselor/progress/student/" + studentId;
     }
 
     

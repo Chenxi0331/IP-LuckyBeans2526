@@ -8,6 +8,42 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .assessment-type-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+        }
+        
+        .timeline-type-label {
+            font-size: 11px;
+            color: #8b5cf6;
+            font-weight: 700;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            display: block;
+        }
+        
+        .timeline-score {
+            display: flex;
+            align-items: baseline;
+            gap: 2px;
+        }
+        
+        .score-denominator {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+    </style>
 </head>
 <body>
     <div th:replace="fragments/navbar :: navbar"></div>
@@ -28,6 +64,9 @@
         
         <div class="trend-chart-section">
             <h2>Score Trend Over Time</h2>
+            <p style="font-size: 14px; color: #666; margin-bottom: 20px;">
+                Different assessment types are shown with different colors
+            </p>
             <canvas id="scoreTrendChart" width="400" height="200"></canvas>
         </div>
         
@@ -88,19 +127,44 @@
                                 </span>
                             </div>
                             <div class="timeline-score" th:classappend="${assessment.severityLevel}">
-                                <span th:text="${assessment.totalScore} + '/20'">8/20</span>
+                                <span th:text="${assessment.totalScore}">12</span>
+                                <span class="score-denominator">
+                                    /
+                                    <span th:text="${assessment.assessmentTypeId != null ? 
+                                                    (assessment.assessmentTypeId == 1 ? '27' : 
+                                                     assessment.assessmentTypeId == 2 ? '21' : 
+                                                     assessment.assessmentTypeId == 3 ? '63' : '20') : '20'}">
+                                    </span>
+                                </span>
                             </div>
                         </div>
                         
                         <div class="timeline-body">
+                            <span class="timeline-type-label" 
+                                  th:if="${assessment.assessmentTypeName != null}"
+                                  th:text="${assessment.assessmentTypeName}">
+                                PHQ-9
+                            </span>
+                            
                             <span class="timeline-severity" 
                                   th:classappend="${assessment.severityLevel}"
                                   th:text="${#strings.capitalize(assessment.severityLevel)}">
                                 Mild
                             </span>
-                            <p th:text="${assessment.assessmentResult}">
+                            <!-- <p th:text="${assessment.assessmentResult}">
                                 Mild symptoms. Consider some self-care activities.
-                            </p>
+                            </p> -->
+
+                            <div th:if="${assessment.recommendations != null && !assessment.recommendations.isEmpty()}" 
+                                class="timeline-recommendations">
+                                <div class="recommendations-label">
+                                    <i class="bi bi-lightbulb"></i>
+                                    <strong>Recommendations:</strong>
+                                </div>
+                                <p th:text="${assessment.recommendations}">
+                                    Your anxiety levels appear to be within normal range.
+                                </p>
+                            </div>
                         </div>
                         
                         <div class="timeline-actions">
@@ -131,60 +195,143 @@
     </main>
     
     <script th:inline="javascript">
-        const dates = /*[[${trendDates}]]*/ [];
-        const scores = /*[[${trendScores}]]*/ [];
+        const assessments = /*[[${assessments}]]*/ [];
         
-        dates.reverse();
-        scores.reverse();
-        
-        const ctx = document.getElementById('scoreTrendChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: dates,
-                datasets: [{
-                    label: 'Assessment Score',
-                    data: scores,
-                    borderColor: '#8b5cf6',
-                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+        if (assessments && assessments.length > 0) {
+            
+            const sortedAssessments = [...assessments].reverse();
+            
+            const groupedByType = {};
+            sortedAssessments.forEach(assessment => {
+                const typeName = assessment.assessmentTypeName || 'Unknown Assessment';
+                const typeId = assessment.assessmentTypeId || 0;
+                
+                if (!groupedByType[typeName]) {
+                    groupedByType[typeName] = {
+                        dates: [],
+                        scores: [],
+                        maxScore: typeId === 1 ? 27 : typeId === 2 ? 21 : typeId === 3 ? 63 : 20,
+                        color: null
+                    };
+                }
+                
+                const date = new Date(assessment.assessmentDate);
+                groupedByType[typeName].dates.push(
+                    date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                );
+                groupedByType[typeName].scores.push(assessment.totalScore);
+            });
+            
+            const colorSchemes = [
+                { border: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' },  // Purple for PHQ-9
+                { border: '#ec4899', bg: 'rgba(236, 72, 153, 0.1)' },  // Pink for GAD-7
+                { border: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' }   // Green for DASS-21
+            ];
+            
+            const datasets = [];
+            let colorIndex = 0;
+            let maxScoreOverall = 0;
+            
+            for (const [typeName, data] of Object.entries(groupedByType)) {
+                const color = colorSchemes[colorIndex % colorSchemes.length];
+                datasets.push({
+                    label: `${typeName} (max: ${data.maxScore})`,
+                    data: data.scores,
+                    borderColor: color.border,
+                    backgroundColor: color.bg,
                     tension: 0.4,
                     fill: true,
                     pointRadius: 5,
-                    pointHoverRadius: 7
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    },
-                    title: {
-                        display: false
-                    }
+                    pointHoverRadius: 7,
+                    borderWidth: 2
+                });
+                maxScoreOverall = Math.max(maxScoreOverall, data.maxScore);
+                colorIndex++;
+            }
+            
+            const allDates = [...new Set(
+                Object.values(groupedByType).flatMap(d => d.dates)
+            )];
+            
+            const ctx = document.getElementById('scoreTrendChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: allDates,
+                    datasets: datasets
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 20,
-                        ticks: {
-                            stepSize: 5
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15,
+                                font: {
+                                    size: 12,
+                                    weight: '600'
+                                }
+                            }
                         },
                         title: {
-                            display: true,
-                            text: 'Score (out of 20)'
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y;
+                                }
+                            }
                         }
                     },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Assessment Date'
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: Math.ceil(maxScoreOverall / 10) * 10, // 动态调整Y轴最大值
+                            ticks: {
+                                stepSize: 5,
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Score',
+                                font: {
+                                    size: 13,
+                                    weight: '600'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Assessment Date',
+                                font: {
+                                    size: 13,
+                                    weight: '600'
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
                         }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
                     }
                 }
-            }
-        });
+            });
+        }
     </script>
     
     <style>
@@ -232,7 +379,7 @@
 
         .trend-chart-section h2 {
             font-size: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 8px;
         }
 
         .comment-section {
@@ -365,13 +512,56 @@
             margin-bottom: 12px;
         }
         
+        .timeline-score span:first-child {
+            font-size: 18px;
+        }
+    
+        .score-denominator {
+            font-size: 14px;
+            opacity: 0.7;
+            font-weight: 600;
+        }
+    
+        .timeline-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        gap: 16px; 
+        flex-wrap: wrap; 
+        }
+
         .timeline-score {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 2px;
             font-size: 20px;
             font-weight: 700;
             padding: 4px 12px;
             border-radius: 8px;
+            white-space: nowrap; 
+            min-width: fit-content;
+        }
+
+        .timeline-card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        min-width: 300px; 
+        }
+    
+        @media (max-width: 768px) {
+        .timeline-header {
+            flex-direction: column;
+            align-items: flex-start;
         }
         
+        .timeline-score {
+            align-self: flex-end;
+            }
+        }
+
         .timeline-score.minimal { background: #d1f4dd; color: #0f7333; }
         .timeline-score.mild { background: #fff4ce; color: #b86e00; }
         .timeline-score.moderate { background: #ffd6cc; color: #c7341e; }
@@ -456,6 +646,36 @@
         .btn-primary:hover {
             background: #7c3aed;
         }
+
+        .timeline-recommendations {
+    margin-top: 16px;
+    padding: 16px;
+    background: linear-gradient(135deg, #fef3c7 0%, #fef9e7 100%);
+    border-left: 4px solid #f59e0b;
+    border-radius: 8px;
+}
+
+.recommendations-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #92400e;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.recommendations-label i {
+    color: #f59e0b;
+    font-size: 16px;
+}
+
+.timeline-recommendations p {
+    color: #78350f;
+    line-height: 1.6;
+    margin: 0;
+    font-size: 14px;
+}
     </style>
 </body>
 </html>

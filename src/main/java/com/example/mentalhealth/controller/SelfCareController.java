@@ -7,10 +7,12 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import com.example.mentalhealth.repository.ModuleQuizRepository;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Arrays; 
 
 @Controller
 @RequestMapping("/self-care")
@@ -24,7 +26,9 @@ public class SelfCareController {
     
     @Autowired
     private UserService userService;
-    
+
+    @Autowired
+    private ModuleQuizRepository quizRepository;
     @GetMapping
 public String selfCare(@RequestParam(required = false) String category,
                       @AuthenticationPrincipal UserDetails userDetails,
@@ -63,9 +67,12 @@ public String selfCare(@RequestParam(required = false) String category,
             redirectAttributes.addFlashAttribute("error", "This module is locked.");
             return "redirect:/self-care";
         }
-        
+        Long quizCount = quizRepository.countByModuleIdAndStatus(id, "APPROVED");
+        boolean hasQuiz = quizCount > 0;
+
         model.addAttribute("module", module);
         model.addAttribute("progress", moduleProgressService.getOrCreateProgress(user.getId(), id));
+        model.addAttribute("hasQuiz", hasQuiz);
         return "self-care/module-detail";
     }
     
@@ -75,7 +82,6 @@ public String selfCare(@RequestParam(required = false) String category,
                                 @AuthenticationPrincipal UserDetails userDetails) {
         try {
             User user = userService.findByEmail(userDetails.getUsername()).get();
-            // 直接传递 Long 类型的 ID
             moduleProgressService.updateProgress(user.getId(), id, progress);
             return "{\"success\": true, \"message\": \"Progress updated\"}";
         } catch (Exception e) {
@@ -94,4 +100,6 @@ public String selfCare(@RequestParam(required = false) String category,
             return "{\"success\": false, \"message\": \"" + e.getMessage() + "\"}";
         }
     }
+
+
 }

@@ -130,7 +130,8 @@
                         onclick="completeContent()">
                     ✓ Mark Content Complete
                 </button>
-                
+                <!-- Check if quiz exists -->
+                <div th:if="${hasQuiz}">
                 <!-- Take Quiz Button (only if content completed but quiz not done) -->
                 <a th:if="${progress.contentCompleted and !progress.quizCompleted}"
                    th:href="@{/self-care/module/{id}/quiz(id=${module.moduleId})}" 
@@ -143,18 +144,38 @@
                    th:href="@{/self-care/module/{id}/quiz/result(id=${module.moduleId})}" 
                    class="btn btn-info">
                     📊 View Quiz Results
-                </a>
+                </a> 
             </div>
-            
+
+                <!--Show message if no quiz -->
+            <div th:if="${!hasQuiz and progress.contentCompleted}" 
+                class="alert alert-success mt-3 mb-0">
+                <i class="bi bi-check-circle"></i>
+                <strong>Module Completed!</strong> This module has no quiz. You've completed 100% of the content.
+            </div>
+    
+            <div th:if="${!hasQuiz and !progress.contentCompleted}" 
+                class="alert alert-info mt-3 mb-0">
+                <i class="bi bi-info-circle"></i>
+                <strong>Note:</strong> This module has no quiz. Complete the content to finish this module.
+            </div>  
         </div>
     </div>
     
     <script th:inline="javascript">
         const moduleId = /*[[${module.moduleId}]]*/ 0;
+        const hasQuiz = /*[[${hasQuiz}]]*/ false;
         
         function completeContent() {
-    if (!confirm('Have you finished viewing all the content? This will mark the content as complete (50% progress).')) {
-        return;
+        let confirmMessage;
+        if (hasQuiz) {
+            confirmMessage = 'Have you finished viewing all the content? This will mark the content as complete (50% progress).';
+        } else {
+            confirmMessage = 'Have you finished viewing all the content? This will mark the module as 100% complete.';
+        }
+        
+        if (!confirm(confirmMessage)) {
+            return;
     }
     
     // Get CSRF token from meta tag or hidden input
@@ -166,13 +187,17 @@
         method: 'POST',
         headers: { 
             'Content-Type': 'application/x-www-form-urlencoded',
-            [csrfHeader]: csrfToken  // ADD THIS!
+            [csrfHeader]: csrfToken  
         }
     })
     .then(res => res.json())
     .then(result => {
         if (result.success) {
-            alert('✓ Content completed! You can now take the quiz to complete this module.');
+                if (hasQuiz) {
+                    alert('✓ Content completed! You can now take the quiz to complete this module.');
+                } else {
+                    alert('✓ Module completed! You have finished 100% of this module.');
+                }
             location.reload();
         } else {
             alert('Failed: ' + result.message);

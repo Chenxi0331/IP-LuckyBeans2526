@@ -19,6 +19,9 @@ public class SelfCareModuleProgressService {
     
     @Autowired
     private SelfCareModuleRepository moduleRepository;
+
+    @Autowired
+    private ModuleQuizRepository quizRepository;
     
     // ==================== UC011: Access Self-Care Modules ====================
     
@@ -184,7 +187,19 @@ public ProgressStatistics getUserProgressStatistics(Long userId) {
 public void markContentCompleted(Long userId, Integer moduleId) {
     UserModuleProgress progress = getOrCreateProgress(userId, moduleId);
     progress.setContentCompleted(true);
-    int percentage = progress.getQuizCompleted() ? 100 : 50;
+
+    Long quizCount = quizRepository.countByModuleIdAndStatus(moduleId, "APPROVED");
+    boolean hasQuiz = quizCount > 0;
+
+    int percentage;
+    if (hasQuiz) {
+        // If has quiz: content = 50%, need quiz to reach 100%
+        percentage = progress.getQuizCompleted() ? 100 : 50;
+    } else {
+        // If no quiz: content completion = 100%
+        percentage = 100;
+    }
+    
     progress.setProgressPercentage(percentage);
     
     if (percentage == 100) {

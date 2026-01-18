@@ -9,13 +9,13 @@
 </head>
 <body>
     <div th:replace="fragments/navbar :: navbar"></div>
+    <main id="page-content-wrapper" class="main-content" style="margin-left: 260px; padding: 2rem;">
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-2">
                 <!-- Sidebar -->
             </div>
             
-            <main class="col-md-10 ms-sm-auto px-md-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">
                         <i class="bi bi-question-circle"></i> Manage Quiz
@@ -189,10 +189,9 @@
                         </div>
                     </div>
                 </div>
-            </main>
         </div>
     </div>
-    
+</main>
     <style>
         .quiz-question-card {
             padding: 20px;

@@ -73,7 +73,7 @@
             </div>
             
             <!-- Pending Approvals Card -->
-            <a th:href="@{/admin/assessment/questions/pending}" class="stat-card pending-card" style="text-decoration: none;">
+            <!-- <a th:href="@{/admin/assessment/questions/pending}" class="stat-card pending-card" style="text-decoration: none;">
                 <div class="stat-icon">⏳</div>
                 <h3>Pending Approvals</h3>
                 <div class="stat-value pending-value" th:text="${pendingCount != null ? pendingCount : 0}">0</div>
@@ -85,15 +85,22 @@
                     <i class="bi bi-check-circle"></i>
                     All Clear
                 </div>
-            </a>
+            </a> -->
         </div>
         
         <div class="admin-actions">
             <a th:href="@{/admin/assessment/all}" class="btn btn-primary">
                 <i class="bi bi-file-text"></i> View All Assessments
             </a>
-            <a th:href="@{/admin/assessment/questions}" class="btn btn-secondary">
+            <!-- <a th:href="@{/admin/assessment/questions}" class="btn btn-secondary">
                 <i class="bi bi-pencil-square"></i> Manage Questions
+            </a> -->
+             <a th:href="@{/admin/assessment/types}" class="btn btn-secondary">
+                <i class="bi bi-collection"></i> Manage Assessment Types
+            </a>
+            <a th:href="@{/admin/assessment/type-requests/pending}" class="btn btn-warning">
+                <i class="bi bi-clock-history"></i> 
+                <span th:text="${pendingRequestCount} + ' Type Requests'"></span>
             </a>
         </div>
     </main>

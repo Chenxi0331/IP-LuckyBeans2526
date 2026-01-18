@@ -70,7 +70,120 @@
             font-size: 15px;
             margin: 0;
         }
-    </style>
+
+        .assessment-type-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .timeline-type {
+            font-size: 12px;
+            color: #8b5cf6;
+            font-weight: 600;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .timeline-recommendations {
+    margin-top: 16px;
+    padding: 16px;
+    background: linear-gradient(135deg, #fef3c7 0%, #fef9e7 100%);
+    border-left: 4px solid #f59e0b;
+    border-radius: 8px;
+}
+
+.recommendations-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #92400e;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.recommendations-label i {
+    color: #f59e0b;
+    font-size: 16px;
+}
+
+.timeline-recommendations p {
+    color: #78350f;
+    line-height: 1.6;
+    margin: 0;
+    font-size: 14px;
+}
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.timeline-score {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+    font-size: 20px;
+    font-weight: 700;
+    padding: 6px 16px;
+    border-radius: 12px;
+    white-space: nowrap;
+    min-width: fit-content;
+}
+
+.timeline-score span:first-child {
+    font-size: 22px;
+}
+
+.score-denominator {
+    font-size: 16px;
+    opacity: 0.7;
+    font-weight: 600;
+}
+
+/* Color variants for severity levels */
+.timeline-score.minimal { 
+    background: #d1f4dd; 
+    color: #0f7333; 
+}
+
+.timeline-score.mild { 
+    background: #fff4ce; 
+    color: #b86e00; 
+}
+
+.timeline-score.moderate { 
+    background: #ffd6cc; 
+    color: #c7341e; 
+}
+
+.timeline-score.severe { 
+    background: #fdd; 
+    color: #a50e0e; 
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .timeline-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .timeline-score {
+        align-self: flex-end;
+    }
+}
+
+</style>
 </head>
 
 <body>
@@ -167,6 +280,9 @@
                                 <div class="score-max" th:text="'/' + ${maxScore}">/20</div>
                             </div>
                             <div class="severity-info">
+                                <!-- Assessment Type Badge -->
+                                <span class="assessment-type-badge" th:if="${latestAssessmentType != null}" 
+                                    th:text="${latestAssessmentType}">PHQ-9</span>
                                 <div class="severity-label" th:classappend="${severityLevel}">
                                     <span th:text="${#strings.capitalize(severityLevel)}"></span>
                                 </div>
@@ -177,7 +293,7 @@
                             <p class="result-description" th:text="${assessment}"></p>
                             <div class="result-actions">
                                 <a href="/self-care" class="btn-small btn-primary">Explore Self-Care</a>
-                                <a th:href="@{/symptoms/start}" class="btn-small btn-secondary">Take New Assessment</a>
+                                <a th:href="@{/symptoms/select-type}" class="btn-small btn-secondary">Take New Assessment</a>
                             </div>
                         </div>
                     </div>
@@ -191,7 +307,7 @@
                         Completed Yet</h2>
                     <p style="font-size: 16px; color: #86868b; margin-bottom: 32px;">Take your first mental health
                         assessment to understand your wellbeing</p>
-                    <a th:href="@{/symptoms/start}" class="btn btn-primary" style="padding: 12px 32px;">Start
+                    <a th:href="@{/symptoms/select-type}" class="btn btn-primary" style="padding: 12px 32px;">Start
                         Assessment</a>
                 </div>
             </div>
@@ -245,6 +361,9 @@
                                 <div class="score-max" th:text="'/' + ${maxScore}">/20</div>
                             </div>
                             <div class="severity-info">
+                                <!-- Assessment Type Badge -->
+                                <span class="assessment-type-badge" th:if="${latestAssessmentType != null}" 
+                                    th:text="${latestAssessmentType}">PHQ-9</span>
                                 <div class="severity-label" th:classappend="${latestSeverity}">
                                     <span th:text="${#strings.capitalize(latestSeverity)}"></span>
                                 </div>
@@ -283,17 +402,34 @@
                                         <span class="timeline-time"
                                             th:text="${#temporals.format(item.assessmentDate, 'hh:mm a')}"></span>
                                     </div>
-                                    <div class="timeline-score" th:classappend="${item.severityLevel}">
-                                        <span th:text="${item.totalScore}"></span>
+                                        <div class="timeline-score" th:classappend="${item.severityLevel}">
+                                            <span th:text="${item.totalScore}">0</span>
+                                            <span class="score-denominator">
+                                                /
+                                                <span th:text="${item.maxScore != null ? item.maxScore : '20'}">20</span>
+                                            </span>
                                     </div>
                                 </div>
 
                                 <div class="timeline-body">
+                                    <!-- Assessment Type Name -->
+                                    <div class="timeline-type" th:if="${item.assessmentTypeName != null}" 
+                                        th:text="${item.assessmentTypeName}">PHQ-9</div>
                                     <span class="timeline-severity" th:classappend="${item.severityLevel}"
                                         th:text="${#strings.capitalize(item.severityLevel)}"></span>
-                                    <p th:text="${item.assessmentResult}"></p>
+                                    <!-- <p th:text="${item.assessmentResult}"></p> -->
+                                    <!-- <p th:text="${item.assessmentResult}"></p> -->
+    
+                                    <div th:if="${item.recommendations != null && !item.recommendations.isEmpty()}" 
+                                        class="timeline-recommendations">
+                                        <div class="recommendations-label">
+                                            <i class="bi bi-lightbulb"></i>
+                                            <strong>Recommendations:</strong>
+                                        </div>
+                                        <p th:text="${item.recommendations}"></p>
+                                    </div>
                                 </div>
-
+                                
                                 <div class="timeline-trend" th:if="${!iterStat.last}">
                                     <span
                                         th:if="${item.totalScore < assessmentHistory.get(iterStat.index + 1).totalScore}"
