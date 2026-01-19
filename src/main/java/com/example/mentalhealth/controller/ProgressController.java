@@ -202,6 +202,9 @@ public class ProgressController {
         }
     }
 
+    @Autowired
+    private com.example.mentalhealth.repository.UserAssessmentRepository userAssessmentRepository;
+
     // UC020: View Progress Insights Dashboard
     @GetMapping("/dashboard")
     public String progressDashboard(@AuthenticationPrincipal UserDetails userDetails, Model model) {
@@ -211,10 +214,68 @@ public class ProgressController {
 
         model.addAttribute("user", user);
 
-        // Required by dashboard.html
+        // 1. Mood Chart Data (Last 7 Days)
         model.addAttribute("dashboardMoodChartData", getChartData(user, 7));
-        model.addAttribute("weeklyGoalPercent", 75);
-        model.addAttribute("achievements", List.of("Consistent Tracker", "First 7 Days Complete"));
+
+        // 2. Weekly Goal Percent (Days with at least one entry in the last 7 days)
+        LocalDate today = LocalDate.now();
+        LocalDate sevenDaysAgo = today.minusDays(6); // inclusive of today = 7 days
+        List<MoodEntry> recentEntries = moodEntryService.getEntriesForUser(user).stream()
+                .filter(e -> !e.getDate().isBefore(sevenDaysAgo))
+                .toList();
+
+        long uniqueDays = recentEntries.stream()
+                .map(MoodEntry::getDate)
+                .distinct()
+                .count();
+        
+        int goalPercent = (int) ((uniqueDays / 7.0) * 100);
+        model.addAttribute("weeklyGoalPercent", goalPercent);
+
+        // 3. Achievements (Dynamic)
+        List<String> achievements = new ArrayList<>();
+        if (goalPercent >= 100) achievements.add("7-Day Streak! 🔥");
+        if (moodEntryService.getEntriesForUser(user).size() >= 1) achievements.add("First Step Taken 🚀");
+        if (recentEntries.stream().anyMatch(e -> "Happy 😊".equals(e.getMood()))) achievements.add("Found Joy 😊");
+        
+        model.addAttribute("achievements", achievements);
+
+        // 4. Activity Distribution Data
+        Map<String, Long> activityCounts = new HashMap<>();
+        // Initialize common activities to 0 to ensure chart has labels
+        activityCounts.put("Study", 0L);
+        activityCounts.put("Exercise", 0L);
+        activityCounts.put("Social", 0L);
+        activityCounts.put("Rest", 0L);
+        activityCounts.put("Other", 0L);
+
+        recentEntries.stream()
+            .map(MoodEntry::getActivity)
+            .filter(Objects::nonNull)
+            .forEach(activity -> activityCounts.put(activity, activityCounts.getOrDefault(activity, 0L) + 1));
+
+        model.addAttribute("activityLabels", activityCounts.keySet());
+        model.addAttribute("activityData", activityCounts.values());
+
+        // 5. Assessment History Data
+        List<com.example.mentalhealth.model.UserAssessment> assessments = userAssessmentRepository.findByUserIdOrderByAssessmentDateDesc(user.getId().intValue());
+        
+        // Take latest 5
+        List<com.example.mentalhealth.model.UserAssessment> latestAssessments = assessments.stream()
+            .limit(5)
+            .sorted(Comparator.comparing(com.example.mentalhealth.model.UserAssessment::getAssessmentDate)) // Sort back to ascending for chart (Left to Right)
+            .toList();
+
+        List<String> assessmentLabels = new ArrayList<>();
+        List<Integer> assessmentScores = new ArrayList<>();
+        
+        for (com.example.mentalhealth.model.UserAssessment ua : latestAssessments) {
+            assessmentLabels.add(ua.getAssessmentDate().toLocalDate().toString()); 
+            assessmentScores.add(ua.getTotalScore());
+        }
+
+        model.addAttribute("assessmentLabels", assessmentLabels);
+        model.addAttribute("assessmentData", assessmentScores);
 
         List<ProgressInsight> insights = progressInsightService.getInsightsForUser(user);
         model.addAttribute("insights", insights);

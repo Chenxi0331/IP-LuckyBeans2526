@@ -24,8 +24,25 @@ public class AdminController {
     @Autowired
     private CounsellingService counsellingService;
 
+    @Autowired
+    private com.example.mentalhealth.repository.UserAssessmentRepository userAssessmentRepository;
+    
+    @Autowired
+    private com.example.mentalhealth.repository.CounselorChatRepository counselorChatRepository;
+
     @GetMapping("/dashboard")
-    public String dashboard() {
+    public String dashboard(Model model) {
+        // Summary Stats
+        long totalUsers = userRepository.count();
+        long totalSessions = counsellingService.getAllSessions().size(); // Or use a count query if available
+        long totalAssessments = userAssessmentRepository.count();
+        long totalChats = counselorChatRepository.count();
+        
+        model.addAttribute("totalUsers", totalUsers);
+        model.addAttribute("totalSessions", totalSessions);
+        model.addAttribute("totalAssessments", totalAssessments);
+        model.addAttribute("totalChats", totalChats);
+        
         return "admin/dashboard";
     }
 
@@ -40,13 +57,10 @@ public class AdminController {
     public String viewAllSessions(Model model) {
         // Assuming service has a method to get all sessions or we fetch from repo
         model.addAttribute("sessions", counsellingService.getAllSessions());
-        return "admin/sessions";
+        return "counselling/all-sessions";
     }
 
-    @GetMapping("/reports")
-    public String reports() {
-        return "admin/reports";
-    }
+
 
     @GetMapping("/settings")
     public String settings() {
