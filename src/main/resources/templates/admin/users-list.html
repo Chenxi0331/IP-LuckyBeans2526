@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Innerly | User Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 1px solid #dee2e6;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .filter-btn:hover {
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+
+        .filter-btn.active {
+            background: #6366f1;
+            color: white;
+            border-color: #6366f1;
+        }
+
+        .user-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-student {
+            background: #dbeafe;
+            color: #0369a1;
+        }
+
+        .badge-counselor {
+            background: #c7d2fe;
+            color: #4f46e5;
+        }
+
+        .badge-admin {
+            background: #fecaca;
+            color: #991b1b;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-inactive {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .status-suspended {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f9fafb;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="fragments/navbar :: navbar"></div>
+
+    <div id="page-content-wrapper" class="main-content" style="margin-left: 260px;">
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">User Management</h2>
+                <a th:href="@{/admin/counselor-verification}" class="btn btn-primary">
+                    <span class="material-icons" style="font-size: 18px;">check_circle</span> Counselor Verification
+                </a>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="filter-buttons">
+                <a th:href="@{/admin/users?filter=all}" th:classappend="${currentFilter == 'all'} ? 'filter-btn active' : 'filter-btn'">All Users</a>
+                <a th:href="@{/admin/users?filter=students}" th:classappend="${currentFilter == 'students'} ? 'filter-btn active' : 'filter-btn'">Students</a>
+                <a th:href="@{/admin/users?filter=counselors}" th:classappend="${currentFilter == 'counselors'} ? 'filter-btn active' : 'filter-btn'">Counselors</a>
+            </div>
+
+            <!-- Users Table -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Joined Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="user : ${users}">
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #a855f7, #9333ea); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: 600;">
+                                            <span th:text="${user.initial != null ? user.initial : '?'}">U</span>
+                                        </div>
+                                        <span th:text="${user.fullName}">User Name</span>
+                                    </div>
+                                </td>
+                                <td th:text="${user.email}">user@example.com</td>
+                                <td>
+                                    <span class="user-badge" th:classappend="${user.role.name() == 'STUDENT'} ? 'badge-student' : (${user.role.name() == 'COUNSELOR'} ? 'badge-counselor' : 'badge-admin')" th:text="${user.role}">ROLE</span>
+                                </td>
+                                <td>
+                                    <span class="status-badge" th:classappend="${user.accountStatus.name() == 'ACTIVE'} ? 'status-active' : (${user.accountStatus.name() == 'INACTIVE'} ? 'status-inactive' : 'status-suspended')" th:text="${user.accountStatus}">STATUS</span>
+                                </td>
+                                <td th:text="${#temporals.format(user.createdAt, 'MMM dd, yyyy')}">Jan 15, 2024</td>
+                                <td>
+                                    <div style="display: flex; gap: 6px;">
+                                        <a th:href="@{/admin/users/view/{id}(id=${user.id})}" class="btn btn-sm btn-outline-primary">
+                                            <span class="material-icons" style="font-size: 16px;">visibility</span>
+                                        </a>
+                                        <a th:href="@{/admin/users/edit/{id}(id=${user.id})}" class="btn btn-sm btn-outline-secondary">
+                                            <span class="material-icons" style="font-size: 16px;">edit</span>
+                                        </a>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-danger dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                <span class="material-icons" style="font-size: 16px;">more_vert</span>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <!-- Deactivate for ACTIVE users -->
+                                                <li th:if="${user.accountStatus.name() == 'ACTIVE'}">
+                                                    <form th:action="@{/admin/users/{id}/deactivate(id=${user.id})}" method="post" style="display: inline;">
+                                                        <button type="submit" class="dropdown-item" onclick="return confirm('Deactivate this user?')">
+                                                            <span class="material-icons" style="font-size: 16px;">block</span> Deactivate
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                
+                                                <!-- Activate for INACTIVE users -->
+                                                <li th:if="${user.accountStatus.name() == 'INACTIVE'}">
+                                                    <form th:action="@{/admin/users/{id}/activate(id=${user.id})}" method="post" style="display: inline;">
+                                                        <button type="submit" class="dropdown-item">
+                                                            <span class="material-icons" style="font-size: 16px;">check_circle</span> Activate
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                
+                                                <!-- Unsuspend for SUSPENDED users -->
+                                                <li th:if="${user.accountStatus.name() == 'SUSPENDED'}">
+                                                    <form th:action="@{/admin/users/{id}/unsuspend(id=${user.id})}" method="post" style="display: inline;">
+                                                        <button type="submit" class="dropdown-item">
+                                                            <span class="material-icons" style="font-size: 16px;">check_circle</span> Unsuspend
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                
+                                                <!-- Divider for ACTIVE users only -->
+                                                <li th:if="${user.accountStatus.name() == 'ACTIVE'}"><hr class="dropdown-divider"></li>
+                                                
+                                                <!-- Suspend for ACTIVE users only -->
+                                                <li th:if="${user.accountStatus.name() == 'ACTIVE'}">
+                                                    <button class="dropdown-item" onclick="showSuspendModal(this)" th:data-user-id="${user.id}">
+                                                        <span class="material-icons" style="font-size: 16px;">warning</span> Suspend
+                                                    </button>
+                                                </li>
+                                                
+                                                <!-- Delete divider and option -->
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <form th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post" style="display: inline;">
+                                                        <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Delete user permanently?')">
+                                                            <span class="material-icons" style="font-size: 16px;">delete</span> Delete
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${users.isEmpty()}">
+                                <td colspan="6" class="text-center text-muted p-4">No users found.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Suspend Modal -->
+    <div class="modal fade" id="suspendModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Suspend User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="suspendForm" method="post">
+                    <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                    
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            ⚠️ The user will not be able to login until suspension is lifted.
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Reason for suspension:</label>
+                            <textarea class="form-control" name="reason" rows="4" placeholder="Explain the reason for suspension..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Suspend User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showSuspendModal(button) {
+            const userId = button.getAttribute('data-user-id');
+            const form = document.getElementById('suspendForm');
+            form.action = `/admin/users/${userId}/suspend`;
+            const modal = new bootstrap.Modal(document.getElementById('suspendModal'));
+            modal.show();
+        }
+    </script>
+</body>
+
+</html>

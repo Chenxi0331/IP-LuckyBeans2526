@@ -10,7 +10,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
 
 @Controller
 public class ProfileController {
@@ -20,6 +27,10 @@ public class ProfileController {
     
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    private static final String UPLOAD_DIR = "uploads/profile-pictures/";
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    private static final String[] ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif"};
     
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -29,7 +40,6 @@ public class ProfileController {
     }
     
     // Student Profile
-    // URL: localhost:8080/profile/student-profile
     @GetMapping("/profile/student-profile")
     public String showStudentProfile(Model model) {
         User user = getCurrentUser();
@@ -37,7 +47,6 @@ public class ProfileController {
             return "redirect:/";
         }
         model.addAttribute("user", user);
-        // Look for file: templates/profile/student-profile.html
         return "profile/student-profile"; 
     }
     
@@ -49,7 +58,6 @@ public class ProfileController {
             return "redirect:/";
         }
         model.addAttribute("user", user);
-        // Look for file: templates/profile/counselor-profile.html
         return "profile/counselor-profile";
     }
     
@@ -61,7 +69,6 @@ public class ProfileController {
             return "redirect:/";
         }
         model.addAttribute("user", user);
-        // Look for file: templates/profile/admin-profile.html
         return "profile/admin-profile";
     }
     
@@ -84,6 +91,80 @@ public class ProfileController {
         
         return getRedirectUrl(user.getRole());
     }
+
+    // Upload Profile Picture
+    @PostMapping("/profile/upload-picture")
+    public String uploadProfilePicture(@RequestParam("profilePicture") MultipartFile file,
+                                       RedirectAttributes redirectAttributes) {
+        try {
+            User user = getCurrentUser();
+
+            // Validate file
+            if (file.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "Please select a file");
+                return getRedirectUrl(user.getRole());
+            }
+
+            // Check file size
+            if (file.getSize() > MAX_FILE_SIZE) {
+                redirectAttributes.addFlashAttribute("error", "File size must be less than 5MB");
+                return getRedirectUrl(user.getRole());
+            }
+
+            // Check file extension
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename == null || !isAllowedExtension(originalFilename)) {
+                redirectAttributes.addFlashAttribute("error", "Only JPG, PNG, GIF files are allowed");
+                return getRedirectUrl(user.getRole());
+            }
+
+            // Save file
+            String pictureFilePath = saveProfilePicture(file, user.getId());
+
+            // Delete old picture if exists
+            if (user.getProfilePicturePath() != null && !user.getProfilePicturePath().isEmpty()) {
+                deleteOldPicture(user.getProfilePicturePath());
+            }
+
+            // Update user
+            user.setProfilePicturePath(pictureFilePath);
+            userRepository.save(user);
+
+            redirectAttributes.addFlashAttribute("success", "Profile picture updated successfully!");
+
+        } catch (IOException e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to upload picture: " + e.getMessage());
+        }
+
+        return getRedirectUrl(getCurrentUser().getRole());
+    }
+
+    // Delete Profile Picture
+    @PostMapping("/profile/delete-picture")
+    public String deleteProfilePicture(RedirectAttributes redirectAttributes) {
+        try {
+            User user = getCurrentUser();
+
+            if (user.getProfilePicturePath() == null || user.getProfilePicturePath().isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "No profile picture to delete");
+                return getRedirectUrl(user.getRole());
+            }
+
+            // Delete file
+            deleteOldPicture(user.getProfilePicturePath());
+
+            // Update user
+            user.setProfilePicturePath(null);
+            userRepository.save(user);
+
+            redirectAttributes.addFlashAttribute("success", "Profile picture deleted successfully!");
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to delete picture: " + e.getMessage());
+        }
+
+        return getRedirectUrl(getCurrentUser().getRole());
+    }
     
     // Change Password
     @PostMapping("/profile/change-password")
@@ -102,6 +183,11 @@ public class ProfileController {
             redirectAttributes.addFlashAttribute("error", "New passwords do not match");
             return getRedirectUrl(user.getRole());
         }
+
+        if (newPassword.length() < 6) {
+            redirectAttributes.addFlashAttribute("error", "Password must be at least 6 characters");
+            return getRedirectUrl(user.getRole());
+        }
         
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
@@ -109,34 +195,48 @@ public class ProfileController {
         redirectAttributes.addFlashAttribute("success", "Password changed successfully!");
         return getRedirectUrl(user.getRole());
     }
-    
-    // Admin: Toggle User Active Status
-    @PostMapping("/admin/users/{userId}/toggle-active")
-    public String toggleUserActive(@PathVariable Long userId, 
-                                  RedirectAttributes redirectAttributes) {
-        User admin = getCurrentUser();
-        if (admin.getRole() != Role.ADMIN) {
-            return "redirect:/";
+
+    // ============ HELPER METHODS ============
+
+    private String saveProfilePicture(MultipartFile file, Long userId) throws IOException {
+        String fileName = userId + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        Path path = Paths.get(UPLOAD_DIR);
+
+        if (!Files.exists(path)) {
+            Files.createDirectories(path);
         }
-        
-        User targetUser = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        targetUser.setActive(!targetUser.isActive());
-        userRepository.save(targetUser);
-        
-        redirectAttributes.addFlashAttribute("success", 
-            "User " + (targetUser.isActive() ? "activated" : "deactivated") + " successfully!");
-        
-        // This redirects back to the AdminController's user list
-        return "redirect:/admin/users";
+
+        Path filePath = path.resolve(fileName);
+        Files.copy(file.getInputStream(), filePath);
+
+        return UPLOAD_DIR + fileName;
     }
-    
-    // Helper to redirect to the correct Profile URL
+
+    private void deleteOldPicture(String picturePath) {
+        try {
+            Path path = Paths.get(picturePath);
+            if (Files.exists(path)) {
+                Files.delete(path);
+            }
+        } catch (IOException e) {
+            // Log error but don't fail the operation
+            System.err.println("Failed to delete old picture: " + e.getMessage());
+        }
+    }
+
+    private boolean isAllowedExtension(String filename) {
+        String lowerFilename = filename.toLowerCase();
+        for (String ext : ALLOWED_EXTENSIONS) {
+            if (lowerFilename.endsWith(ext)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private String getRedirectUrl(Role role) {
         switch (role) {
             case ADMIN:
-                // Redirects to: @GetMapping("/profile/admin-profile")
                 return "redirect:/profile/admin-profile"; 
             case COUNSELOR:
                 return "redirect:/profile/counselor-profile";

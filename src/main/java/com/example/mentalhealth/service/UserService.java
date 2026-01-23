@@ -29,4 +29,8 @@ public class UserService {
     public List<User> getAllStudents() {
         return userRepository.findByRole(Role.STUDENT);
     }
+
+    public User save(User user) {
+        return userRepository.save(user);
+    }
 }

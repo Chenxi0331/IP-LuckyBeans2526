@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Chats - Innerly</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .chats-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .chat-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .chat-item {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .chat-item:hover {
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.1);
+            border-color: #a855f7;
+            transform: translateX(4px);
+        }
+        
+        .chat-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #a855f7, #9333ea);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .chat-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .chat-name {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        
+        .chat-last-message {
+            font-size: 14px;
+            color: #94a3b8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .chat-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-closed {
+            background: #fee2e2;
+            color: #7f1d1d;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        
+        .empty-text {
+            color: #94a3b8;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR Fragment -->
+    <div th:replace="fragments/navbar :: navbar"></div>
+    
+    <!-- MAIN CONTENT -->
+    <div id="page-content-wrapper" style="margin-left: 260px; min-height: 100vh; background-color: #f8fafc;">
+        <div class="container-fluid p-4">
+            <div class="header mb-4">
+                <h2 class="fw-bold" style="color: #a855f7;">My Chats</h2>
+                <p class="text-muted">
+                    <span th:if="${userRole == 'STUDENT'}">Your active conversations with counselors</span>
+                    <span th:if="${userRole == 'COUNSELOR'}">Conversations with your students</span>
+                </p>
+            </div>
+            
+            <div class="chats-container">
+                <!-- Empty State -->
+                <div th:if="${#lists.isEmpty(chats)}" class="empty-state">
+                    <div class="empty-icon">💬</div>
+                    <h4 class="mb-3">No chats yet</h4>
+                    <p class="empty-text">
+                        <span th:if="${userRole == 'STUDENT'}">Start a conversation by choosing a counselor</span>
+                        <span th:if="${userRole == 'COUNSELOR'}">Wait for students to initiate conversations with you</span>
+                    </p>
+                    <a th:if="${userRole == 'STUDENT'}" th:href="@{/chatbot/counselor-list}" class="btn btn-primary mt-3">
+                        Browse Counselors
+                    </a>
+                </div>
+                
+                <!-- Chat List -->
+                <ul class="chat-list" th:if="${!#lists.isEmpty(chats)}">
+                    <li th:each="chat : ${chats}">
+                        <a th:href="@{/chatbot/room/{id}(id=${chat.id})}" class="chat-item">
+                            <div class="chat-avatar" 
+                                 th:if="${userRole == 'STUDENT'}"
+                                 th:text="${chat.counselor.initial != null ? chat.counselor.initial : 'C'}">C</div>
+                            <div class="chat-avatar" 
+                                 th:if="${userRole == 'COUNSELOR'}"
+                                 th:text="${chat.student.initial != null ? chat.student.initial : 'S'}">S</div>
+                            <div class="chat-info">
+                                <div class="chat-name" th:if="${userRole == 'STUDENT'}" th:text="${chat.counselor.fullName}">Dr. Jane Smith</div>
+                                <div class="chat-name" th:if="${userRole == 'COUNSELOR'}" th:text="${chat.student.fullName}">John Doe</div>
+                                <div class="chat-last-message">
+                                    <span th:if="${chat.lastMessageAt != null}" th:text="'Last message: ' + ${#temporals.format(chat.lastMessageAt, 'MMM dd, HH:mm')}">Last message: Jan 20, 10:30</span>
+                                    <span th:if="${chat.lastMessageAt == null}">No messages yet</span>
+                                </div>
+                            </div>
+                            <div th:classappend="${chat.status == 'ACTIVE'} ? 'status-active' : 'status-closed'" class="chat-status">
+                                <span th:text="${chat.status}">ACTIVE</span>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

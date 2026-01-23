@@ -41,6 +41,13 @@ public class User {
     @Column(name = "consent_mood_sharing")
     private Boolean consentMoodSharing = false;
 
+    @Column(name = "profile_picture_path")
+    private String profilePicturePath;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "account_status")
+    private AccountStatus accountStatus = AccountStatus.ACTIVE;
+
     // Constructors
     public User() {
     }
@@ -98,6 +105,14 @@ public class User {
         return consentMoodSharing != null && consentMoodSharing;
     }
 
+    public String getProfilePicturePath() {
+        return profilePicturePath;
+    }
+
+    public AccountStatus getAccountStatus() {
+        return accountStatus;
+    }
+
     // Setters
     public void setId(Long id) {
         this.id = id;
@@ -141,5 +156,17 @@ public class User {
 
     public void setConsentMoodSharing(Boolean consentMoodSharing) {
         this.consentMoodSharing = consentMoodSharing;
+    }
+
+    public void setProfilePicturePath(String profilePicturePath) {
+        this.profilePicturePath = profilePicturePath;
+    }
+
+    public void setAccountStatus(AccountStatus accountStatus) {
+        this.accountStatus = accountStatus;
+    }
+
+    public enum AccountStatus {
+        ACTIVE, INACTIVE, SUSPENDED
     }
 }
